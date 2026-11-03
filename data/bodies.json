@@ -1,0 +1,672 @@
+{
+ "mercury": {
+  "id": "mercury",
+  "name": "Mercury",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 3.3e+23,
+  "radius_km": 2439.5,
+  "density": 5429.0,
+  "gravity": 3.7,
+  "gravity_source": "fact sheet",
+  "escape_kms": 4.3,
+  "rotation_hours": 1407.6,
+  "day_hours": 4222.6,
+  "a_km": 57900000.0,
+  "orbit_days": 88.0,
+  "orbit_kms": 47.4,
+  "incl_deg": 7.0,
+  "ecc": 0.206,
+  "obliquity_deg": 0.034,
+  "temp_c": 167.0,
+  "pressure_bar": 0.0,
+  "n_moons": 0.0,
+  "rings": false,
+  "magnetic": "Yes",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "surface_pressure_text": "<~5 x 10-15 bar (0.005 picobar)",
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html",
+  "facts": [
+   {
+    "text": "Because the planet is so close to the Sun, day temperatures can reach highs of 800°F (430°C).",
+    "url": "https://science.nasa.gov/mercury/facts/"
+   },
+   {
+    "text": "Without an atmosphere to retain that heat at night, temperatures can dip as low as -290°F (-180°C).",
+    "url": "https://science.nasa.gov/mercury/facts/"
+   },
+   {
+    "text": "Despite its proximity to the Sun, Mercury is not the hottest planet in our solar system – that title belongs to nearby Venus, thanks to its dense atmosphere.",
+    "url": "https://science.nasa.gov/mercury/facts/"
+   },
+   {
+    "text": "But Mercury is the fastest planet, zipping around the Sun every 88 Earth days.",
+    "url": "https://science.nasa.gov/mercury/facts/"
+   },
+   {
+    "text": "MESSENGER finally entered orbit around Mercury at 00:45 UT March 18, 2011, nearly seven years after launch.",
+    "url": "https://science.nasa.gov/mission/messenger/"
+   }
+  ],
+  "map_credit": "MESSENGER MDIS BDR basemap (NASA/JHUAPL), via NASA Solar System Treks"
+ },
+ "venus": {
+  "id": "venus",
+  "name": "Venus",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 4.87e+24,
+  "radius_km": 6052.0,
+  "density": 5243.0,
+  "gravity": 8.9,
+  "gravity_source": "fact sheet",
+  "escape_kms": 10.4,
+  "rotation_hours": -5832.5,
+  "day_hours": 2802.0,
+  "a_km": 108200000.0,
+  "orbit_days": 224.7,
+  "orbit_kms": 35.0,
+  "incl_deg": 3.4,
+  "ecc": 0.007,
+  "obliquity_deg": 177.4,
+  "temp_c": 464.0,
+  "pressure_bar": 92.0,
+  "n_moons": 0.0,
+  "rings": false,
+  "magnetic": "No",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "surface_pressure_text": "92 bars",
+  "composition": "96.5% Carbon Dioxide (CO2), 3.5% Nitrogen (N2)",
+  "scale_height_km": 15.9,
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html",
+  "facts": [
+   {
+    "text": "It's the hottest planet in our solar system, and is sometimes called Earth's twin.",
+    "url": "https://science.nasa.gov/venus/facts/"
+   },
+   {
+    "text": "And the atmospheric pressure at the surface is about 93 times what it is at sea level on Earth.",
+    "url": "https://science.nasa.gov/venus/facts/"
+   },
+   {
+    "text": "Below Venus' dense, persistent clouds, the surface has volcanoes and deformed mountains.",
+    "url": "https://science.nasa.gov/venus/facts/"
+   },
+   {
+    "text": "At the tops of Venus’ clouds, whipped around the planet by winds measured as high as 224 mph (360 kph), we find another transformation.",
+    "url": "https://science.nasa.gov/venus/facts/"
+   },
+   {
+    "text": "Magellan was designed to use a Synthetic Aperture Radar (SAR) to map 70% of the Venusian surface down to a resolution of 390 to 985 feet (120 to 300 meters).",
+    "url": "https://science.nasa.gov/mission/magellan/"
+   }
+  ],
+  "map_credit": "Magellan C3-MDIR radar mosaic, tinted (NASA/JPL), via NASA Solar System Treks"
+ },
+ "earth": {
+  "id": "earth",
+  "name": "Earth",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 5.969999999999999e+24,
+  "radius_km": 6378.0,
+  "density": 5514.0,
+  "gravity": 9.8,
+  "gravity_source": "fact sheet",
+  "escape_kms": 11.2,
+  "rotation_hours": 23.9,
+  "day_hours": 24.0,
+  "a_km": 149600000.0,
+  "orbit_days": 365.2,
+  "orbit_kms": 29.8,
+  "incl_deg": 0.0,
+  "ecc": 0.017,
+  "obliquity_deg": 23.4,
+  "temp_c": 15.0,
+  "pressure_bar": 1.0,
+  "n_moons": 1.0,
+  "rings": false,
+  "magnetic": "Yes",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "surface_pressure_text": "1014 mb",
+  "composition": "78.08% Nitrogen (N2), 20.95% Oxygen (O2),",
+  "scale_height_km": 8.5,
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
+  "facts": [
+   {
+    "text": "Most notably, Earth is unique in that most of our planet is covered in liquid water, since the temperature allows liquid water to exist for extended periods of time.",
+    "url": "https://science.nasa.gov/earth/facts/"
+   },
+   {
+    "text": "Earth's vast oceans provided a convenient place for life to begin about 3.8 billion years ago.",
+    "url": "https://science.nasa.gov/earth/facts/"
+   },
+   {
+    "text": "Earth's axis of rotation is tilted 23.4 degrees with respect to the plane of Earth's orbit around the Sun.",
+    "url": "https://science.nasa.gov/earth/facts/"
+   },
+   {
+    "text": "As Earth orbits the Sun, it completes one rotation every 23.9 hours.",
+    "url": "https://science.nasa.gov/earth/facts/"
+   }
+  ],
+  "map_credit": "Blue Marble (NASA Scientific Visualization Studio, animation 2915)"
+ },
+ "mars": {
+  "id": "mars",
+  "name": "Mars",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 6.42e+23,
+  "radius_km": 3396.0,
+  "density": 3934.0,
+  "gravity": 3.7,
+  "gravity_source": "fact sheet",
+  "escape_kms": 5.0,
+  "rotation_hours": 24.6,
+  "day_hours": 24.7,
+  "a_km": 228000000.0,
+  "orbit_days": 687.0,
+  "orbit_kms": 24.1,
+  "incl_deg": 1.8,
+  "ecc": 0.094,
+  "obliquity_deg": 25.2,
+  "temp_c": -65.0,
+  "pressure_bar": 0.01,
+  "n_moons": 2.0,
+  "rings": false,
+  "magnetic": "No",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "surface_pressure_text": "6.36 mb at mean radius (variable from 4.0 to 8.7 mb depending on season)",
+  "composition": "Carbon Dioxide (CO2) - 95.1% ; Nitrogen (N2) - 2.59% Argon (Ar) - 1.94%; Oxygen (O2) - 0.16%; Carbon Monoxide (CO) - 0.06%",
+  "scale_height_km": 11.0,
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+  "facts": [
+   {
+    "text": "This dynamic planet has seasons, polar ice caps, extinct volcanoes, canyons, and weather.",
+    "url": "https://science.nasa.gov/mars/facts/"
+   },
+   {
+    "text": "NASA missions have found lots of evidence that Mars was much wetter and warmer, with a thicker atmosphere, billions of years ago.",
+    "url": "https://science.nasa.gov/mars/facts/"
+   },
+   {
+    "text": "From this distance, it takes sunlight 13 minutes to travel from the Sun to Mars.",
+    "url": "https://science.nasa.gov/mars/facts/"
+   },
+   {
+    "text": "NASA's Viking 1 made the first truly successful landing on Mars.",
+    "url": "https://science.nasa.gov/mission/viking-1/"
+   },
+   {
+    "text": "The computer inflated these large air bags about 330 feet (100 meters) above the surface of Mars.",
+    "url": "https://science.nasa.gov/mission/mars-pathfinder/"
+   }
+  ],
+  "map_credit": "Viking MDIM2.1 colour mosaic (NASA/USGS), via NASA Solar System Treks"
+ },
+ "jupiter": {
+  "id": "jupiter",
+  "name": "Jupiter",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 1.898e+27,
+  "radius_km": 71492.0,
+  "density": 1326.0,
+  "gravity": 23.1,
+  "gravity_source": "fact sheet",
+  "escape_kms": 59.5,
+  "rotation_hours": 9.9,
+  "day_hours": 9.9,
+  "a_km": 778500000.0,
+  "orbit_days": 4331.0,
+  "orbit_kms": 13.1,
+  "incl_deg": 1.3,
+  "ecc": 0.049,
+  "obliquity_deg": 3.1,
+  "temp_c": -110.0,
+  "pressure_bar": null,
+  "n_moons": 95.0,
+  "rings": true,
+  "magnetic": "Yes",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "composition": "Molecular hydrogen (H2) - 89.8% (2.0%); Helium (He) - 10.2% (2.0%)",
+  "scale_height_km": 27.0,
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html",
+  "facts": [
+   {
+    "text": "It's the largest planet in our solar system – if it were a hollow shell, 1,000 Earths could fit inside.",
+    "url": "https://science.nasa.gov/jupiter/facts/"
+   },
+   {
+    "text": "But it has the shortest day in the solar system, taking about 9.9 hours to spin around once on its axis.",
+    "url": "https://science.nasa.gov/jupiter/facts/"
+   },
+   {
+    "text": "Jupiter’s iconic Great Red Spot is a giant storm bigger than Earth that has raged for hundreds of years.",
+    "url": "https://science.nasa.gov/jupiter/facts/"
+   },
+   {
+    "text": "From this distance, it takes sunlight 43 minutes to travel from the Sun to Jupiter.",
+    "url": "https://science.nasa.gov/jupiter/facts/"
+   }
+  ],
+  "map_credit": "Cassini cylindrical map of Jupiter, PIA07782 (NASA/JPL/SSI)"
+ },
+ "saturn": {
+  "id": "saturn",
+  "name": "Saturn",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 5.68e+26,
+  "radius_km": 60268.0,
+  "density": 687.0,
+  "gravity": 9.0,
+  "gravity_source": "fact sheet",
+  "escape_kms": 35.5,
+  "rotation_hours": 10.7,
+  "day_hours": 10.7,
+  "a_km": 1432000000.0,
+  "orbit_days": 10747.0,
+  "orbit_kms": 9.7,
+  "incl_deg": 2.5,
+  "ecc": 0.052,
+  "obliquity_deg": 26.7,
+  "temp_c": -140.0,
+  "pressure_bar": null,
+  "n_moons": 274.0,
+  "rings": true,
+  "magnetic": "Yes",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "composition": "Molecular hydrogen (H2) - 96.3% (2.4%); Helium (He) - 3.25% (2.4%)",
+  "scale_height_km": 59.5,
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html",
+  "facts": [
+   {
+    "text": "Saturn is not the only planet to have rings, but none are as spectacular or as complex as Saturn's.",
+    "url": "https://science.nasa.gov/saturn/facts/"
+   },
+   {
+    "text": "From the jets of water that spray from Saturn's moon Enceladus to the methane lakes on smoggy Titan , the Saturn system is a rich source of scientific discovery and still holds many mysteries.",
+    "url": "https://science.nasa.gov/saturn/facts/"
+   },
+   {
+    "text": "From this distance, it takes sunlight 80 minutes to travel from the Sun to Saturn.",
+    "url": "https://science.nasa.gov/saturn/facts/"
+   },
+   {
+    "text": "It began the first in-depth, up-close study of Saturn and its system of rings and moons in 2004.",
+    "url": "https://science.nasa.gov/mission/cassini/"
+   }
+  ]
+ },
+ "uranus": {
+  "id": "uranus",
+  "name": "Uranus",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 8.68e+25,
+  "radius_km": 25559.0,
+  "density": 1270.0,
+  "gravity": 8.7,
+  "gravity_source": "fact sheet",
+  "escape_kms": 21.3,
+  "rotation_hours": -17.2,
+  "day_hours": 17.2,
+  "a_km": 2867000000.0,
+  "orbit_days": 30589.0,
+  "orbit_kms": 6.8,
+  "incl_deg": 0.8,
+  "ecc": 0.047,
+  "obliquity_deg": 97.8,
+  "temp_c": -195.0,
+  "pressure_bar": null,
+  "n_moons": 28.0,
+  "rings": true,
+  "magnetic": "Yes",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "composition": "Molecular hydrogen (H2) - 82.5% (3.3%); Helium (He) - 15.2% (3.3%) Methane (CH4) - 2.3%",
+  "scale_height_km": 27.7,
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html",
+  "facts": [
+   {
+    "text": "The ice giant is surrounded by 13 faint rings and 28 small moons.",
+    "url": "https://science.nasa.gov/uranus/facts/"
+   },
+   {
+    "text": "Uranus rotates at a nearly 90-degree angle from the plane of its orbit.",
+    "url": "https://science.nasa.gov/uranus/facts/"
+   },
+   {
+    "text": "It was discovered in 1781 by astronomer William Herschel, although he originally thought it was either a comet or a star.",
+    "url": "https://science.nasa.gov/uranus/facts/"
+   },
+   {
+    "text": "From this distance, it takes sunlight 2 hours and 40 minutes to travel from the Sun to Uranus.",
+    "url": "https://science.nasa.gov/uranus/facts/"
+   }
+  ]
+ },
+ "neptune": {
+  "id": "neptune",
+  "name": "Neptune",
+  "kind": "planet",
+  "parent": "sun",
+  "mass_kg": 1.0199999999999999e+26,
+  "radius_km": 24764.0,
+  "density": 1638.0,
+  "gravity": 11.0,
+  "gravity_source": "fact sheet",
+  "escape_kms": 23.5,
+  "rotation_hours": 16.1,
+  "day_hours": 16.1,
+  "a_km": 4515000000.0,
+  "orbit_days": 59800.0,
+  "orbit_kms": 5.4,
+  "incl_deg": 1.8,
+  "ecc": 0.01,
+  "obliquity_deg": 28.3,
+  "temp_c": -200.0,
+  "pressure_bar": null,
+  "n_moons": 16.0,
+  "rings": true,
+  "magnetic": "Yes",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "composition": "Molecular hydrogen (H2) - 80.0% (3.2%); Helium (He) - 19.0% (3.2%); Methane (CH4) 1.5% (0.5%)",
+  "scale_height_km": 19.1,
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html",
+  "facts": [
+   {
+    "text": "In 2011 Neptune completed its first 165-year orbit since its discovery in 1846.",
+    "url": "https://science.nasa.gov/neptune/facts/"
+   },
+   {
+    "text": "The warm light we see here on our home planet is roughly 900 times as bright as sunlight on Neptune.",
+    "url": "https://science.nasa.gov/neptune/facts/"
+   },
+   {
+    "text": "More than 200 years later, the ice giant became the first planet located through mathematical predictions rather than through regular observations of the sky.",
+    "url": "https://science.nasa.gov/neptune/facts/"
+   },
+   {
+    "text": "So far, each of these worlds has been visited by only one brief spacecraft flyby (Voyager 2, in 1986 and 1989, respectively).",
+    "url": "https://science.nasa.gov/mission/cassini/"
+   }
+  ]
+ },
+ "moon": {
+  "id": "moon",
+  "name": "Moon",
+  "kind": "moon",
+  "parent": "earth",
+  "mass_kg": 7.3e+22,
+  "radius_km": 1737.5,
+  "density": 3340.0,
+  "gravity": 1.6,
+  "gravity_source": "fact sheet",
+  "escape_kms": 2.4,
+  "rotation_hours": 655.7,
+  "day_hours": 708.7,
+  "a_km": 384000.0,
+  "orbit_days": 27.3,
+  "orbit_kms": 1.0,
+  "incl_deg": 5.1,
+  "ecc": 0.055,
+  "obliquity_deg": 6.7,
+  "temp_c": -20.0,
+  "pressure_bar": 0.0,
+  "n_moons": 0.0,
+  "rings": false,
+  "magnetic": "No",
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+  "facts": [
+   {
+    "text": "The Moon has a very thin and tenuous atmosphere called an exosphere.",
+    "url": "https://science.nasa.gov/moon/facts/"
+   },
+   {
+    "text": "Apollo astronauts brought back a total of 842 pounds (382 kilograms) of lunar rocks and soil to Earth.",
+    "url": "https://science.nasa.gov/moon/facts/"
+   },
+   {
+    "text": "Humans didn't see the lunar far side until a Soviet spacecraft flew past in 1959.",
+    "url": "https://science.nasa.gov/moon/facts/"
+   },
+   {
+    "text": "The Moon's weak atmosphere and its lack of liquid water cannot support life as we know it.",
+    "url": "https://science.nasa.gov/moon/facts/"
+   }
+  ],
+  "map_credit": "LRO WAC global mosaic (NASA/GSFC/ASU), via NASA Solar System Treks"
+ },
+ "io": {
+  "id": "io",
+  "name": "Io",
+  "kind": "moon",
+  "parent": "jupiter",
+  "mass_kg": 8.932e+22,
+  "radius_km": 1821.5,
+  "density": 3530.0,
+  "gravity": 1.797,
+  "gravity_source": "derived: G x mass / radius^2",
+  "escape_kms": 2.558,
+  "a_km": 421800.0,
+  "orbit_days": 5.91,
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html",
+  "facts": [
+   {
+    "text": "Io is caught in a tug-of-war between Jupiter's massive gravity and the smaller but precisely timed pulls from two neighboring moons that orbit farther from Jupiter—Europa and Ganymede.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
+   },
+   {
+    "text": "Io’s volcanoes are at times so powerful that they are seen with large telescopes on Earth, and Io even has lakes of molten silicate lava on its surface.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
+   },
+   {
+    "text": "It was Voyager 1 that spotted the first signs of the little moon’s powerful volcanism in 1979.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
+   }
+  ],
+  "map_credit": "Voyager ISS + Galileo SSI colour mosaic (NASA/USGS), via NASA Solar System Treks"
+ },
+ "europa": {
+  "id": "europa",
+  "name": "Europa",
+  "kind": "moon",
+  "parent": "jupiter",
+  "mass_kg": 4.8e+22,
+  "radius_km": 1560.8,
+  "density": 3010.0,
+  "gravity": 1.315,
+  "gravity_source": "derived: G x mass / radius^2",
+  "escape_kms": 2.026,
+  "a_km": 671100.0,
+  "orbit_days": 9.4,
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html",
+  "facts": [
+   {
+    "text": "It shows strong evidence for an ocean of liquid water beneath its icy crust.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/"
+   },
+   {
+    "text": "Based on Europa's icy composition, scientists think the most likely material to create this magnetic signature is a global ocean of salty water.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/"
+   },
+   {
+    "text": "Europa Clipper will try to determine if Jupiter's icy moon Europa currently has habitable conditions.",
+    "url": "https://science.nasa.gov/mission/europa-clipper/"
+   },
+   {
+    "text": "It will orbit Jupiter, and conduct 49 close flybys of Europa.",
+    "url": "https://science.nasa.gov/mission/europa-clipper/"
+   }
+  ],
+  "map_credit": "Voyager + Galileo SSI mosaic (NASA/USGS), via NASA Solar System Treks"
+ },
+ "ganymede": {
+  "id": "ganymede",
+  "name": "Ganymede",
+  "kind": "moon",
+  "parent": "jupiter",
+  "mass_kg": 1.4819e+23,
+  "radius_km": 2631.2,
+  "density": 1940.0,
+  "gravity": 1.429,
+  "gravity_source": "derived: G x mass / radius^2",
+  "escape_kms": 2.742,
+  "a_km": 1070400.0,
+  "orbit_days": 14.97,
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html",
+  "facts": [
+   {
+    "text": "Jupiter’s icy moon Ganymede is the largest moon in our solar system, even bigger than the planet Mercury, and the dwarf planet Pluto.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
+   },
+   {
+    "text": "There’s strong evidence that Ganymede has an underground saltwater ocean that may hold more water than all the water on Earth's surface.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
+   },
+   {
+    "text": "The dark areas are the older, more heavily cratered regions and the light areas are younger, tectonically deformed regions.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
+   }
+  ],
+  "map_credit": "Voyager + Galileo SSI colour mosaic (NASA/USGS), via NASA Solar System Treks"
+ },
+ "callisto": {
+  "id": "callisto",
+  "name": "Callisto",
+  "kind": "moon",
+  "parent": "jupiter",
+  "mass_kg": 1.0759000000000001e+23,
+  "radius_km": 2410.3,
+  "density": 1830.0,
+  "gravity": 1.236,
+  "gravity_source": "derived: G x mass / radius^2",
+  "escape_kms": 2.441,
+  "a_km": 1882700.0,
+  "orbit_days": 26.33,
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html",
+  "facts": [
+   {
+    "text": "Callisto is Jupiter’s second largest moon and the third largest moon in our solar system.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
+   },
+   {
+    "text": "Data from NASA’s Galileo spacecraft in the 1990s revealed Callisto may have a secret: a salty ocean beneath its surface.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
+   },
+   {
+    "text": "Galileo orbited Jupiter until the mission ended in 2003.",
+    "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
+   }
+  ],
+  "map_credit": "Voyager + Galileo SSI mosaic (NASA/USGS), via NASA Solar System Treks"
+ },
+ "titan": {
+  "id": "titan",
+  "name": "Titan",
+  "kind": "moon",
+  "parent": "saturn",
+  "mass_kg": 1.3455e+23,
+  "radius_km": 2575.0,
+  "density": 1880.0,
+  "gravity": 1.354,
+  "gravity_source": "derived: G x mass / radius^2",
+  "escape_kms": 2.641,
+  "a_km": 1221870.0,
+  "orbit_days": 20.273,
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html",
+  "facts": [
+   {
+    "text": "It has clouds, rain, rivers, lakes and seas of liquid hydrocarbons like methane and ethane.",
+    "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+   },
+   {
+    "text": "This mammoth moon is the only moon in the solar system with a dense atmosphere, and it’s the only world besides Earth that has standing bodies of liquid, including rivers, lakes and seas, on its surface.",
+    "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+   },
+   {
+    "text": "Like Earth, Titan’s atmosphere is primarily nitrogen, plus a small amount of methane.",
+    "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+   },
+   {
+    "text": "Titan is also thought to have a subsurface ocean of water.",
+    "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+   },
+   {
+    "text": "Dragonfly is expected to make one flight every 1-2 Titan days, which is called a Tsol and lasts about 16 Earth days.",
+    "url": "https://science.nasa.gov/mission/dragonfly/"
+   }
+  ],
+  "map_credit": "Cassini ISS global mosaic PIA19658, tinted (NASA/JPL/SSI), via NASA Solar System Treks"
+ },
+ "enceladus": {
+  "id": "enceladus",
+  "name": "Enceladus",
+  "kind": "moon",
+  "parent": "saturn",
+  "mass_kg": 1.08e+20,
+  "radius_km": 252.0,
+  "density": 1610.0,
+  "gravity": 0.114,
+  "gravity_source": "derived: G x mass / radius^2",
+  "escape_kms": 0.239,
+  "a_km": 238020.0,
+  "orbit_days": 3.9494,
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html",
+  "facts": [
+   {
+    "text": "A handful of worlds are thought to have liquid water oceans beneath their frozen shell, but Enceladus sprays its ocean out into space where spacecraft can sample it.",
+    "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+   },
+   {
+    "text": "From these samples, scientists have determined that Enceladus has most of the chemical ingredients needed for life, and likely has hydrothermal vents releasing hot, mineral-rich water into its ocean.",
+    "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+   },
+   {
+    "text": "Because Enceladus reflects so much sunlight, the surface temperature is extremely cold, about minus 330 degrees Fahrenheit (minus 201 degrees Celsius).",
+    "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+   },
+   {
+    "text": "In particular, the south polar region of Enceladus is almost entirely free of impact craters.",
+    "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+   }
+  ],
+  "map_credit": "Cassini ISS colour mosaic (NASA/JPL/SSI), via NASA Solar System Treks"
+ },
+ "triton": {
+  "id": "triton",
+  "name": "Triton",
+  "kind": "moon",
+  "parent": "neptune",
+  "mass_kg": 2.14e+22,
+  "radius_km": 1353.4,
+  "density": 2050.0,
+  "gravity": 0.78,
+  "gravity_source": "derived: G x mass / radius^2",
+  "escape_kms": 1.453,
+  "a_km": 354760.0,
+  "orbit_days": 14.328,
+  "source_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptuniansatfact.html",
+  "facts": [
+   {
+    "text": "Triton's thin atmosphere is composed mainly of nitrogen with small amounts of methane.",
+    "url": "https://science.nasa.gov/neptune/moons/triton/"
+   },
+   {
+    "text": "It is so cold that most of Triton's nitrogen is condensed as frost, giving its surface an icy sheen that reflects 70 percent of the sunlight that hits it.",
+    "url": "https://science.nasa.gov/neptune/moons/triton/"
+   },
+   {
+    "text": "NASA's Voyager 2―the only spacecraft to fly past Neptune and Triton―found surface temperatures of -391degrees Fahrenheit (-235 degrees Celsius).",
+    "url": "https://science.nasa.gov/neptune/moons/triton/"
+   },
+   {
+    "text": "During its 1989 flyby, Voyager 2 also found Triton has active geysers, making it one of the few geologically active moons in our solar system.",
+    "url": "https://science.nasa.gov/neptune/moons/triton/"
+   }
+  ]
+ }
+}

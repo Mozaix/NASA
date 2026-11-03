@@ -1,0 +1,1192 @@
+{
+ "gale": {
+  "id": "gale",
+  "body": "mars",
+  "name": "Gale Crater",
+  "real_elevation": true,
+  "dem_label": "MOLA MEGDR 128 pixels/degree",
+  "width_km": 190.0,
+  "landing_name": "Aeolis Palus (Curiosity's plain)",
+  "lat": -5.2,
+  "lon": 137.6,
+  "polar": false,
+  "color_label": "Viking MDIM2.1 colour mosaic (NASA/USGS), via NASA Solar System Treks",
+  "pois": [
+   {
+    "name": "Bradbury Landing",
+    "u": 0.45091494877330185,
+    "v": 0.30991621413015613,
+    "elev_m": -4503,
+    "sample": "regolith",
+    "fact": {
+     "text": "Landing at Gale Crater, Mars Science Laboratory is assessing whether Mars ever had an environment capable of supporting microbial life.",
+     "url": "https://science.nasa.gov/mission/msl-curiosity/science/"
+    },
+    "lat": -4.5895,
+    "lon": 137.4417,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Aeolis Mons (Mount Sharp)",
+    "u": 0.5760551628542898,
+    "v": 0.4637098643024561,
+    "elev_m": 29,
+    "sample": "core",
+    "fact": {
+     "text": "At center is the \"clay-bearing unit,\" a region with a unique story to tell about the history of water on Mount Sharp, the 3-mile-tall (5-kilometer-tall) mountain Curiosity has been ascending since 2014.",
+     "url": "https://science.nasa.gov/mission/msl-curiosity/science/"
+    },
+    "lat": -5.083445462,
+    "lon": 137.845279,
+    "coords_source": "IAU nomenclature via NASA Treks"
+   },
+   {
+    "name": "Yellowknife Bay",
+    "u": 0.4565893419346987,
+    "v": 0.31007189290646225,
+    "elev_m": -4516,
+    "sample": "core",
+    "fact": {
+     "text": "Early in its mission, Curiosity's scientific tools found chemical and mineral evidence of past habitable environments on Mars.",
+     "url": "https://science.nasa.gov/mission/msl-curiosity/"
+    },
+    "lat": -4.59,
+    "lon": 137.46,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Crater floor sediments",
+    "u": 0.3914733548367378,
+    "v": 0.6089751434143248,
+    "elev_m": -3311,
+    "sample": "rock",
+    "fact": {
+     "text": "It hunts for special rocks that formed in water and/or have signs of organics.",
+     "url": "https://science.nasa.gov/mission/msl-curiosity/"
+    },
+    "lat": -5.55,
+    "lon": 137.25,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Gale's northern rim",
+    "u": 0.6085266451632624,
+    "v": 0.20421032501826095,
+    "elev_m": -3797,
+    "sample": "rock",
+    "fact": {
+     "text": "NASA missions have found lots of evidence that Mars was much wetter and warmer, with a thicker atmosphere, billions of years ago.",
+     "url": "https://science.nasa.gov/mars/facts/"
+    },
+    "lat": -4.25,
+    "lon": 137.95,
+    "coords_source": "catalog"
+   }
+  ],
+  "landing_uv": [
+   0.45038781935393757,
+   0.31007189290646225
+  ],
+  "trek_dem_check": {
+   "correlation": 0.9987,
+   "treks_m_per_grey_level": 115.1,
+   "treks_grey_levels_here": 52
+  },
+  "height_min_m": -4653.24755859375,
+  "height_max_m": 1421.8262939453125,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 46.38671875,
+  "vexag": 2.5
+ },
+ "jezero": {
+  "id": "jezero",
+  "body": "mars",
+  "name": "Jezero Crater",
+  "real_elevation": true,
+  "dem_label": "MOLA MEGDR 128 pixels/degree",
+  "width_km": 90.0,
+  "landing_name": "Octavia E. Butler landing site",
+  "lat": 18.45,
+  "lon": 77.5,
+  "polar": false,
+  "color_label": "Viking MDIM2.1 colour mosaic (NASA/USGS), via NASA Solar System Treks",
+  "pois": [
+   {
+    "name": "Octavia E. Butler Landing",
+    "u": 0.4693225816706888,
+    "v": 0.5034837450608942,
+    "elev_m": -2570,
+    "sample": "regolith",
+    "fact": {
+     "text": "NASA’s Perseverance rover landed in Jezero Crater, an area with an ancient delta, on Feb. 18, 2021.",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/"
+    },
+    "lat": 18.4447,
+    "lon": 77.4508,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Western delta",
+    "u": 0.43141227609300353,
+    "v": 0.46056137666909924,
+    "elev_m": -2413,
+    "sample": "core",
+    "fact": {
+     "text": "Scientists believe the area was once flooded with water and was home to an ancient river delta.",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+    },
+    "lat": 18.51,
+    "lon": 77.39,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Crater lake floor",
+    "u": 0.5748229715349155,
+    "v": 0.559157934996347,
+    "elev_m": -2663,
+    "sample": "rock",
+    "fact": {
+     "text": "The rover discovered a habitable, stable lake, delta, and river system in Jezero Crater's history.",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+    },
+    "lat": 18.36,
+    "lon": 77.62,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Sampling area",
+    "u": 0.4501180189767304,
+    "v": 0.4868537922230334,
+    "elev_m": -2477,
+    "sample": "core",
+    "fact": {
+     "text": "These samples record the history of the Jezero Crater landing site, and may even preserve signs of ancient life.",
+     "url": "https://science.nasa.gov/mission/mars-2020-perseverance/"
+    },
+    "lat": 18.47,
+    "lon": 77.42,
+    "coords_source": "catalog"
+   }
+  ],
+  "landing_uv": [
+   0.4693225816706888,
+   0.5034837450608942
+  ],
+  "trek_dem_check": {
+   "correlation": 0.9905,
+   "treks_m_per_grey_level": 113.9,
+   "treks_grey_levels_here": 22
+  },
+  "height_min_m": -3060.254638671875,
+  "height_max_m": -511.3115234375,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 21.97265625,
+  "vexag": 3.0
+ },
+ "valles": {
+  "id": "valles",
+  "body": "mars",
+  "name": "Valles Marineris (Coprates)",
+  "real_elevation": true,
+  "dem_label": "MOLA MEGDR 128 pixels/degree",
+  "width_km": 340.0,
+  "landing_name": "Coprates Chasma floor",
+  "lat": -13.3,
+  "lon": -62.5,
+  "polar": false,
+  "color_label": "Viking MDIM2.1 colour mosaic (NASA/USGS), via NASA Solar System Treks",
+  "pois": [
+   {
+    "name": "Coprates Chasma",
+    "u": 0.7982782745611412,
+    "v": 0.5113729111700933,
+    "elev_m": -5137,
+    "sample": "core",
+    "fact": {
+     "text": "The canyon runs about 2,400 miles (3,870 kilometers) in length, spans about 370 miles (600 kilometers) across at its widest, and descends about 5.8 miles (9.3 kilometers) at its deepest.",
+     "url": "https://science.nasa.gov/resource/valles-marineris-the-grand-canyon-of-mars/"
+    },
+    "lat": -13.36536384,
+    "lon": -60.738450459999996,
+    "coords_source": "IAU nomenclature via NASA Treks"
+   },
+   {
+    "name": "Canyon system overview",
+    "u": 0.3645382294221993,
+    "v": 0.3086066808941688,
+    "elev_m": -4056,
+    "sample": "rock",
+    "fact": {
+     "text": "The center of the scene shows the entire Valles Marineris canyon system, extending from Noctis Labyrinthus, the arcuate system of graben to the west, to the chaotic terrain to the east.",
+     "url": "https://science.nasa.gov/resource/valles-marineris-the-grand-canyon-of-mars/"
+    },
+    "lat": -12.2,
+    "lon": -63.3,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Southern plateau",
+    "u": 0.4999999999999988,
+    "v": 0.8305884602737081,
+    "elev_m": 3743,
+    "sample": "regolith",
+    "fact": {
+     "text": "South of Valles Marineris is very ancient terrain covered by many impact craters.",
+     "url": "https://science.nasa.gov/resource/valles-marineris-the-grand-canyon-of-mars/"
+    },
+    "lat": -15.2,
+    "lon": -62.5,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Tharsis view",
+    "u": 0.24600918016661935,
+    "v": 0.6565945338138617,
+    "elev_m": 1568,
+    "sample": "rock",
+    "fact": {
+     "text": "The three Tharsis volcanoes (dark red spots), each about 25 kilometers high, are visible to the west.",
+     "url": "https://science.nasa.gov/resource/valles-marineris-the-grand-canyon-of-mars/"
+    },
+    "lat": -14.2,
+    "lon": -64.0,
+    "coords_source": "catalog"
+   }
+  ],
+  "landing_uv": [
+   0.5846636066111253,
+   0.5000000000000001
+  ],
+  "trek_dem_check": {
+   "correlation": 0.9996,
+   "treks_m_per_grey_level": 114.8,
+   "treks_grey_levels_here": 101
+  },
+  "height_min_m": -5508.3984375,
+  "height_max_m": 6055.52001953125,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 83.0078125,
+  "vexag": 1.6
+ },
+ "olympus": {
+  "id": "olympus",
+  "body": "mars",
+  "name": "Olympus Mons",
+  "real_elevation": true,
+  "dem_label": "MOLA MEGDR 128 pixels/degree",
+  "width_km": 760.0,
+  "landing_name": "Southern flank of Olympus Mons",
+  "lat": 18.65,
+  "lon": -133.8,
+  "polar": false,
+  "color_label": "Viking MDIM2.1 colour mosaic (NASA/USGS), via NASA Solar System Treks",
+  "pois": [
+   {
+    "name": "Olympus Mons summit",
+    "u": 0.49981512581424364,
+    "v": 0.49978524969041827,
+    "elev_m": 20013,
+    "sample": "rock",
+    "fact": {
+     "text": "This dynamic planet has seasons, polar ice caps, extinct volcanoes, canyons, and weather.",
+     "url": "https://science.nasa.gov/mars/facts/"
+    },
+    "lat": 18.65275889,
+    "lon": -133.8025067,
+    "coords_source": "IAU nomenclature via NASA Treks"
+   },
+   {
+    "name": "Aureole plains",
+    "u": 0.30824475088156467,
+    "v": 0.27037380494838675,
+    "elev_m": 6808,
+    "sample": "regolith",
+    "fact": {
+     "text": "Much of the plains surrounding the volcano are covered by the ridged and grooved 'aureole' of Olympus Mons.",
+     "url": "https://science.nasa.gov/photojournal/olympus-mons/"
+    },
+    "lat": 21.6,
+    "lon": -136.4,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Southern escarpment",
+    "u": 0.5147504037783418,
+    "v": 0.7140583174209953,
+    "elev_m": 14068,
+    "sample": "core",
+    "fact": {
+     "text": "Instead, they're looking for signs of life that existed long ago, when Mars was warmer and covered with water.",
+     "url": "https://science.nasa.gov/mars/facts/"
+    },
+    "lat": 15.9,
+    "lon": -133.6,
+    "coords_source": "catalog"
+   }
+  ],
+  "landing_uv": [
+   0.49999999999999933,
+   0.6284349904525972
+  ],
+  "trek_dem_check": {
+   "correlation": 0.9999,
+   "treks_m_per_grey_level": 114.9,
+   "treks_grey_levels_here": 209
+  },
+  "height_min_m": -2824.626708984375,
+  "height_max_m": 21219.89453125,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 185.546875,
+  "vexag": 1.5
+ },
+ "shackleton": {
+  "id": "shackleton",
+  "body": "moon",
+  "name": "Shackleton Crater",
+  "real_elevation": true,
+  "dem_label": "LOLA polar LDEM, 20 m/pixel",
+  "width_km": 80.0,
+  "landing_name": "Connecting ridge near the south pole",
+  "lat": -89.67,
+  "lon": 129.2,
+  "polar": true,
+  "color_label": "Shaded from LOLA elevation (WAC mosaic has seams at the pole)",
+  "pois": [
+   {
+    "name": "Shackleton rim",
+    "u": 0.61875,
+    "v": 0.5,
+    "elev_m": 750,
+    "sample": "regolith",
+    "fact": {
+     "text": "These lightless areas of the Moon are called “permanently shadowed regions.”",
+     "url": "https://science.nasa.gov/moon/moon-water-and-ices/"
+    },
+    "lat": null,
+    "lon": null,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Permanently shadowed floor",
+    "u": 0.5,
+    "v": 0.5,
+    "elev_m": -2784,
+    "sample": "core",
+    "fact": {
+     "text": "The LRO and LCROSS findings added to a growing body of evidence that water exists on the Moon in the form of ice within permanently shadowed regions.",
+     "url": "https://science.nasa.gov/moon/moon-water-and-ices/"
+    },
+    "lat": null,
+    "lon": null,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Ice prospecting site",
+    "u": 0.35,
+    "v": 0.325,
+    "elev_m": -648,
+    "sample": "core",
+    "fact": {
+     "text": "The discovery that the Moon harbors water ice , and that the highest concentrations occur within darkened craters at the poles, makes the Moon a little more hospitable for future human colonists.",
+     "url": "https://science.nasa.gov/moon/facts/"
+    },
+    "lat": null,
+    "lon": null,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "South polar ridge",
+    "u": 0.675,
+    "v": 0.35,
+    "elev_m": -927,
+    "sample": "rock",
+    "fact": {
+     "text": "The orbiter is also helping NASA identify areas near the Moon’s South Pole with crucial resources like water and extended sunlight, which provides power for equipment and supports exploration activities.",
+     "url": "https://science.nasa.gov/mission/lro/"
+    },
+    "lat": null,
+    "lon": null,
+    "coords_source": "catalog"
+   }
+  ],
+  "landing_uv": [
+   0.6375,
+   0.45
+  ],
+  "height_min_m": -4246.28125,
+  "height_max_m": 1957.15625,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 19.53125,
+  "vexag": 2.0
+ },
+ "tranquility": {
+  "id": "tranquility",
+  "body": "moon",
+  "name": "Tranquility Base",
+  "real_elevation": true,
+  "dem_label": "LOLA LDEM 128 pixels/degree",
+  "width_km": 70.0,
+  "landing_name": "Sea of Tranquility",
+  "lat": 0.67,
+  "lon": 23.47,
+  "polar": false,
+  "color_label": "LRO WAC global mosaic (NASA/GSFC/ASU), via NASA Solar System Treks",
+  "pois": [
+   {
+    "name": "Apollo 11 landing site",
+    "u": 0.5012994833085066,
+    "v": 0.49822391804658556,
+    "elev_m": -1935,
+    "sample": "regolith",
+    "fact": {
+     "text": "Partially piloted manually by Armstrong, the Eagle landed in the Sea of Tranquility in Site 2 at 0 degrees, 41 minutes, 15 seconds north latitude and 23 degrees, 26 minutes east longitude.",
+     "url": "https://www.nasa.gov/history/apollo-11-mission-overview/"
+    },
+    "lat": 0.6741,
+    "lon": 23.473,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Mare basalts",
+    "u": 0.6429431639356149,
+    "v": 0.6386210305103976,
+    "elev_m": -1958,
+    "sample": "rock",
+    "fact": {
+     "text": "Apollo astronauts brought back a total of 842 pounds (382 kilograms) of lunar rocks and soil to Earth.",
+     "url": "https://science.nasa.gov/moon/facts/"
+    },
+    "lat": 0.35,
+    "lon": 23.8,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Cratered mare",
+    "u": 0.3397303919509827,
+    "v": 0.37870659830340214,
+    "elev_m": -1859,
+    "sample": "core",
+    "fact": {
+     "text": "The Moon has a solid, rocky surface cratered and pitted from impacts by asteroids, meteorites, and comets.",
+     "url": "https://science.nasa.gov/moon/facts/"
+    },
+    "lat": 0.95,
+    "lon": 23.1,
+    "coords_source": "catalog"
+   }
+  ],
+  "landing_uv": [
+   0.42636261251801694,
+   0.5303233504241495
+  ],
+  "trek_dem_check": {
+   "correlation": 0.9935,
+   "treks_m_per_grey_level": 76.5,
+   "treks_grey_levels_here": 16
+  },
+  "height_min_m": -2457.56689453125,
+  "height_max_m": -1245.57470703125,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 17.08984375,
+  "vexag": 5.0
+ },
+ "tycho": {
+  "id": "tycho",
+  "body": "moon",
+  "name": "Tycho Crater",
+  "real_elevation": true,
+  "dem_label": "LOLA LDEM 128 pixels/degree",
+  "width_km": 150.0,
+  "landing_name": "Tycho crater floor",
+  "lat": -43.3,
+  "lon": -11.2,
+  "polar": false,
+  "color_label": "LRO WAC global mosaic (NASA/GSFC/ASU), via NASA Solar System Treks",
+  "pois": [
+   {
+    "name": "Tycho central peak",
+    "u": 0.4761773394726041,
+    "v": 0.5020496563330039,
+    "elev_m": -1514,
+    "sample": "rock",
+    "fact": {
+     "text": "Lunar impact craters are the depressions left behind after an asteroid, meteoroid, or comet collides with the Moon.",
+     "url": "https://science.nasa.gov/moon/lunar-craters/"
+    },
+    "lat": -43.310139,
+    "lon": -11.36192299999999,
+    "coords_source": "IAU nomenclature via NASA Treks"
+   },
+   {
+    "name": "Tycho rim",
+    "u": 0.4852876610936066,
+    "v": 0.3382754644045371,
+    "elev_m": -3192,
+    "sample": "core",
+    "fact": {
+     "text": "Moon craters fascinate us because they are a record of the process that built and shaped our entire solar system, the fingerprints of history pressed into the lunar surface .",
+     "url": "https://science.nasa.gov/moon/lunar-craters/"
+    },
+    "lat": -42.5,
+    "lon": -11.3,
+    "coords_source": "catalog"
+   },
+   {
+    "name": "Ejecta blanket",
+    "u": 0.3528766109360705,
+    "v": 0.7021556694943303,
+    "elev_m": -227,
+    "sample": "regolith",
+    "fact": {
+     "text": "The Moon has a solid, rocky surface cratered and pitted from impacts by asteroids, meteorites, and comets.",
+     "url": "https://science.nasa.gov/moon/facts/"
+    },
+    "lat": -44.3,
+    "lon": -12.2,
+    "coords_source": "catalog"
+   }
+  ],
+  "landing_uv": [
+   0.4411506443744307,
+   0.43935329915170207
+  ],
+  "trek_dem_check": {
+   "correlation": 0.9994,
+   "treks_m_per_grey_level": 77.8,
+   "treks_grey_levels_here": 70
+  },
+  "height_min_m": -3539.815185546875,
+  "height_max_m": 1838.2264404296875,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 36.62109375,
+  "vexag": 2.0
+ },
+ "mercury_site": {
+  "id": "mercury_site",
+  "body": "mercury",
+  "name": "Caloris Planitia",
+  "real_elevation": false,
+  "color_label": "MESSENGER MDIS BDR basemap (NASA/JHUAPL), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 1021.9,
+  "landing_name": "Caloris Planitia",
+  "lat": 31.6525475223,
+  "lon": 161.98478774399996,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.8125982622966654,
+    "v": 0.6163956256611338,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "Because the planet is so close to the Sun, day temperatures can reach highs of 800°F (430°C).",
+     "url": "https://science.nasa.gov/mercury/facts/"
+    },
+    "elev_game": -109.06942749023438
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.49511604123448966,
+    "v": 0.674761621445972,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "Without an atmosphere to retain that heat at night, temperatures can dip as low as -290°F (-180°C).",
+     "url": "https://science.nasa.gov/mercury/facts/"
+    },
+    "elev_game": 49.57136917114258
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.3151904283528835,
+    "v": 0.3946711847869643,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "Despite its proximity to the Sun, Mercury is not the hottest planet in our solar system – that title belongs to nearby Venus, thanks to its dense atmosphere.",
+     "url": "https://science.nasa.gov/mercury/facts/"
+    },
+    "elev_game": 61.12377166748047
+   },
+   {
+    "name": "Survey site D",
+    "u": 0.5784345382280603,
+    "v": 0.34229617050177624,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "But Mercury is the fastest planet, zipping around the Sun every 88 Earth days.",
+     "url": "https://science.nasa.gov/mercury/facts/"
+    },
+    "elev_game": -211.7449188232422
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -1250.0,
+  "height_max_m": 1250.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 249.47640880313475,
+  "vexag": 36.786793336475036
+ },
+ "venus_site": {
+  "id": "venus_site",
+  "body": "venus",
+  "name": "Maxwell Montes",
+  "real_elevation": false,
+  "color_label": "Magellan C3-MDIR radar mosaic, tinted (NASA/JPL), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 2746.3,
+  "landing_name": "Maxwell Montes",
+  "lat": 65.2,
+  "lon": 3.3000000000000114,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.8155226466615411,
+    "v": 0.5174209239533828,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "It's the hottest planet in our solar system, and is sometimes called Earth's twin.",
+     "url": "https://science.nasa.gov/venus/facts/"
+    },
+    "elev_game": 578.6937866210938
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.34165301054877445,
+    "v": 0.7862733215439267,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "And the atmospheric pressure at the surface is about 93 times what it is at sea level on Earth.",
+     "url": "https://science.nasa.gov/venus/facts/"
+    },
+    "elev_game": -425.6248474121094
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.2188076561802363,
+    "v": 0.3781249814174209,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "Below Venus' dense, persistent clouds, the surface has volcanoes and deformed mountains.",
+     "url": "https://science.nasa.gov/venus/facts/"
+    },
+    "elev_game": 98.1827621459961
+   },
+   {
+    "name": "Survey site D",
+    "u": 0.7261796930161304,
+    "v": 0.2139224160480076,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "At the tops of Venus’ clouds, whipped around the planet by winds measured as high as 224 mph (360 kph), we find another transformation.",
+     "url": "https://science.nasa.gov/venus/facts/"
+    },
+    "elev_game": -26.040233612060547
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -3000.0,
+  "height_max_m": 3000.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 670.4859581538373,
+  "vexag": 40.0
+ },
+ "earth_site": {
+  "id": "earth_site",
+  "body": "earth",
+  "name": "Florida coast",
+  "real_elevation": false,
+  "color_label": "Blue Marble (NASA Scientific Visualization Studio, animation 2915)",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 2449.0,
+  "landing_name": "Florida coast",
+  "lat": 28.5,
+  "lon": -81.0,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.728186197546591,
+    "v": 0.5663533040330792,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "Most notably, Earth is unique in that most of our planet is covered in liquid water, since the temperature allows liquid water to exist for extended periods of time.",
+     "url": "https://science.nasa.gov/earth/facts/"
+    },
+    "elev_game": -186.9463348388672
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.42310055940746105,
+    "v": 0.8473046051201223,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "Earth's vast oceans provided a convenient place for life to begin about 3.8 billion years ago.",
+     "url": "https://science.nasa.gov/earth/facts/"
+    },
+    "elev_game": -129.71249389648438
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.23288238851271054,
+    "v": 0.23771355844120656,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "Earth's axis of rotation is tilted 23.4 degrees with respect to the plane of Earth's orbit around the Sun.",
+     "url": "https://science.nasa.gov/earth/facts/"
+    },
+    "elev_game": -293.2101745605469
+   },
+   {
+    "name": "Survey site D",
+    "u": 0.647151737497224,
+    "v": 0.33541614625030314,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "As Earth orbits the Sun, it completes one rotation every 23.9 hours.",
+     "url": "https://science.nasa.gov/earth/facts/"
+    },
+    "elev_game": -17.121740341186523
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -400.0,
+  "height_max_m": 400.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 597.8945784248933,
+  "vexag": 40.0
+ },
+ "io_site": {
+  "id": "io_site",
+  "body": "io",
+  "name": "Loki Patera",
+  "real_elevation": false,
+  "color_label": "Voyager ISS + Galileo SSI colour mosaic (NASA/USGS), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 826.6,
+  "landing_name": "Loki Patera",
+  "lat": 13.0083,
+  "lon": 51.213599999999985,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.8103497009012706,
+    "v": 0.5015935158193578,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "Io is caught in a tug-of-war between Jupiter's massive gravity and the smaller but precisely timed pulls from two neighboring moons that orbit farther from Jupiter—Europa and Ganymede.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
+    },
+    "elev_game": -357.3282470703125
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.44988382914922215,
+    "v": 0.6604028928657935,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "Io’s volcanoes are at times so powerful that they are seen with large telescopes on Earth, and Io even has lakes of molten silicate lava on its surface.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
+    },
+    "elev_game": 187.67584228515625
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.23967251273776902,
+    "v": 0.36277879272811864,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "It was Voyager 1 that spotted the first signs of the little moon’s powerful volcanism in 1979.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
+    },
+    "elev_game": 442.0904541015625
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -1750.0,
+  "height_max_m": 1750.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 201.79943370410024,
+  "vexag": 21.254669497337
+ },
+ "europa_site": {
+  "id": "europa_site",
+  "body": "europa",
+  "name": "Conamara Chaos",
+  "real_elevation": false,
+  "color_label": "Voyager + Galileo SSI mosaic (NASA/USGS), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 653.8,
+  "landing_name": "Conamara Chaos",
+  "lat": 9.7,
+  "lon": 87.30000000000001,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.7653216050154505,
+    "v": 0.6649844323874678,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "It shows strong evidence for an ocean of liquid water beneath its icy crust.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/"
+    },
+    "elev_game": 261.7574768066406
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.4196845840403609,
+    "v": 0.8415787296204189,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "Based on Europa's icy composition, scientists think the most likely material to create this magnetic signature is a global ocean of salty water.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/"
+    },
+    "elev_game": 267.9329833984375
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.19072777746401387,
+    "v": 0.4990150614907952,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "Europa Clipper will try to determine if Jupiter's icy moon Europa currently has habitable conditions.",
+     "url": "https://science.nasa.gov/mission/europa-clipper/"
+    },
+    "elev_game": 280.7413635253906
+   },
+   {
+    "name": "Survey site D",
+    "u": 0.5484979391155891,
+    "v": 0.285282646184051,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "It will orbit Jupiter, and conduct 49 close flybys of Europa.",
+     "url": "https://science.nasa.gov/mission/europa-clipper/"
+    },
+    "elev_game": 293.9234313964844
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -450.0,
+  "height_max_m": 450.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 159.61581424879392,
+  "vexag": 40.0
+ },
+ "ganymede_site": {
+  "id": "ganymede_site",
+  "body": "ganymede",
+  "name": "Galileo Regio",
+  "real_elevation": false,
+  "color_label": "Voyager + Galileo SSI colour mosaic (NASA/USGS), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 1102.2,
+  "landing_name": "Galileo Regio",
+  "lat": 45.0,
+  "lon": -127.0,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.7708752820723352,
+    "v": 0.5854109302325314,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "Jupiter’s icy moon Ganymede is the largest moon in our solar system, even bigger than the planet Mercury, and the dwarf planet Pluto.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
+    },
+    "elev_game": -218.09506225585938
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.345255856365619,
+    "v": 0.7867398867281228,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "There’s strong evidence that Ganymede has an underground saltwater ocean that may hold more water than all the water on Earth's surface.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
+    },
+    "elev_game": -466.34332275390625
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.3061110993374814,
+    "v": 0.49066248989250016,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "The dark areas are the older, more heavily cratered regions and the light areas are younger, tectonically deformed regions.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
+    },
+    "elev_game": -124.38451385498047
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -900.0,
+  "height_max_m": 900.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 269.08068327231325,
+  "vexag": 40.0
+ },
+ "callisto_site": {
+  "id": "callisto_site",
+  "body": "callisto",
+  "name": "Valhalla",
+  "real_elevation": false,
+  "color_label": "Voyager + Galileo SSI mosaic (NASA/USGS), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 1093.8,
+  "landing_name": "Valhalla",
+  "lat": 14.0,
+  "lon": -56.0,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.692769605016174,
+    "v": 0.514808452450158,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "Callisto is Jupiter’s second largest moon and the third largest moon in our solar system.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
+    },
+    "elev_game": -460.0776672363281
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.3040197209709271,
+    "v": 0.7013557620952712,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "Data from NASA’s Galileo spacecraft in the 1990s revealed Callisto may have a secret: a salty ocean beneath its surface.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
+    },
+    "elev_game": 86.81362915039062
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.25288629470056834,
+    "v": 0.25713056494233366,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "Galileo orbited Jupiter until the mission ended in 2003.",
+     "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
+    },
+    "elev_game": -499.161376953125
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -1100.0,
+  "height_max_m": 1100.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 267.0311144973884,
+  "vexag": 40.0
+ },
+ "titan_site": {
+  "id": "titan_site",
+  "body": "titan",
+  "name": "Huygens landing region",
+  "real_elevation": false,
+  "color_label": "Cassini ISS global mosaic PIA19658, tinted (NASA/JPL/SSI), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 1258.4,
+  "landing_name": "Huygens landing region",
+  "lat": -10.3,
+  "lon": 167.7,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.6983785803636611,
+    "v": 0.5690677677914048,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "It has clouds, rain, rivers, lakes and seas of liquid hydrocarbons like methane and ethane.",
+     "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+    },
+    "elev_game": -304.316162109375
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.36672752346634535,
+    "v": 0.8319868438318392,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "This mammoth moon is the only moon in the solar system with a dense atmosphere, and it’s the only world besides Earth that has standing bodies of liquid, including rivers, lakes and seas, on its surface.",
+     "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+    },
+    "elev_game": 195.8153076171875
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.1501089113492345,
+    "v": 0.46733183493347635,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "Like Earth, Titan’s atmosphere is primarily nitrogen, plus a small amount of methane.",
+     "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+    },
+    "elev_game": -81.83976745605469
+   },
+   {
+    "name": "Survey site D",
+    "u": 0.6815131220479871,
+    "v": 0.25126267842976324,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "Titan is also thought to have a subsurface ocean of water.",
+     "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
+    },
+    "elev_game": -13.787439346313477
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -350.0,
+  "height_max_m": 350.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 307.2222633515409,
+  "vexag": 40.0
+ },
+ "enceladus_site": {
+  "id": "enceladus_site",
+  "body": "enceladus",
+  "name": "South polar terrain",
+  "real_elevation": false,
+  "color_label": "Cassini ISS colour mosaic (NASA/JPL/SSI), via NASA Solar System Treks",
+  "dem_label": "Procedural relief shaped by the real image (no bundled elevation data)",
+  "width_km": 131.9,
+  "landing_name": "South polar terrain",
+  "lat": -72.0,
+  "lon": 60.0,
+  "polar": false,
+  "pois": [
+   {
+    "name": "Survey site A",
+    "u": 0.6639613987981551,
+    "v": 0.6416220591104358,
+    "elev_m": null,
+    "sample": "regolith",
+    "fact": {
+     "text": "A handful of worlds are thought to have liquid water oceans beneath their frozen shell, but Enceladus sprays its ocean out into space where spacecraft can sample it.",
+     "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+    },
+    "elev_game": 516.7843017578125
+   },
+   {
+    "name": "Survey site B",
+    "u": 0.46711447637089076,
+    "v": 0.6976678826255545,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "From these samples, scientists have determined that Enceladus has most of the chemical ingredients needed for life, and likely has hydrothermal vents releasing hot, mineral-rich water into its ocean.",
+     "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+    },
+    "elev_game": 520.703125
+   },
+   {
+    "name": "Survey site C",
+    "u": 0.38101284491755866,
+    "v": 0.37816564798654817,
+    "elev_m": null,
+    "sample": "rock",
+    "fact": {
+     "text": "Because Enceladus reflects so much sunlight, the surface temperature is extremely cold, about minus 330 degrees Fahrenheit (minus 201 degrees Celsius).",
+     "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+    },
+    "elev_game": 473.9851379394531
+   },
+   {
+    "name": "Survey site D",
+    "u": 0.5682463962186928,
+    "v": 0.34093612738843193,
+    "elev_m": null,
+    "sample": "core",
+    "fact": {
+     "text": "In particular, the south polar region of Enceladus is almost entirely free of impact craters.",
+     "url": "https://science.nasa.gov/saturn/moons/enceladus/"
+    },
+    "elev_game": 524.0819702148438
+   }
+  ],
+  "landing_uv": [
+   0.5,
+   0.5
+  ],
+  "height_min_m": -600.0,
+  "height_max_m": 600.0,
+  "height_n": 1024,
+  "world_m": 4096.0,
+  "hscale": 32.213596545598456,
+  "vexag": 9.896016858807844
+ }
+}

@@ -1,0 +1,1166 @@
+{
+ "planets": [
+  {
+   "pl_name": "Proxima Cen b",
+   "hostname": "Proxima Cen",
+   "pl_rade": 1.02,
+   "pl_bmasse": 1.055,
+   "pl_orbper": 11.18465,
+   "pl_orbsmax": 0.04848,
+   "pl_eqt": 218.0,
+   "st_teff": 2900.0,
+   "st_rad": 0.141,
+   "sy_dist": 1.30119,
+   "disc_year": 2016,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_proxima_cen_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 9.96,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen%20b"
+  },
+  {
+   "pl_name": "GJ 887 d",
+   "hostname": "GJ 887",
+   "pl_rade": 2.34,
+   "pl_bmasse": 6.1,
+   "pl_orbper": 50.77,
+   "pl_orbsmax": 0.212,
+   "pl_eqt": 241.0,
+   "st_teff": 3688.0,
+   "st_rad": 0.468,
+   "sy_dist": 3.28679,
+   "disc_year": 2026,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_gj_887_d",
+   "class": "neptune_like",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 10.94,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20887%20d"
+  },
+  {
+   "pl_name": "Ross 128 b",
+   "hostname": "Ross 128",
+   "pl_rade": 1.11,
+   "pl_bmasse": 1.4,
+   "pl_orbper": 9.8658,
+   "pl_orbsmax": 0.0496,
+   "pl_eqt": 301.0,
+   "st_teff": 3192.0,
+   "st_rad": 0.1967,
+   "sy_dist": 3.37454,
+   "disc_year": 2017,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_ross_128_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 11.16,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128%20b"
+  },
+  {
+   "pl_name": "Teegarden's Star b",
+   "hostname": "Teegarden's Star",
+   "pl_rade": 1.05,
+   "pl_bmasse": 1.16,
+   "pl_orbper": 4.90634,
+   "pl_orbsmax": 0.0259,
+   "pl_eqt": 277.0,
+   "st_teff": 3034.0,
+   "st_rad": 0.12,
+   "sy_dist": 3.83078,
+   "disc_year": 2019,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_teegarden_s_star_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 10.33,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star%20b"
+  },
+  {
+   "pl_name": "Wolf 1061 c",
+   "hostname": "Wolf 1061",
+   "pl_rade": 1.66,
+   "pl_bmasse": 3.41,
+   "pl_orbper": 17.8719,
+   "pl_orbsmax": 0.089,
+   "pl_eqt": 299.3,
+   "st_teff": 3342.0,
+   "st_rad": 0.307,
+   "sy_dist": 4.30592,
+   "disc_year": 2015,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_wolf_1061_c",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 12.15,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201061%20c"
+  },
+  {
+   "pl_name": "GJ 667 C c",
+   "hostname": "GJ 667 C",
+   "pl_rade": 1.77,
+   "pl_bmasse": 3.8,
+   "pl_orbper": 28.14,
+   "pl_orbsmax": 0.125,
+   "pl_eqt": null,
+   "st_teff": 3350.0,
+   "st_rad": null,
+   "sy_dist": 7.24396,
+   "disc_year": 2013,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_gj_667_c_c",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 11.91,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C%20c"
+  },
+  {
+   "pl_name": "GJ 486 b",
+   "hostname": "GJ 486",
+   "pl_rade": 1.289,
+   "pl_bmasse": 2.77,
+   "pl_orbper": 1.46712127,
+   "pl_orbsmax": 0.01714,
+   "pl_eqt": 696.3,
+   "st_teff": 3317.0,
+   "st_rad": 0.3243,
+   "sy_dist": 8.07426,
+   "disc_year": 2021,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_gj_486_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 16.37,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20486%20b"
+  },
+  {
+   "pl_name": "L 98-59 d",
+   "hostname": "L 98-59",
+   "pl_rade": 1.627,
+   "pl_bmasse": 1.64,
+   "pl_orbper": 7.450729,
+   "pl_orbsmax": 0.0494,
+   "pl_eqt": 416.0,
+   "st_teff": 3415.0,
+   "st_rad": 0.3155,
+   "sy_dist": 10.6194,
+   "disc_year": 2019,
+   "discoverymethod": "Transit",
+   "id": "exo_l_98_59_d",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 6.08,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59%20d"
+  },
+  {
+   "pl_name": "COCONUTS-2 b",
+   "hostname": "COCONUTS-2 A",
+   "pl_rade": 12.57647635,
+   "pl_bmasse": 2383.7130525,
+   "pl_orbper": 402000000.0,
+   "pl_orbsmax": 7506.0,
+   "pl_eqt": 493.0,
+   "st_teff": 3552.0,
+   "st_rad": 0.366,
+   "sy_dist": 10.8864,
+   "disc_year": 2021,
+   "discoverymethod": "Imaging",
+   "id": "exo_coconuts_2_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 148.0,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/COCONUTS-2%20b"
+  },
+  {
+   "pl_name": "TRAPPIST-1 b",
+   "hostname": "TRAPPIST-1",
+   "pl_rade": 1.116,
+   "pl_bmasse": 1.374,
+   "pl_orbper": 1.510826,
+   "pl_orbsmax": 0.01154,
+   "pl_eqt": 397.6,
+   "st_teff": 2566.0,
+   "st_rad": 0.1192,
+   "sy_dist": 12.42988881,
+   "disc_year": 2016,
+   "discoverymethod": "Transit",
+   "id": "exo_trappist_1_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 10.83,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1%20b"
+  },
+  {
+   "pl_name": "TRAPPIST-1 c",
+   "hostname": "TRAPPIST-1",
+   "pl_rade": 1.097,
+   "pl_bmasse": 1.308,
+   "pl_orbper": 2.421937,
+   "pl_orbsmax": 0.0158,
+   "pl_eqt": 339.7,
+   "st_teff": 2566.0,
+   "st_rad": 0.1192,
+   "sy_dist": 12.42988881,
+   "disc_year": 2016,
+   "discoverymethod": "Transit",
+   "id": "exo_trappist_1_c",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 10.67,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1%20c"
+  },
+  {
+   "pl_name": "TRAPPIST-1 d",
+   "hostname": "TRAPPIST-1",
+   "pl_rade": 0.788,
+   "pl_bmasse": 0.388,
+   "pl_orbper": 4.049219,
+   "pl_orbsmax": 0.02227,
+   "pl_eqt": 286.2,
+   "st_teff": 2566.0,
+   "st_rad": 0.1192,
+   "sy_dist": 12.42988881,
+   "disc_year": 2016,
+   "discoverymethod": "Transit",
+   "id": "exo_trappist_1_d",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 6.14,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1%20d"
+  },
+  {
+   "pl_name": "TRAPPIST-1 e",
+   "hostname": "TRAPPIST-1",
+   "pl_rade": 0.92,
+   "pl_bmasse": 0.692,
+   "pl_orbper": 6.101013,
+   "pl_orbsmax": 0.02925,
+   "pl_eqt": 249.7,
+   "st_teff": 2566.0,
+   "st_rad": 0.1192,
+   "sy_dist": 12.42988881,
+   "disc_year": 2017,
+   "discoverymethod": "Transit",
+   "id": "exo_trappist_1_e",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 8.03,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1%20e"
+  },
+  {
+   "pl_name": "TRAPPIST-1 f",
+   "hostname": "TRAPPIST-1",
+   "pl_rade": 1.045,
+   "pl_bmasse": 1.039,
+   "pl_orbper": 9.20754,
+   "pl_orbsmax": 0.03849,
+   "pl_eqt": 217.7,
+   "st_teff": 2566.0,
+   "st_rad": 0.1192,
+   "sy_dist": 12.42988881,
+   "disc_year": 2017,
+   "discoverymethod": "Transit",
+   "id": "exo_trappist_1_f",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 9.34,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1%20f"
+  },
+  {
+   "pl_name": "TRAPPIST-1 g",
+   "hostname": "TRAPPIST-1",
+   "pl_rade": 1.129,
+   "pl_bmasse": 1.321,
+   "pl_orbper": 12.352446,
+   "pl_orbsmax": 0.04683,
+   "pl_eqt": 197.3,
+   "st_teff": 2566.0,
+   "st_rad": 0.1192,
+   "sy_dist": 12.42988881,
+   "disc_year": 2017,
+   "discoverymethod": "Transit",
+   "id": "exo_trappist_1_g",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 10.18,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1%20g"
+  },
+  {
+   "pl_name": "TRAPPIST-1 h",
+   "hostname": "TRAPPIST-1",
+   "pl_rade": 0.755,
+   "pl_bmasse": 0.326,
+   "pl_orbper": 18.772866,
+   "pl_orbsmax": 0.06189,
+   "pl_eqt": 171.7,
+   "st_teff": 2566.0,
+   "st_rad": 0.1192,
+   "sy_dist": 12.42988881,
+   "disc_year": 2017,
+   "discoverymethod": "Transit",
+   "id": "exo_trappist_1_h",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 5.62,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1%20h"
+  },
+  {
+   "pl_name": "LHS 475 b",
+   "hostname": "LHS 475",
+   "pl_rade": 0.991,
+   "pl_bmasse": 0.941,
+   "pl_orbper": 2.029088,
+   "pl_orbsmax": 0.02037,
+   "pl_eqt": 586.0,
+   "st_teff": 3300.0,
+   "st_rad": 0.2789,
+   "sy_dist": 12.4814,
+   "disc_year": 2023,
+   "discoverymethod": "Transit",
+   "id": "exo_lhs_475_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 9.41,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%20475%20b"
+  },
+  {
+   "pl_name": "55 Cnc e",
+   "hostname": "55 Cnc",
+   "pl_rade": 1.875,
+   "pl_bmasse": 7.99,
+   "pl_orbper": 0.7365474,
+   "pl_orbsmax": 0.01544,
+   "pl_eqt": 1958.0,
+   "st_teff": 5172.0,
+   "st_rad": 0.943,
+   "sy_dist": 12.5855,
+   "disc_year": 2004,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_55_cnc_e",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 22.32,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc%20e"
+  },
+  {
+   "pl_name": "GJ 1132 b",
+   "hostname": "GJ 1132",
+   "pl_rade": 1.19151465,
+   "pl_bmasse": 1.83704819,
+   "pl_orbper": 1.62892911,
+   "pl_orbsmax": 0.0157,
+   "pl_eqt": 583.8,
+   "st_teff": 3229.0,
+   "st_rad": 0.2211,
+   "sy_dist": 12.613,
+   "disc_year": 2015,
+   "discoverymethod": "Transit",
+   "id": "exo_gj_1132_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 12.71,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132%20b"
+  },
+  {
+   "pl_name": "GJ 1214 b",
+   "hostname": "GJ 1214",
+   "pl_rade": 2.733,
+   "pl_bmasse": 8.41,
+   "pl_orbper": 1.580404531,
+   "pl_orbsmax": 0.01505,
+   "pl_eqt": 567.0,
+   "st_teff": 3101.0,
+   "st_rad": 0.2162,
+   "sy_dist": 14.6427,
+   "disc_year": 2009,
+   "discoverymethod": "Transit",
+   "id": "exo_gj_1214_b",
+   "class": "neptune_like",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 11.06,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214%20b"
+  },
+  {
+   "pl_name": "LHS 1140 b",
+   "hostname": "LHS 1140",
+   "pl_rade": 1.73,
+   "pl_bmasse": 5.6,
+   "pl_orbper": 24.73723,
+   "pl_orbsmax": 0.0946,
+   "pl_eqt": 226.0,
+   "st_teff": 3096.0,
+   "st_rad": 0.2159,
+   "sy_dist": 14.9861,
+   "disc_year": 2017,
+   "discoverymethod": "Transit",
+   "id": "exo_lhs_1140_b",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 18.37,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140%20b"
+  },
+  {
+   "pl_name": "51 Peg b",
+   "hostname": "51 Peg",
+   "pl_rade": 14.1,
+   "pl_bmasse": 193.87532827,
+   "pl_orbper": 4.2307966,
+   "pl_orbsmax": 0.052,
+   "pl_eqt": 1328.93,
+   "st_teff": 5761.0,
+   "st_rad": 1.19,
+   "sy_dist": 15.4614,
+   "disc_year": 1995,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_51_peg_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 9.58,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg%20b"
+  },
+  {
+   "pl_name": "bet Pic b",
+   "hostname": "bet Pic",
+   "pl_rade": 18.49485,
+   "pl_bmasse": 2765.1071409,
+   "pl_orbper": 8682.0,
+   "pl_orbsmax": 10.07,
+   "pl_eqt": 1612.0,
+   "st_teff": 8038.68,
+   "st_rad": 1.54416,
+   "sy_dist": 19.7442,
+   "disc_year": 2008,
+   "discoverymethod": "Imaging",
+   "id": "exo_bet_pic_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 79.38,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic%20b"
+  },
+  {
+   "pl_name": "HD 189733 b",
+   "hostname": "HD 189733",
+   "pl_rade": 12.66617,
+   "pl_bmasse": 359.1479,
+   "pl_orbper": 2.21857567,
+   "pl_orbsmax": 0.03126,
+   "pl_eqt": 1209.0,
+   "st_teff": 5052.0,
+   "st_rad": 0.75,
+   "sy_dist": 19.7638,
+   "disc_year": 2005,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_hd_189733_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 21.98,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733%20b"
+  },
+  {
+   "pl_name": "TOI-270 d",
+   "hostname": "TOI-270",
+   "pl_rade": 2.0,
+   "pl_bmasse": 4.2,
+   "pl_orbper": 11.38194,
+   "pl_orbsmax": 0.0721,
+   "pl_eqt": 383.0,
+   "st_teff": 3506.0,
+   "st_rad": 0.38,
+   "sy_dist": 22.4793,
+   "disc_year": 2019,
+   "discoverymethod": "Transit",
+   "id": "exo_toi_270_d",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 10.31,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-270%20d"
+  },
+  {
+   "pl_name": "TOI-1452 b",
+   "hostname": "TOI-1452",
+   "pl_rade": 1.672,
+   "pl_bmasse": 4.82,
+   "pl_orbper": 11.06201,
+   "pl_orbsmax": 0.061,
+   "pl_eqt": 326.0,
+   "st_teff": 3185.0,
+   "st_rad": 0.275,
+   "sy_dist": 30.5212,
+   "disc_year": 2022,
+   "discoverymethod": "Transit",
+   "id": "exo_toi_1452_b",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 16.93,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-1452%20b"
+  },
+  {
+   "pl_name": "TOI-700 d",
+   "hostname": "TOI-700",
+   "pl_rade": 1.145,
+   "pl_bmasse": 1.58,
+   "pl_orbper": 37.423457,
+   "pl_orbsmax": 0.1642,
+   "pl_eqt": 268.8,
+   "st_teff": 3459.0,
+   "st_rad": 0.4104,
+   "sy_dist": 31.1265,
+   "disc_year": 2020,
+   "discoverymethod": "Transit",
+   "id": "exo_toi_700_d",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 11.84,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700%20d"
+  },
+  {
+   "pl_name": "K2-18 b",
+   "hostname": "K2-18",
+   "pl_rade": 2.37,
+   "pl_bmasse": 8.92,
+   "pl_orbper": 32.939623,
+   "pl_orbsmax": 0.1429,
+   "pl_eqt": 284.0,
+   "st_teff": 3457.0,
+   "st_rad": 0.411,
+   "sy_dist": 38.0266,
+   "disc_year": 2015,
+   "discoverymethod": "Transit",
+   "id": "exo_k2_18_b",
+   "class": "neptune_like",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 15.6,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18%20b"
+  },
+  {
+   "pl_name": "HR 8799 b",
+   "hostname": "HR 8799",
+   "pl_rade": 13.0,
+   "pl_bmasse": 2000.0,
+   "pl_orbper": 170000.0,
+   "pl_orbsmax": 68.0,
+   "pl_eqt": 1200.0,
+   "st_teff": 7204.58,
+   "st_rad": 1.49338,
+   "sy_dist": 41.2441,
+   "disc_year": 2008,
+   "discoverymethod": "Imaging",
+   "id": "exo_hr_8799_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 116.22,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799%20b"
+  },
+  {
+   "pl_name": "HR 8799 e",
+   "hostname": "HR 8799",
+   "pl_rade": 13.11453,
+   "pl_bmasse": 3178.3,
+   "pl_orbper": 20815.6,
+   "pl_orbsmax": 16.4,
+   "pl_eqt": 1150.0,
+   "st_teff": 7400.0,
+   "st_rad": 1.49338,
+   "sy_dist": 41.2441,
+   "disc_year": 2010,
+   "discoverymethod": "Imaging",
+   "id": "exo_hr_8799_e",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 181.47,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799%20e"
+  },
+  {
+   "pl_name": "HD 209458 b",
+   "hostname": "HD 209458",
+   "pl_rade": 15.58051,
+   "pl_bmasse": 232.0159,
+   "pl_orbper": 3.52474859,
+   "pl_orbsmax": 0.04707,
+   "pl_eqt": 1459.0,
+   "st_teff": 6091.0,
+   "st_rad": 1.19,
+   "sy_dist": 48.3016,
+   "disc_year": 1999,
+   "discoverymethod": "Radial Velocity",
+   "id": "exo_hd_209458_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 9.39,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458%20b"
+  },
+  {
+   "pl_name": "TOI-178 d",
+   "hostname": "TOI-178",
+   "pl_rade": 2.695,
+   "pl_bmasse": 5.2,
+   "pl_orbper": 6.557569,
+   "pl_orbsmax": 0.0592,
+   "pl_eqt": 690.0,
+   "st_teff": 4316.0,
+   "st_rad": 0.662,
+   "sy_dist": 62.699,
+   "disc_year": 2021,
+   "discoverymethod": "Transit",
+   "id": "exo_toi_178_d",
+   "class": "neptune_like",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 7.03,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-178%20d"
+  },
+  {
+   "pl_name": "Kepler-16 b",
+   "hostname": "Kepler-16",
+   "pl_rade": 8.4493,
+   "pl_bmasse": 105.833,
+   "pl_orbper": 228.776,
+   "pl_orbsmax": 0.7048,
+   "pl_eqt": 205.9,
+   "st_teff": 4450.0,
+   "st_rad": 0.6489,
+   "sy_dist": 75.0852,
+   "disc_year": 2011,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_16_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 14.56,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16%20b"
+  },
+  {
+   "pl_name": "HIP 67522 b",
+   "hostname": "HIP 67522",
+   "pl_rade": 9.9872018,
+   "pl_bmasse": 13.8,
+   "pl_orbper": 6.9594731,
+   "pl_orbsmax": 0.0748,
+   "pl_eqt": 1175.0,
+   "st_teff": 5675.0,
+   "st_rad": 1.38,
+   "sy_dist": 127.28,
+   "disc_year": 2020,
+   "discoverymethod": "Transit",
+   "id": "exo_hip_67522_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 1.36,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/HIP%2067522%20b"
+  },
+  {
+   "pl_name": "CoRoT-7 b",
+   "hostname": "CoRoT-7",
+   "pl_rade": 1.68135,
+   "pl_bmasse": 4.07660518,
+   "pl_orbper": 0.85359163,
+   "pl_orbsmax": 0.017016,
+   "pl_eqt": 1756.0,
+   "st_teff": 5275.0,
+   "st_rad": 0.83,
+   "sy_dist": 159.906,
+   "disc_year": 2009,
+   "discoverymethod": "Transit",
+   "id": "exo_corot_7_b",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 14.16,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/CoRoT-7%20b"
+  },
+  {
+   "pl_name": "Kepler-186 f",
+   "hostname": "Kepler-186",
+   "pl_rade": 1.17,
+   "pl_bmasse": 1.71,
+   "pl_orbper": 129.9441,
+   "pl_orbsmax": 0.432,
+   "pl_eqt": 177.0,
+   "st_teff": 3755.0,
+   "st_rad": 0.523,
+   "sy_dist": 177.594,
+   "disc_year": 2014,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_186_f",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 12.27,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186%20f"
+  },
+  {
+   "pl_name": "Kepler-10 b",
+   "hostname": "Kepler-10",
+   "pl_rade": 1.47,
+   "pl_bmasse": 3.24,
+   "pl_orbper": 0.8374907,
+   "pl_orbsmax": 0.01685,
+   "pl_eqt": 2188.0,
+   "st_teff": 5708.0,
+   "st_rad": 1.065,
+   "sy_dist": 185.506,
+   "disc_year": 2011,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_10_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 14.72,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-10%20b"
+  },
+  {
+   "pl_name": "WASP-76 b",
+   "hostname": "WASP-76",
+   "pl_rade": 20.78145022,
+   "pl_bmasse": 284.13859586,
+   "pl_orbper": 1.80988198,
+   "pl_orbsmax": 0.033,
+   "pl_eqt": 2228.0,
+   "st_teff": 6329.0,
+   "st_rad": 1.756,
+   "sy_dist": 194.459,
+   "disc_year": 2016,
+   "discoverymethod": "Transit",
+   "id": "exo_wasp_76_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 6.46,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-76%20b"
+  },
+  {
+   "pl_name": "Kepler-22 b",
+   "hostname": "Kepler-22",
+   "pl_rade": 2.1,
+   "pl_bmasse": 9.1,
+   "pl_orbper": 289.863876,
+   "pl_orbsmax": 0.812,
+   "pl_eqt": 279.0,
+   "st_teff": 5596.0,
+   "st_rad": 0.869,
+   "sy_dist": 194.642,
+   "disc_year": 2011,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_22_b",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 20.26,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22%20b"
+  },
+  {
+   "pl_name": "KELT-9 b",
+   "hostname": "KELT-9",
+   "pl_rade": 21.70058664,
+   "pl_bmasse": 915.34581216,
+   "pl_orbper": 1.4811235,
+   "pl_orbsmax": 0.03368,
+   "pl_eqt": 3921.0,
+   "st_teff": 9270.0,
+   "st_rad": 2.418,
+   "sy_dist": 204.455,
+   "disc_year": 2017,
+   "discoverymethod": "Transit",
+   "id": "exo_kelt_9_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 19.09,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9%20b"
+  },
+  {
+   "pl_name": "WASP-39 b",
+   "hostname": "WASP-39",
+   "pl_rade": 14.336311,
+   "pl_bmasse": 89.31023,
+   "pl_orbper": 4.0552941,
+   "pl_orbsmax": 0.04828,
+   "pl_eqt": 1166.0,
+   "st_teff": 5485.0,
+   "st_rad": 0.939,
+   "sy_dist": 213.982,
+   "disc_year": 2011,
+   "discoverymethod": "Transit",
+   "id": "exo_wasp_39_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 4.27,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39%20b"
+  },
+  {
+   "pl_name": "WASP-121 b",
+   "hostname": "WASP-121",
+   "pl_rade": 19.52604438,
+   "pl_bmasse": 371.85923619,
+   "pl_orbper": 1.27492504,
+   "pl_orbsmax": 0.02571,
+   "pl_eqt": 2409.0,
+   "st_teff": 6628.0,
+   "st_rad": 1.461,
+   "sy_dist": 269.898,
+   "disc_year": 2016,
+   "discoverymethod": "Transit",
+   "id": "exo_wasp_121_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 9.58,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121%20b"
+  },
+  {
+   "pl_name": "Kepler-62 f",
+   "hostname": "Kepler-62",
+   "pl_rade": 1.41,
+   "pl_bmasse": 35.0,
+   "pl_orbper": 267.291,
+   "pl_orbsmax": 0.718,
+   "pl_eqt": 208.0,
+   "st_teff": 4925.0,
+   "st_rad": 0.64,
+   "sy_dist": 300.874,
+   "disc_year": 2013,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_62_f",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 172.88,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62%20f"
+  },
+  {
+   "pl_name": "HAT-P-7 b",
+   "hostname": "HAT-P-7",
+   "pl_rade": 16.92559,
+   "pl_bmasse": 584.8072,
+   "pl_orbper": 2.20474,
+   "pl_orbsmax": 0.03809,
+   "pl_eqt": 2733.0,
+   "st_teff": 6389.0,
+   "st_rad": 2.0,
+   "sy_dist": 341.079,
+   "disc_year": 2008,
+   "discoverymethod": "Transit",
+   "id": "exo_hat_p_7_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 20.05,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/HAT-P-7%20b"
+  },
+  {
+   "pl_name": "WASP-96 b",
+   "hostname": "WASP-96",
+   "pl_rade": 13.45,
+   "pl_bmasse": 152.55,
+   "pl_orbper": 3.4252602,
+   "pl_orbsmax": 0.0453,
+   "pl_eqt": 1285.0,
+   "st_teff": 5540.0,
+   "st_rad": 1.05,
+   "sy_dist": 352.464,
+   "disc_year": 2014,
+   "discoverymethod": "Transit",
+   "id": "exo_wasp_96_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 8.28,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-96%20b"
+  },
+  {
+   "pl_name": "Kepler-442 b",
+   "hostname": "Kepler-442",
+   "pl_rade": 1.34,
+   "pl_bmasse": 2.36,
+   "pl_orbper": 112.3053,
+   "pl_orbsmax": 0.409,
+   "pl_eqt": 241.0,
+   "st_teff": 4402.0,
+   "st_rad": 0.598,
+   "sy_dist": 365.965,
+   "disc_year": 2015,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_442_b",
+   "class": "terrestrial",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 12.91,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442%20b"
+  },
+  {
+   "pl_name": "WASP-12 b",
+   "hostname": "WASP-12",
+   "pl_rade": 22.02564708,
+   "pl_bmasse": 467.2101,
+   "pl_orbper": 1.091418901,
+   "pl_orbsmax": 0.0234,
+   "pl_eqt": 2601.0,
+   "st_teff": 6265.0,
+   "st_rad": 1.69,
+   "sy_dist": 427.246,
+   "disc_year": 2008,
+   "discoverymethod": "Transit",
+   "id": "exo_wasp_12_b",
+   "class": "gas_giant",
+   "has_surface": false,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 9.46,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12%20b"
+  },
+  {
+   "pl_name": "Kepler-452 b",
+   "hostname": "Kepler-452",
+   "pl_rade": 1.63,
+   "pl_bmasse": 3.29,
+   "pl_orbper": 384.843,
+   "pl_orbsmax": 1.046,
+   "pl_eqt": 265.0,
+   "st_teff": 5757.0,
+   "st_rad": 1.11,
+   "sy_dist": 551.727,
+   "disc_year": 2015,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_452_b",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 12.16,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452%20b"
+  },
+  {
+   "pl_name": "PSR B1257+12 c",
+   "hostname": "PSR B1257+12",
+   "pl_rade": 1.91,
+   "pl_bmasse": 4.3,
+   "pl_orbper": 66.5419,
+   "pl_orbsmax": 0.36,
+   "pl_eqt": null,
+   "st_teff": null,
+   "st_rad": null,
+   "sy_dist": 600.0,
+   "disc_year": 1992,
+   "discoverymethod": "Pulsar Timing",
+   "id": "exo_psr_b1257_12_c",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 11.58,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12%20c"
+  },
+  {
+   "pl_name": "Kepler-69 c",
+   "hostname": "Kepler-69",
+   "pl_rade": 1.71,
+   "pl_bmasse": 3.57,
+   "pl_orbper": 242.4613,
+   "pl_orbsmax": 0.64,
+   "pl_eqt": 299.0,
+   "st_teff": 5638.0,
+   "st_rad": 0.93,
+   "sy_dist": 730.625,
+   "disc_year": 2013,
+   "discoverymethod": "Transit",
+   "id": "exo_kepler_69_c",
+   "class": "super_earth",
+   "has_surface": true,
+   "derived": {
+    "gravity": "G x archive mass / archive radius^2"
+   },
+   "gravity": 11.99,
+   "source_url": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69%20c"
+  }
+ ],
+ "class_facts": {
+  "terrestrial": [
+   {
+    "text": "Terrestrial planets (Earth sized and smaller) are rocky worlds, composed of rock, silicate, water and/or carbon.",
+    "url": "https://science.nasa.gov/exoplanets/terrestrial/"
+   },
+   {
+    "text": "To determine if some of these worlds have atmospheres, oceans or other signs of habitability, it takes more investigation.",
+    "url": "https://science.nasa.gov/exoplanets/terrestrial/"
+   },
+   {
+    "text": "We've found rocky planets in Earth's size range, at the right distance from their parent stars to harbor liquid water (this is known as the habitable zone).",
+    "url": "https://science.nasa.gov/exoplanets/terrestrial/"
+   }
+  ],
+  "super_earth": [
+   {
+    "text": "Larger terrestrial exoplanets (those at least twice as massive as Earth) are classified as super-Earths .",
+    "url": "https://science.nasa.gov/exoplanets/terrestrial/"
+   },
+   {
+    "text": "Super-Earths can be up to 10 times more massive than Earth.",
+    "url": "https://science.nasa.gov/exoplanets/super-earth/"
+   }
+  ],
+  "neptune_like": [
+   {
+    "text": "Neptunian planets typically have hydrogen and helium-dominated atmospheres with cores of rock and heavier metals.",
+    "url": "https://science.nasa.gov/exoplanets/neptune-like/"
+   },
+   {
+    "text": "By analyzing the amount of light blocked by the planet at different wavelengths, called spectroscopy, researchers can determine which molecules make up the atmosphere.",
+    "url": "https://science.nasa.gov/exoplanets/neptune-like/"
+   }
+  ],
+  "gas_giant": [
+   {
+    "text": "Similar in size to Jupiter, these gas-dominated planets orbit extremely close to their parent stars, circling them in as few as 18 hours.",
+    "url": "https://science.nasa.gov/exoplanets/gas-giant/"
+   },
+   {
+    "text": "Gas giants are planets the size of Saturn or Jupiter, the largest planet in our solar system, or much, much larger.",
+    "url": "https://science.nasa.gov/exoplanets/planet-types/"
+   },
+   {
+    "text": "They likely have a mixture of interior compositions, but all will have hydrogen and helium-dominated outer atmospheres and rocky cores.",
+    "url": "https://science.nasa.gov/exoplanets/planet-types/"
+   }
+  ],
+  "general": [
+   {
+    "text": "Most have been discovered by the \"transit\" method – watching for the tiniest of shadows as a planet crosses the face of its star.",
+    "url": "https://science.nasa.gov/exoplanets/planet-types/"
+   },
+   {
+    "text": "Our nearest neighboring star, Proxima Centauri, was found to possess at least one planet – probably a rocky one.",
+    "url": "https://science.nasa.gov/exoplanets/planet-types/"
+   }
+  ]
+ },
+ "source_url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
+ "columns": "pl_name,hostname,pl_rade,pl_bmasse,pl_orbper,pl_orbsmax,pl_eqt,st_teff,st_rad,sy_dist,disc_year,discoverymethod"
+}

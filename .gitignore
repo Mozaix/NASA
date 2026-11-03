@@ -1,0 +1,7 @@
+.cache/
+tools/.venv/
+__pycache__/
+.godot/
+USB_BUILD/
+*.tmp
+.DS_Store
