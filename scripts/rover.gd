@@ -24,7 +24,7 @@ var _body: Node3D
 var _dust: CPUParticles3D
 var _lights: Array[SpotLight3D] = []
 var _hop_cool := 0.0
-var external_input := Vector2.ZERO
+var speed_mult := 1.0
 
 func setup(t: Node, g: float, dust_color: Color) -> void:
 	terrain = t
@@ -37,9 +37,9 @@ func setup(t: Node, g: float, dust_color: Color) -> void:
 	Models.cube(_body, Vector3(2.0, 0.55, 3.6), Vector3(0, 1.25, 0), white)
 	Models.cube(_body, Vector3(1.7, 0.35, 1.5), Vector3(0, 1.7, -0.8), gold)
 	Models.cube(_body, Vector3(1.6, 0.06, 2.2), Vector3(0, 1.62, 0.6), Models.mat(Color(0.08, 0.13, 0.32), 0.7, 0.25))
-	Models.cyl(_body, 0.08, 0.1, 1.6, Vector3(0.6, 2.3, 1.3), white, 8)
+	Models.cyl(_body, 0.08, 0.1, 1.6, Vector3(0.6, 2.3, 1.3), white, 16)
 	Models.cube(_body, Vector3(0.55, 0.3, 0.3), Vector3(0.6, 3.15, 1.35), dark)
-	Models.cyl(_body, 0.35, 0.05, 0.15, Vector3(-0.7, 2.05, -1.2), white, 12)
+	Models.cyl(_body, 0.35, 0.05, 0.15, Vector3(-0.7, 2.05, -1.2), white, 24)
 	var arm := Models.cube(_body, Vector3(0.1, 0.1, 1.5), Vector3(-0.7, 1.1, 2.2), dark)
 	arm.rotation.x = 0.4
 	var tire := Models.mat(Color(0.16, 0.16, 0.18), 0.2, 0.8)
@@ -51,7 +51,7 @@ func setup(t: Node, g: float, dust_color: Color) -> void:
 		var axle := Node3D.new()
 		axle.position = Vector3(0, WHEEL_R, 0)
 		holder.add_child(axle)
-		var wheel := Models.cyl(axle, WHEEL_R, WHEEL_R, 0.45, Vector3.ZERO, tire, 14)
+		var wheel := Models.cyl(axle, WHEEL_R, WHEEL_R, 0.45, Vector3.ZERO, tire, 28)
 		wheel.rotation.z = PI / 2.0
 		Models.cube(wheel, Vector3(0.14, 0.5, 1.15), Vector3.ZERO, dark)
 		_wheels.append(holder)
@@ -106,7 +106,7 @@ func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -
 	if grounded:
 		var fwd := forward_dir()
 		var tangent := (fwd - n * fwd.dot(n)).normalized()
-		var cap := BOOST_SPEED if boost else MAX_SPEED
+		var cap := (BOOST_SPEED if boost else MAX_SPEED) * speed_mult
 		var turn_rate := lerpf(2.1, 0.9, clampf(speed / BOOST_SPEED, 0.0, 1.0))
 		var along := velocity.dot(tangent)
 		heading -= steer * turn_rate * delta * (1.0 if along >= -0.5 else -1.0)

@@ -13,6 +13,8 @@ var _t := 0.0
 var _stage := 0
 var _fps: Dictionary = {}
 var _quality := -1
+var demo := false
+var _started_ms := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -25,6 +27,8 @@ func _ready() -> void:
 			region_id = a.split("=")[1]
 		elif a.begins_with("--nfe-out="):
 			out_dir = a.split("=")[1]
+		elif a == "--nfe-demo":
+			demo = true
 		elif a == "--nfe-ui":
 			ui_tour.call_deferred()
 		elif a == "--nfe-novsync":
@@ -64,6 +68,9 @@ func ui_tour() -> void:
 func report(key: String, value: Variant) -> void:
 	results[key] = value
 	print("[autotest] ", key, " = ", value)
+
+func report_shot(label: String) -> void:
+	_shot(label)
 
 func _shot(label: String) -> void:
 	if out_dir == "" or DisplayServer.get_name() == "headless":
@@ -113,7 +120,13 @@ func _process(delta: float) -> void:
 		_record(sname, delta)
 	if sname == "Launch":
 		_watch_rocket(scene)
+	if sname == "DemoPicker" and _started_ms == 0:
+		_started_ms = Time.get_ticks_msec()
 	match sname:
+		"DemoPicker":
+			if _stage == 0 and _t > 1.0:
+				_stage = 1
+				scene.auto_advance()
 		"MainMenu", "Launch", "Transfer", "Orbit":
 			if _stage == 0 and _t > 3.0:
 				_stage = 1
@@ -131,6 +144,10 @@ func _process(delta: float) -> void:
 			elif _stage == 1 and _t > 10.0:
 				_stage = 2
 				_shot("landing_mid")
+				scene.toggle_look_down()
+				await get_tree().create_timer(0.8).timeout
+				_shot("landing_look_down")
+				scene.toggle_look_down()
 			elif _stage == 2 and scene.state != "fly":
 				_stage = 3
 				_t = 0.0
@@ -147,7 +164,7 @@ func _process(delta: float) -> void:
 				_stage = 1
 				_shot("surface_start")
 				_drive_test(scene)
-			elif _stage == 1 and _t > 10.0:
+			elif _stage == 1 and _t > (6.0 if demo else 10.0):
 				_stage = 2
 				_shot("surface_drive")
 				Input.action_release("move_forward")
@@ -163,6 +180,8 @@ func _process(delta: float) -> void:
 				_stage = 1
 				_shot("debrief")
 				scene.auto_advance()
+				if demo:
+					report("demo_seconds_after_picker", (Time.get_ticks_msec() - _started_ms) / 1000)
 				_finish()
 
 var _rocket_marks: Array[float] = [15.0, 60.0, 85.0, 120.0, 180.0, 225.0, 295.0]

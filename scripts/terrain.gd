@@ -17,6 +17,7 @@ var _chunks: Array[MeshInstance3D] = []
 var _meshes: Array[ArrayMesh] = []
 var _lod_dist: Array[float] = []
 var _time := 0.0
+var _morph_now := PackedFloat32Array()
 
 static func _grid_mesh(step_t: int) -> ArrayMesh:
 	# Vertices are in texel units; node scale turns them into metres. UV.x flags the skirt.
@@ -189,7 +190,7 @@ func _build_chunks() -> void:
 		_meshes.append(_grid_mesh(step_t))
 	var size := float(CHUNK_TEXELS) * texel
 	var ls := Settings.lod_scale()
-	var finest := maxf(size * 1.4 * ls, size * 0.71 + 75.0)
+	var finest := maxf(size * 1.4 * ls, size * 0.71 + 130.0)
 	_lod_dist = [finest, maxf(size * 2.8 * ls, finest + size), maxf(size * 5.5 * ls, finest + size * 2.0)]
 	# y range for culling boxes
 	var lo := INF
@@ -208,8 +209,10 @@ func _build_chunks() -> void:
 			mi.scale = Vector3(texel, 1.0, texel)
 			mi.custom_aabb = AABB(Vector3(0, ylo, 0), Vector3(CHUNK_TEXELS, yhi - ylo, CHUNK_TEXELS))
 			mi.mesh = _meshes[3]
+			mi.set_instance_shader_parameter("lod_step", 8.0)
 			add_child(mi)
 			_chunks.append(mi)
+			_morph_now.append(0.0)
 	# Coarse mirrored ring beyond the map edge, so the world does not visibly end.
 	var ring_scale := 8.0
 	var ring_size := size * ring_scale
@@ -231,7 +234,8 @@ func update_lod(cam_pos: Vector3, delta: float) -> void:
 	_time += delta
 	material.set_shader_parameter("time_s", _time)
 	var half := float(CHUNK_TEXELS) * texel * 0.5
-	for c in _chunks:
+	for i in _chunks.size():
+		var c := _chunks[i]
 		var d := Vector2(c.position.x + half - cam_pos.x, c.position.z + half - cam_pos.z).length()
 		var lod := 3
 		if d < _lod_dist[0]:
@@ -243,6 +247,14 @@ func update_lod(cam_pos: Vector3, delta: float) -> void:
 		var m := _meshes[lod]
 		if c.mesh != m:
 			c.mesh = m
+			c.set_instance_shader_parameter("lod_step", float(1 << lod))
+		# Blend toward the next level over the last stretch before switching, so nothing pops.
+		var blend := 0.0
+		if lod < 3:
+			blend = smoothstep(_lod_dist[lod] * 0.78, _lod_dist[lod], d)
+		if not is_equal_approx(_morph_now[i], blend):
+			_morph_now[i] = blend
+			c.set_instance_shader_parameter("morph", blend)
 
 func set_pad(pos: Vector3, radius: float) -> void:
 	material.set_shader_parameter("pad_pos", pos)

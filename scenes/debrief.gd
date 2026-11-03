@@ -61,7 +61,7 @@ func _ready() -> void:
 		UI.kv(g, "Autopilot used", "yes, -60", UI.AMBER)
 	var row := UI.hbox()
 	v.add_child(row)
-	var again := UI.button("Plan another mission", func() -> void: Flow.go("planner", "Mission Control"), true)
+	var again := UI.button("Play the full game" if Game.is_demo() else "Plan another mission", func() -> void: Flow.go("planner", "Mission Control"), true)
 	row.add_child(again)
 	row.add_child(UI.button("Main menu", func() -> void: Flow.go("menu")))
 	again.grab_focus.call_deferred()

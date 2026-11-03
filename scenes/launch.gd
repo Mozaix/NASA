@@ -23,7 +23,7 @@ var burn_dir := 1.0
 var burn_score := 0.0
 var _status: Label
 var _prompt: Label
-var _hud: Label
+var _card: HudCard
 var _gauge: ProgressBar
 var _gauge_box: Control
 var _timing: TimingBar
@@ -97,7 +97,7 @@ func _ready() -> void:
 	var pad_y := EARTH_R + 0.05
 	Models.cyl(self, 0.05, 0.06, 0.012, Vector3(0, pad_y + 0.006, 0), Models.mat(Color(0.42, 0.42, 0.44)), 24)
 	Models.cube(self, Vector3(0.005, 0.3, 0.005), Vector3(0.036, pad_y + 0.16, 0), Models.mat(Color(0.65, 0.22, 0.12), 0.3, 0.7))
-	rocket = Models.rocket()
+	rocket = Models.rocket(str(Game.mission.launcher))
 	rocket.scale = Vector3.ONE * ROCKET_SCALE
 	rocket.position = Vector3(0, pad_y + 0.012, 0)
 	add_child(rocket)
@@ -119,21 +119,17 @@ func _build_hud() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.theme = UI.theme()
 	layer.add_child(root)
-	var col := UI.vbox(6)
-	var p := UI.panel(col)
-	p.custom_minimum_size.x = 330.0
-	p.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 20)
-	root.add_child(p)
-	col.add_child(UI.eyebrow("%s to %s" % [str(Game.launcher().name), str(Game.target().name)]))
-	_hud = UI.label("", 16, UI.TEXT, "mono")
-	col.add_child(_hud)
+	_card = HudCard.new("Launch", "%s to %s" % [str(Game.launcher().name), str(Game.target().name)])
+	_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 20)
+	root.add_child(_card)
+	_card.add_row("height", "Height", true)
+	_card.add_row("speed", "Speed")
 	_gauge_box = UI.vbox(4)
 	_gauge_box.visible = false
-	_gauge_box.add_child(UI.label("AERODYNAMIC STRESS: keep in the green", 13, UI.TEXT_DIM))
+	_gauge_box.add_child(UI.label("Air pressure on the rocket", 15, UI.TEXT_DIM))
 	_gauge = UI.bar(0, 1, UI.GOOD, 14.0)
 	_gauge_box.add_child(_gauge)
-	_gauge_box.add_child(UI.para("%s and %s adjust throttle" % [Settings.key_name("move_forward"), Settings.key_name("move_back")], 13))
-	col.add_child(_gauge_box)
+	_card.add_widget(_gauge_box)
 	_status = UI.label("", 34, UI.TEXT, "bold")
 	_status.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 40)
 	_status.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -176,14 +172,33 @@ func _process(delta: float) -> void:
 			if t <= 0.0:
 				_next_scene()
 	_camera(delta)
-	var alt_km := altitude
-	var v_txt := speed
-	_hud.text = "Altitude %7.0f km\nSpeed    %7.2f km/s\nThrottle %7.0f %%\nGravity  %7.2f m/s²" % [alt_km, v_txt, throttle * 100.0, float(Data.body("earth").gravity)]
+	_card.set_row("height", "%.0f km up" % altitude, UI.TEXT, altitude / (Orbital.LEO_ALT / 1000.0))
+	_card.set_row("speed", "%.1f km/s" % speed)
+	_card.set_tip(_what_now())
+	_card.set_details(PackedStringArray(["Throttle %.0f%%" % (throttle * 100.0), "Target orbit %.0f km" % (Orbital.LEO_ALT / 1000.0), "Earth gravity %.1f m/s\u00b2" % float(Data.body("earth").gravity)]))
 	# Sky fades to black with altitude.
 	var space := clampf(altitude / 90.0, 0.0, 1.0)
 	sky_mat.set_shader_parameter("top_color", Color(0.15, 0.36, 0.72).lerp(Color.BLACK, space))
 	sky_mat.set_shader_parameter("horizon_color", Color(0.7, 0.83, 0.96).lerp(Color.BLACK, space))
 	sky_mat.set_shader_parameter("stars_amt", space)
+
+func _what_now() -> String:
+	match state:
+		"countdown":
+			return "Press %s to light the engines" % Settings.key_name("thrust")
+		"ascent":
+			if float(_gauge.value) > 0.85:
+				return "Too much pressure! Hold %s to ease off" % Settings.key_name("move_back")
+			return "Climbing. Keep the pressure bar out of the red"
+		"coast":
+			return "In orbit. Getting ready to leave Earth"
+		"burn":
+			return "Press %s when the marker is in the green" % Settings.key_name("thrust")
+	return "On your way!"
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("details"):
+		_card.toggle_details()
 
 func ignite() -> void:
 	state = "ascent"
@@ -195,7 +210,9 @@ func ignite() -> void:
 	Sfx.play("stage")
 	Sfx.loop("engine", 0.6)
 
-func _ascent(delta: float) -> void:
+func _ascent(real_delta: float) -> void:
+	# The demo flies the same ascent at a faster pace.
+	var delta := real_delta * (2.6 if Game.is_demo() else 1.0)
 	t += delta
 	var up := Input.get_axis("move_back", "move_forward")
 	throttle = clampf(throttle + up * delta * 1.3, 0.35, 1.0)
@@ -229,7 +246,7 @@ func _ascent(delta: float) -> void:
 	if altitude >= Orbital.LEO_ALT / 1000.0:
 		speed = sqrt(Orbital.mu_of(Data.body("earth")) / (Orbital.radius_m(Data.body("earth")) + Orbital.LEO_ALT)) / 1000.0
 		state = "coast"
-		t = 2.2
+		t = 0.5 if Game.is_demo() else 2.2
 		flame2.emitting = false
 		_gauge_box.visible = false
 		Sfx.loop("engine", 0.0)
@@ -279,7 +296,7 @@ func _next_scene() -> void:
 	flame2.emitting = false
 	Sfx.loop("engine", 0.0)
 	Game.mission.phase = "transfer"
-	if Orbital.plan(Game.target()).kind == "orbit":
+	if Orbital.plan(Game.target()).kind == "orbit" and not Game.is_demo():
 		Flow.go("orbit", str(Game.target().name))
 	else:
 		Flow.go("transfer", "Cruise to " + str(Game.target().name))
@@ -298,7 +315,7 @@ func _camera(delta: float) -> void:
 func auto_advance() -> void:
 	if state == "countdown":
 		ignite()
-	await get_tree().create_timer(30.0).timeout
+	await get_tree().create_timer(12.0 if Game.is_demo() else 30.0).timeout
 	while state == "ascent":
 		await get_tree().process_frame
 	while state != "burn":

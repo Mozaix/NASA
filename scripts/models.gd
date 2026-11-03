@@ -13,7 +13,7 @@ static func mat(color: Color, metal: float = 0.3, rough: float = 0.55, emission:
 		m.emission_energy_multiplier = emission
 	return m
 
-static func cyl(parent: Node3D, r_top: float, r_bot: float, h: float, pos: Vector3, m: Material, seg: int = 20) -> MeshInstance3D:
+static func cyl(parent: Node3D, r_top: float, r_bot: float, h: float, pos: Vector3, m: Material, seg: int = 32) -> MeshInstance3D:
 	var c := CylinderMesh.new()
 	c.top_radius = r_top
 	c.bottom_radius = r_bot
@@ -41,8 +41,8 @@ static func ball(parent: Node3D, r: float, pos: Vector3, m: Material) -> MeshIns
 	var c := SphereMesh.new()
 	c.radius = r
 	c.height = r * 2.0
-	c.radial_segments = 16
-	c.rings = 8
+	c.radial_segments = 28
+	c.rings = 14
 	var mi := MeshInstance3D.new()
 	mi.mesh = c
 	mi.material_override = m
@@ -76,7 +76,7 @@ static func flame(parent: Node3D, pos: Vector3, scale_f: float = 1.0, color: Col
 	var q := QuadMesh.new()
 	q.size = Vector2.ONE * 1.5 * scale_f * world_scale
 	p.mesh = q
-	p.amount = [24, 48, 80][Settings.quality]
+	p.amount = [48, 90, 140][Settings.quality]
 	p.lifetime = 0.42
 	p.local_coords = attached
 	p.direction = Vector3.DOWN
@@ -135,7 +135,7 @@ static func dust(parent: Node3D, color: Color) -> CPUParticles3D:
 	return p
 
 ## Launch vehicle. Lower stage node is "Booster" so the launch scene can drop it. Origin at base.
-static func rocket() -> Node3D:
+static func rocket(kind: String = "medium") -> Node3D:
 	var root := Node3D.new()
 	var white := mat(Color(0.92, 0.93, 0.95), 0.1, 0.5)
 	var dark := mat(Color(0.14, 0.15, 0.18), 0.5, 0.5)
@@ -148,6 +148,14 @@ static func rocket() -> Node3D:
 	cyl(booster, 0.51, 0.51, 0.25, Vector3(0, 4.8, 0), accent)
 	for a: float in [0.0, 1.57, 3.14, 4.71]:
 		cube(booster, Vector3(0.06, 1.0, 0.7), Vector3(cos(a) * 0.65, 0.6, sin(a) * 0.65), dark).rotation.y = -a + 1.57
+	# Side boosters show which launcher was chosen. They drop with the first stage.
+	var side_count := {"heavy": 2, "super": 4}.get(kind, 0) as int
+	for i in side_count:
+		var a := float(i) / float(side_count) * TAU + (0.0 if side_count == 2 else PI / 4.0)
+		var at := Vector3(cos(a) * 0.86, 0.0, sin(a) * 0.86)
+		cyl(booster, 0.3, 0.3, 4.4, at + Vector3(0, 2.4, 0), white)
+		cyl(booster, 0.02, 0.3, 0.8, at + Vector3(0, 5.0, 0), accent)
+		cyl(booster, 0.3, 0.38, 0.4, at + Vector3(0, 0.2, 0), dark)
 	var upper := Node3D.new()
 	upper.name = "Upper"
 	root.add_child(upper)
@@ -175,13 +183,13 @@ static func lander(with_chute: bool = false) -> Node3D:
 	var gold := mat(Color(0.85, 0.66, 0.3), 0.8, 0.35)
 	var grey := mat(Color(0.74, 0.75, 0.78), 0.4, 0.5)
 	var dark := mat(Color(0.2, 0.2, 0.22), 0.5, 0.5)
-	cyl(root, 1.6, 2.2, 1.6, Vector3(0, 2.6, 0), gold, 8)
-	cyl(root, 0.9, 1.5, 1.2, Vector3(0, 3.95, 0), grey, 8)
-	cyl(root, 0.5, 0.9, 0.8, Vector3(0, 1.5, 0), dark, 12)
+	cyl(root, 1.6, 2.2, 1.6, Vector3(0, 2.6, 0), gold, 32)
+	cyl(root, 0.9, 1.5, 1.2, Vector3(0, 3.95, 0), grey, 32)
+	cyl(root, 0.5, 0.9, 0.8, Vector3(0, 1.5, 0), dark, 24)
 	for a: float in [0.785, 2.356, 3.927, 5.498]:
-		var leg := cyl(root, 0.08, 0.08, 3.0, Vector3(cos(a) * 2.0, 1.15, sin(a) * 2.0), grey, 6)
+		var leg := cyl(root, 0.08, 0.08, 3.0, Vector3(cos(a) * 2.0, 1.15, sin(a) * 2.0), grey, 12)
 		leg.rotation = Vector3(sin(a) * 0.55, 0.0, -cos(a) * 0.55)
-		cyl(root, 0.5, 0.5, 0.12, Vector3(cos(a) * 2.8, 0.06, sin(a) * 2.8), dark, 10)
+		cyl(root, 0.5, 0.5, 0.12, Vector3(cos(a) * 2.8, 0.06, sin(a) * 2.8), dark, 20)
 	var f := flame(root, Vector3(0, 1.0, 0), 1.0)
 	f.name = "Flame"
 	if with_chute:
@@ -191,7 +199,7 @@ static func lander(with_chute: bool = false) -> Node3D:
 		chute.name = "Chute"
 		chute.position = Vector3(0, 16, 0)
 		root.add_child(chute)
-		cyl(chute, 0.5, 9.0, 3.5, Vector3.ZERO, chute_mat, 16)
+		cyl(chute, 0.5, 9.0, 3.5, Vector3.ZERO, chute_mat, 32)
 		chute.visible = false
 	return root
 

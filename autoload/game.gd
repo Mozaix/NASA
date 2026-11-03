@@ -54,7 +54,7 @@ func new_mission() -> void:
 		"launch_unix": 0.0, "launch_quality": 1.0, "correction_quality": 1.0,
 		"landed": false, "crashes": 0, "landing_rating": 0.0, "assisted": false, "orbit_science": 0.0,
 		"pois": {}, "samples": [], "facts_seen": [], "science": 0.0,
-		"phase": "planning", "aborted": false, "distance_m": 0.0,
+		"phase": "planning", "aborted": false, "distance_m": 0.0, "demo": false,
 	}
 
 func part(list: Array, id: String) -> Dictionary:
@@ -230,6 +230,47 @@ func save_best(total: float) -> bool:
 		f.set_value("scores", "best", best_scores)
 		f.save("user://scores.cfg")
 	return better
+
+func is_demo() -> bool:
+	return bool(mission.get("demo", false))
+
+## Fit the best stage and propellant to a given launcher. Returns false if nothing can fly the mission.
+func design_with(launcher_id: String) -> bool:
+	var t := target()
+	mission.launcher = launcher_id
+	mission.rover = not is_probe_mission()
+	mission.power = "rtg2" if distance_au() > 2.0 else "solar_big"
+	if t.kind == "exoplanet":
+		mission.stage = "sail"
+		mission.propellant_t = 0.0
+		return problems().is_empty()
+	var best := {}
+	for s: Dictionary in STAGES:
+		if s.id == "sail":
+			continue
+		mission.stage = s.id
+		mission.propellant_t = 0.0
+		var need := float(dv_plan().total) * 1.06
+		var prop := dry_mass() * (exp(need / (float(s.isp) * Orbital.G0)) - 1.0)
+		mission.propellant_t = snappedf(prop + 0.25, 0.5)
+		if problems().is_empty() and (best.is_empty() or cost() < float(best.cost)):
+			best = {"cost": cost(), "stage": s.id, "prop": mission.propellant_t}
+	if best.is_empty():
+		return false
+	mission.stage = best.stage
+	mission.propellant_t = best.prop
+	return true
+
+## Same check, leaving the current design as it was.
+func can_design_with(launcher_id: String) -> bool:
+	var keep: Array = [mission.launcher, mission.stage, mission.propellant_t, mission.power, mission.rover]
+	var ok := design_with(launcher_id)
+	mission.launcher = keep[0]
+	mission.stage = keep[1]
+	mission.propellant_t = keep[2]
+	mission.power = keep[3]
+	mission.rover = keep[4]
+	return ok
 
 ## Pick a sensible, launchable design for the chosen target. Used by "Auto-design" and by tests.
 func auto_design() -> void:
