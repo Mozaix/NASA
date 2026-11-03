@@ -2,6 +2,7 @@ extends Node3D
 ## Cruise: real planet positions from JPL elements, true/viewable scale toggle, course corrections.
 
 const CRUISE_SECONDS := 40.0
+const DEMO_CRUISE_SECONDS := 9.0
 
 var plan: Dictionary
 var target: Dictionary
@@ -25,7 +26,7 @@ var _mu := Orbital.MU_SUN
 var _days := 0.0
 var _start_unix := 0.0
 var _parent_id := ""
-var _hud: Label
+var _card: HudCard
 var _scale_btn: Button
 var _info: VBoxContainer
 var _fix_panel: Control
@@ -261,16 +262,15 @@ func _build_hud() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.theme = UI.theme()
 	layer.add_child(root)
+	_card = HudCard.new("On the way to " + str(target.name))
+	_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 20)
+	root.add_child(_card)
+	_card.set_tip("Sit back. Your spacecraft is coasting there.")
+	_card.add_row("trip", "Trip", true)
+	_card.add_row("speed", "Speed")
+	_card.add_row("where", "Distance")
 	var col := UI.vbox(6)
-	var p := UI.panel(col)
-	p.custom_minimum_size.x = 370.0
-	p.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 20)
-	root.add_child(p)
-	var title := "Interstellar cruise" if mode == "interstellar" else ("Translunar coast" if mode == "lunar" else "Hohmann transfer")
-	col.add_child(UI.eyebrow(title))
-	col.add_child(UI.label("To " + str(target.name), 24, UI.TEXT, "bold"))
-	_hud = UI.label("", 15, UI.TEXT, "mono")
-	col.add_child(_hud)
+	_card.add_widget(col)
 	var speed_row := UI.hbox(6)
 	speed_row.add_child(UI.button("Faster", func() -> void: time_scale = minf(time_scale * 2.0, 8.0)))
 	speed_row.add_child(UI.button("Slower", func() -> void: time_scale = maxf(time_scale * 0.5, 0.25)))
@@ -337,6 +337,8 @@ func toggle_scale() -> void:
 	_rebuild_scale()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("details"):
+		_card.toggle_details()
 	if event.is_action_pressed("map") and mode != "interstellar":
 		toggle_scale()
 
@@ -344,20 +346,27 @@ func _process(delta: float) -> void:
 	if _fix_active:
 		_fix_tick(delta)
 	else:
-		progress += delta * time_scale / CRUISE_SECONDS
+		progress += delta * time_scale / (DEMO_CRUISE_SECONDS if Game.is_demo() else CRUISE_SECONDS)
 	progress = minf(progress, 1.0)
 	var now := _start_unix + progress * _days * 86400.0
 	if mode == "interstellar":
 		_process_interstellar(delta)
 	else:
 		_process_system(now, delta)
-	if not _fix_active and _fixes_done < 2 and progress > (0.32 if _fixes_done == 0 else 0.68):
+	if not Game.is_demo() and not _fix_active and _fixes_done < 2 and progress > (0.32 if _fixes_done == 0 else 0.68):
 		_begin_fix()
 	if progress >= 1.0 and not _arrival:
 		_arrival = true
 		Sfx.play("chime")
-		Game.mission.phase = "orbit"
-		Flow.go("orbit", str(target.name))
+		if Game.is_demo():
+			# The demo goes straight to the good part.
+			Game.mission.orbit_science = 40.0
+			Game.add_science(40.0)
+			Game.mission.phase = "landing"
+			Flow.go("surface" if Game.is_probe_mission() else "landing", str(World.region_for(target).name))
+		else:
+			Game.mission.phase = "orbit"
+			Flow.go("orbit", str(target.name))
 
 func _process_system(now: float, delta: float) -> void:
 	for b: Dictionary in bodies:
@@ -385,8 +394,11 @@ func _process_system(now: float, delta: float) -> void:
 			cam.focus = (bodies[_focus_index].node as Node3D).position
 	var s := _kepler_state(progress)
 	var v := sqrt(_mu * (2.0 / float(s.r) - 1.0 / _a))
-	var dist_txt := "%.2f AU from the Sun" % (float(s.r) / Orbital.AU) if mode == "solar" else "%s km from Earth" % UI.grouped(int(float(s.r) / 1000.0))
-	_hud.text = "Date      %s\nElapsed   %s of %s\nDistance  %s\nSpeed     %.2f km/s" % [Orbital.date_string(now), Orbital.format_time(progress * _days), Orbital.format_time(_days), dist_txt, v / 1000.0]
+	var dist_txt := "%.1f times Earth's distance from the Sun" % (float(s.r) / Orbital.AU) if mode == "solar" else "%s km from Earth" % UI.grouped(int(float(s.r) / 1000.0))
+	_card.set_row("trip", "%s of %s" % [Orbital.format_time(progress * _days), Orbital.format_time(_days)], UI.TEXT, progress)
+	_card.set_row("speed", "%.1f km/s" % (v / 1000.0))
+	_card.set_row("where", dist_txt)
+	_card.set_details(PackedStringArray(["Date %s" % Orbital.date_string(now), "Distance %.3f AU" % (float(s.r) / Orbital.AU) if mode == "solar" else "", "Transfer: Hohmann"]))
 
 func _process_interstellar(delta: float) -> void:
 	var k := pow(progress, 3.2)
@@ -396,7 +408,10 @@ func _process_interstellar(delta: float) -> void:
 	cam.look_at(Vector3(0.0, 0.0, lerpf(-40.0, -400.0, k)), Vector3.UP)
 	var ly := float(plan.light_years)
 	(bodies[0].globe as Node3D).rotation.y += delta * 0.1
-	_hud.text = "Distance   %.1f light-years\nCovered    %.2f light-years\nElapsed    %s\nSpeed      20%% of light (concept)\nAt Voyager 1's speed: %s" % [ly, ly * progress, Orbital.format_time(progress * _days), Orbital.format_time(float(plan.voyager_years) * 365.25)]
+	_card.set_row("trip", "%s of %s" % [Orbital.format_time(progress * _days), Orbital.format_time(_days)], UI.TEXT, progress)
+	_card.set_row("speed", "20% of light speed (concept)")
+	_card.set_row("where", "%.1f of %.1f light-years" % [ly * progress, ly])
+	_card.set_details(PackedStringArray(["At Voyager 1's speed: %s" % Orbital.format_time(float(plan.voyager_years) * 365.25)]))
 
 func _begin_fix() -> void:
 	_fix_active = true
@@ -434,6 +449,8 @@ func _end_fix() -> void:
 
 func auto_advance() -> void:
 	time_scale = 8.0
+	if Game.is_demo():
+		return
 	if mode != "interstellar":
 		_shot_true_scale()
 

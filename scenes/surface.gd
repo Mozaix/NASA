@@ -15,7 +15,7 @@ var _yaw := 0.0
 var _pitch := 0.32
 var _cam_dist := 15.0
 var _mouse_captured := false
-var _hud_stats: Label
+var _card: HudCard
 var _nav: Label
 var _objectives: VBoxContainer
 var _toast: Label
@@ -38,6 +38,9 @@ var _probe := false
 var _hscale := 24.0
 var _lander_pos := Vector3.ZERO
 var _done_shown := false
+var _cam_pos := Vector3.ZERO
+var _near: Variant = null
+var _cam_aim := Vector3.ZERO
 
 func _ready() -> void:
 	target = Game.target()
@@ -69,6 +72,7 @@ func _ready() -> void:
 	add_child(vehicle)
 	vehicle.global_position = start + Vector3(16, 0, 10)
 	vehicle.setup(terrain, g, dust)
+	vehicle.speed_mult = 1.4 if Game.is_demo() else 1.0
 	vehicle.place(vehicle.global_position)
 	vehicle.heading = 0.6
 	_yaw = PI + vehicle.heading
@@ -105,19 +109,35 @@ func _rock_mesh() -> ArrayMesh:
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 2.0
-	sphere.radial_segments = 8
-	sphere.rings = 5
+	sphere.radial_segments = 16
+	sphere.rings = 10
 	var arrays := sphere.get_mesh_arrays()
 	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 42
-	var cache := {}
+	var norms: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var fn := FastNoiseLite.new()
+	fn.seed = 42
+	fn.frequency = 0.9
+	fn.fractal_octaves = 2
 	for i in verts.size():
-		var key := verts[i].snapped(Vector3.ONE * 0.01)
-		if not cache.has(key):
-			cache[key] = rng.randf_range(0.72, 1.25)
-		verts[i] *= Vector3(cache[key], cache[key] * 0.75, cache[key])
+		var d := verts[i].normalized()
+		verts[i] = d * (1.0 + fn.get_noise_3dv(d * 1.7) * 0.55) * Vector3(1.0, 0.72, 1.0)
+	# Rebuild smooth normals from the lumpy shape.
+	var faces := PackedInt32Array(arrays[Mesh.ARRAY_INDEX])
+	norms.fill(Vector3.ZERO)
+	var t := 0
+	while t < faces.size():
+		var fa := verts[faces[t]]
+		var fb := verts[faces[t + 1]]
+		var fc := verts[faces[t + 2]]
+		var fnm := (fb - fa).cross(fc - fa)
+		norms[faces[t]] += fnm
+		norms[faces[t + 1]] += fnm
+		norms[faces[t + 2]] += fnm
+		t += 3
+	for i in norms.size():
+		norms[i] = norms[i].normalized() if norms[i].dot(verts[i]) >= 0.0 else -norms[i].normalized()
 	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = norms
 	var m := ArrayMesh.new()
 	m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return m
@@ -162,7 +182,7 @@ func _build_pois() -> void:
 	beacon_mat.emission_enabled = true
 	beacon_mat.emission = Color(0.2, 1.0, 0.75)
 	beacon_mat.emission_energy_multiplier = 1.4
-	for src: Dictionary in region.pois:
+	for src: Dictionary in _pois_for_mode():
 		var pos: Vector3 = terrain.uv_to_world(float(src.u), float(src.v))
 		if _probe:
 			pos.y = 60.0 + float(pois.size()) * 40.0
@@ -190,6 +210,26 @@ func _build_pois() -> void:
 		Models.ball(root, 0.35, Vector3(0, 0.35, 0), pm)
 		pois.append({"src": src, "pos": pos, "root": root, "tag": tag, "pillar": pillar, "visited": false, "sampled": false})
 
+## The demo keeps two nearby stops.
+func _pois_for_mode() -> Array:
+	var all: Array = region.pois
+	if not Game.is_demo():
+		return all
+	var uv: Array = region.landing_uv
+	var land := Vector2(float(uv[0]), float(uv[1]))
+	var by_distance: Array = all.duplicate()
+	by_distance.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return Vector2(float(a.u), float(a.v)).distance_to(land) < Vector2(float(b.u), float(b.v)).distance_to(land))
+	# Stops this payload can sample come first; the next nearest fills the second slot as a visit.
+	var picked: Array = []
+	for p: Dictionary in by_distance:
+		if picked.size() < 2 and Game.can_collect("gas" if _probe else str(p.sample)):
+			picked.append(p)
+	for p: Dictionary in by_distance:
+		if picked.size() < 2 and not p in picked:
+			picked.append(p)
+	return picked
+
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
@@ -198,18 +238,19 @@ func _build_hud() -> void:
 	root.theme = UI.theme()
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(root)
-	# Left column: where you are and how real the ground is.
-	var col := UI.vbox(5)
-	var p := UI.panel(col, 14)
-	p.custom_minimum_size.x = 340.0
-	p.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 18)
-	root.add_child(p)
-	col.add_child(UI.eyebrow(str(target.name)))
-	col.add_child(UI.label(str(region.name), 19, UI.TEXT, "bold"))
-	_hud_stats = UI.label("", 14, UI.TEXT, "mono")
-	col.add_child(_hud_stats)
-	var src_note: String = str(region.get("dem_label", ""))
-	col.add_child(UI.para(("Real elevation: " if region.get("real_elevation", false) else "") + src_note, 12, UI.GOOD if region.get("real_elevation", false) else UI.AMBER))
+	# Top-left: what to do now, in plain words.
+	_card = HudCard.new(str(target.name), str(region.name))
+	_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 18)
+	root.add_child(_card)
+	_card.add_row("speed", "Speed", true)
+	_card.add_row("gravity", "Gravity")
+	if region.get("real_elevation", false):
+		_card.add_row("ground", "Ground")
+	if _probe:
+		_card.add_row("height", "Height", true)
+	_card.add_row("driven", "Flown" if _probe else "Driven")
+	var real: bool = region.get("real_elevation", false)
+	_card.add_widget(UI.para("Real NASA terrain" if real else "Imagined terrain, based on NASA data", 13, UI.GOOD if real else UI.AMBER))
 	# Objectives
 	var ov := UI.vbox(4)
 	_objectives = ov
@@ -344,6 +385,8 @@ func _set_capture(on: bool) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		_toggle_pause()
+	elif event.is_action_pressed("details"):
+		_card.toggle_details()
 	elif event.is_action_pressed("map"):
 		_map_panel.visible = not _map_panel.visible
 	elif event.is_action_pressed("lights"):
@@ -383,8 +426,14 @@ func _process(delta: float) -> void:
 	var off := Vector3(sin(_yaw) * cos(_pitch), sin(_pitch), cos(_yaw) * cos(_pitch)) * _cam_dist
 	var pos := v + Vector3.UP * 2.0 + off
 	pos.y = maxf(pos.y, float(terrain.height_at(pos.x, pos.z)) + 1.5)
-	cam.global_position = pos
-	cam.look_at(v + Vector3.UP * 2.2, Vector3.UP)
+	# A little lag on the camera absorbs small bumps, so driving feels smooth.
+	var k := 1.0 - exp(-delta * 9.0)
+	_cam_pos = pos if _cam_pos == Vector3.ZERO else _cam_pos.lerp(pos, k)
+	_cam_pos.y = maxf(_cam_pos.y, float(terrain.height_at(_cam_pos.x, _cam_pos.z)) + 1.0)
+	var aim := v + Vector3.UP * 2.2
+	_cam_aim = aim if _cam_aim == Vector3.ZERO else _cam_aim.lerp(aim, 1.0 - exp(-delta * 14.0))
+	cam.global_position = _cam_pos
+	cam.look_at(_cam_aim, Vector3.UP)
 	terrain.update_lod(cam.global_position, delta)
 	_update_rocks(v)
 	_update_hud()
@@ -397,21 +446,57 @@ func _process(delta: float) -> void:
 		if _fact_time <= 0.0:
 			_fact_panel.visible = false
 
+func _elevation_words(elev: float) -> String:
+	var km := absf(elev) / 1000.0
+	var place := str(target.name)
+	if km < 0.05:
+		return "at %s's reference level" % place
+	return "%.1f km %s reference level" % [km, "below" if elev < 0.0 else "above"]
+
+## The single most useful instruction right now.
+func _what_now() -> String:
+	if _near != null and not _near.sampled:
+		var kind: String = "gas" if _probe else str(_near.src.sample)
+		if Game.can_collect(kind):
+			return "Hold %s to collect the %s sample" % [Settings.key_name("interact"), kind]
+		return "No instrument for this sample. Drive to the next beacon"
+	var left := 0
+	for p: Dictionary in pois:
+		if not p.sampled:
+			left += 1
+	if left == 0:
+		return "All done! Open the pause menu to finish"
+	if _probe:
+		return "Fly to a beacon. Hold %s to climb" % Settings.key_name("thrust")
+	return "Drive to the green beacon with W A S D"
+
 func _dist_real_km(world_dist: float) -> float:
 	return world_dist * _hscale / 1000.0
 
 func _update_hud() -> void:
 	var v := vehicle.global_position
 	var speed: float = Vector2(vehicle.velocity.x, vehicle.velocity.z).length()
-	var txt := "Gravity    %.2f m/s²\nSpeed      %.0f m/s\n" % [float(target.get("gravity") if target.get("gravity") != null else 0.0), speed]
+	var g := float(target.get("gravity") if target.get("gravity") != null else 0.0)
+	var top: float = 63.0 if _probe else float(Rover.BOOST_SPEED) * float(vehicle.speed_mult)
+	var pace := "Stopped"
+	if speed > 0.5:
+		pace = "Boosting" if speed > top * 0.62 else "Cruising"
+	if not _probe and not vehicle.grounded:
+		pace = "In the air!"
+	_card.set_row("speed", pace, UI.AMBER if pace == "In the air!" else UI.TEXT, speed / top)
+	_card.set_row("gravity", HudCard.gravity_words(g))
+	_card.set_row("driven", "%.1f km" % _dist_real_km(vehicle.distance))
+	var details := PackedStringArray(["Gravity %.2f m/s\u00b2" % g, "Speed %.0f m/s" % speed])
 	if region.get("real_elevation", false):
-		txt += "Elevation  %s m\n" % UI.grouped(int(terrain.real_elevation(v.x, v.z)))
+		var elev: float = terrain.real_elevation(v.x, v.z)
+		_card.set_row("ground", _elevation_words(elev))
+		details.append("Elevation %s m" % UI.grouped(int(elev)))
+		details.append("Map scale 1:%d, height \u00d7%.1f" % [int(_hscale), float(region.get("vexag", 1.0))])
+		details.append(str(region.get("dem_label", "")))
 	if _probe:
-		txt += "Height     %.0f m\n" % v.y
-	else:
-		txt += "Map scale  1:%d, height ×%.1f\n" % [int(_hscale), float(region.get("vexag", 1.0))]
-	txt += "Driven     %.1f km" % _dist_real_km(vehicle.distance)
-	_hud_stats.text = txt
+		_card.set_row("height", "%.0f m above the clouds" % maxf(v.y - 20.0, 0.0), UI.TEXT, v.y / 260.0)
+	_card.set_tip(_what_now())
+	_card.set_details(details)
 	var best: Variant = null
 	var best_d := INF
 	for p: Dictionary in pois:
@@ -446,6 +531,7 @@ func _process_pois(delta: float) -> void:
 			near = p
 			if not p.visited:
 				_visit(p)
+	_near = near
 	_progress.visible = false
 	_progress_label.text = ""
 	if near == null or near.sampled:
@@ -458,11 +544,12 @@ func _process_pois(delta: float) -> void:
 		_progress_label.text = "%s sample: this mission did not bring the instrument" % kind.capitalize()
 		return
 	_progress_label.text = "Hold %s to collect %s sample" % [Settings.key_name("interact"), kind]
+	var need := COLLECT_TIME * (0.5 if Game.is_demo() else 1.0)
 	if Input.is_action_pressed("interact"):
 		_collect += delta
 		_progress.visible = true
-		_progress.value = _collect / COLLECT_TIME
-		if _collect >= COLLECT_TIME:
+		_progress.value = _collect / need
+		if _collect >= need:
 			_sample(near, kind)
 	else:
 		_collect = 0.0

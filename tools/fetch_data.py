@@ -516,6 +516,10 @@ def save_terrain(rid, h, color_img, meta, hscale, vexag):
     dzdy, dzdx = np.gradient(world_h, texel_world)
     n = np.dstack([-dzdx, np.ones_like(h), -dzdy])
     n /= np.linalg.norm(n, axis=2, keepdims=True)
+    # Soften lighting only. The heights used for physics and readouts are not changed.
+    for axis in (0, 1):
+        n = np.roll(n, 1, axis) * 0.25 + n * 0.5 + np.roll(n, -1, axis) * 0.25
+    n /= np.linalg.norm(n, axis=2, keepdims=True)
     Image.fromarray(((n * 0.5 + 0.5) * 255).astype(np.uint8)).save(out / "normal.pngdata", format="PNG")
     color_img.convert("RGB").save(out / "color.jpgdata", format="JPEG", quality=92, subsampling=0)
     (out / "minimap.jpgdata").write_bytes(_jpeg(color_img.convert("RGB").resize((384, 384), Image.LANCZOS)))

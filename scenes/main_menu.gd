@@ -32,7 +32,7 @@ func _build_ui() -> void:
 	col.anchor_top = 0.5
 	col.anchor_bottom = 0.5
 	col.offset_left = 90.0
-	col.offset_right = 580.0
+	col.offset_right = 640.0
 	col.grow_vertical = Control.GROW_DIRECTION_BOTH
 	root.add_child(col)
 	col.add_child(UI.eyebrow("NASA Space Apps Challenge 2026"))
@@ -41,19 +41,23 @@ func _build_ui() -> void:
 	var gap := Control.new()
 	gap.custom_minimum_size.y = 10.0
 	col.add_child(gap)
-	var start := UI.button("New Mission", func() -> void: Flow.go("planner", "Mission Control"), true)
-	start.custom_minimum_size.y = 52.0
+	var start := UI.button("Play Main Game", func() -> void: Flow.go("planner", "Mission Control"), true)
+	start.custom_minimum_size.y = 68.0
+	start.add_theme_font_size_override("font_size", 25)
 	col.add_child(start)
-	col.add_child(UI.button("Mission Archive: planets, moons, exoplanets", func() -> void: Flow.go("archive")))
-	var row := UI.hbox()
-	for pair: Array in [["Settings", "settings"], ["Credits & Sources", "credits"]]:
+	var modes := UI.hbox(10)
+	col.add_child(modes)
+	modes.add_child(_mode_button("Play Demo", "About 3 minutes, one simple page", func() -> void: Flow.go("demo_picker")))
+	modes.add_child(_mode_button("Play 2D", "Build rockets, chase the high score", func() -> void: Flow.go("rocket2d", "Rocket Builder")))
+	var row := UI.hbox(8)
+	col.add_child(row)
+	for pair: Array in [["Leaderboard", "leaderboard"], ["Archive", "archive"], ["Settings", "settings"], ["Credits", "credits"]]:
 		var dest: String = pair[1]
 		var b := UI.button(pair[0], func() -> void: Flow.go(dest))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.add_theme_font_size_override("font_size", 15)
 		row.add_child(b)
-	col.add_child(row)
-	var quit := UI.button("Quit", func() -> void: Sfx.quit_game())
-	col.add_child(quit)
+	col.add_child(UI.button("Quit", func() -> void: Sfx.quit_game()))
 	start.grab_focus.call_deferred()
 	var foot := UI.label("Fan project using NASA data. Not endorsed by NASA.   Works fully offline.", 13, UI.TEXT_DIM)
 	foot.anchor_top = 1.0
@@ -63,8 +67,26 @@ func _build_ui() -> void:
 	foot.offset_bottom = -16.0
 	root.add_child(foot)
 
+func _mode_button(title: String, subtitle: String, on_press: Callable) -> Button:
+	var b := UI.button("", on_press)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.custom_minimum_size.y = 84.0
+	var v := UI.vbox(2)
+	v.set_anchors_preset(Control.PRESET_FULL_RECT)
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var t := UI.label(title, 22, UI.TEXT, "bold")
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var st := UI.label(subtitle, 13, UI.TEXT_DIM)
+	st.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	st.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(t)
+	v.add_child(st)
+	b.add_child(v)
+	return b
+
 func _process(delta: float) -> void:
 	_globe.rotation.y += delta * 0.035
 
 func auto_advance() -> void:
-	Flow.go("planner", "Mission Control")
+	Flow.go("demo_picker" if Autotest.demo else "planner", "Mission Control")

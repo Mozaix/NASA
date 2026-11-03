@@ -23,6 +23,7 @@ func _ready() -> void:
 	test_terrain()
 	test_rover_contact()
 	await test_autoland()
+	await test_demo()
 	await test_scenes()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
@@ -86,6 +87,75 @@ func test_data() -> void:
 		for f: String in ["height.f32", "color.jpgdata", "normal.pngdata", "minimap.jpgdata"]:
 			check(FileAccess.file_exists("res://data/regions/%s/%s" % [rid, f]), rid + "/" + f)
 	check(FileAccess.file_exists("res://data/SOURCES.md"), "SOURCES.md exists")
+
+## Demo mode must be flyable for every choice it offers, with any rocket it allows.
+func test_demo() -> void:
+	var picker: Node = (load("res://scenes/demo_picker.tscn") as PackedScene).instantiate()
+	add_child(picker)
+	await get_tree().process_frame
+	check(Game.is_demo(), "Picker turns demo mode on")
+	var dests: Array = picker.DESTINATIONS
+	for i in dests.size():
+		picker._choose_destination(i, true)
+		for kit: Dictionary in picker.KITS:
+			picker._choose_kit(str(kit.id))
+			check(Game.problems().is_empty(), "Demo mission flies: %s/%s" % [dests[i].id, kit.id], Game.problems())
+		var any := false
+		for l: Dictionary in Game.LAUNCHERS:
+			if Game.can_design_with(str(l.id)):
+				any = true
+				var keep: String = Game.mission.launcher
+				Game.design_with(str(l.id))
+				check(Game.problems().is_empty(), "Offered rocket works: %s/%s" % [dests[i].id, l.id], Game.problems())
+				Game.design_with(keep)
+		check(any, "Some rocket reaches " + str(dests[i].id))
+	# Stepping through the page draws cards and hologram parts for each step.
+	for i in 4:
+		picker._show_step(i)
+		await get_tree().process_frame
+		check(picker._cards.get_child_count() >= 2, "Choices side by side on step %d" % i, picker._cards.get_child_count())
+		check(picker._holo.get_child_count() >= 1, "Hologram shows something on step %d" % i)
+	# The last step's hologram must hold the rocket, lander, rover and each instrument.
+	picker._choose_kit("lab")
+	for id: String in ["rocket", "lander", "rover", "camera", "spectrometer", "drill"]:
+		check(picker._parts.has(id), "Hologram includes " + id)
+	picker.queue_free()
+	await get_tree().process_frame
+	# Demo surface: only two stops, both collectable, on the same terrain as the full game.
+	Game.new_mission()
+	Game.mission.demo = true
+	Game.mission.target_id = "mars"
+	Game.mission.region_id = "gale"
+	Game.mission.instruments = ["camera"]
+	Game.auto_design()
+	Game.mission.instruments = ["camera"]
+	var surface: Node = (load("res://scenes/surface.tscn") as PackedScene).instantiate()
+	add_child(surface)
+	await get_tree().process_frame
+	check(surface.pois.size() == 2, "Demo has two stops", surface.pois.size())
+	surface.queue_free()
+	await get_tree().process_frame
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	# Look-down view points the camera straight at the ground under the lander.
+	Game.new_mission()
+	Game.auto_design()
+	var land: Node = (load("res://scenes/landing.tscn") as PackedScene).instantiate()
+	add_child(land)
+	await get_tree().process_frame
+	land.toggle_look_down()
+	for f in 40:
+		land._process(1.0 / 60.0)
+	var facing: Vector3 = -land.cam.global_basis.z
+	check(facing.dot(Vector3.DOWN) > 0.98, "Look-down camera faces the ground", facing)
+	check(absf(land.cam.global_position.x - land.craft.global_position.x) < 1.0, "Look-down camera sits at the lander")
+	land.toggle_look_down()
+	for f in 40:
+		land._process(1.0 / 60.0)
+	check((-land.cam.global_basis.z).dot(Vector3.DOWN) < 0.9, "Returning restores the chase view")
+	land.queue_free()
+	await get_tree().process_frame
+	Sfx.stop_loops()
+	Game.new_mission()
 
 func test_scoring() -> void:
 	Game.new_mission()
@@ -314,7 +384,7 @@ func test_scenes() -> void:
 			inst.queue_free()
 			await get_tree().process_frame
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	for s: String in ["main_menu", "planner", "archive", "settings", "credits"]:
+	for s: String in ["main_menu", "planner", "archive", "settings", "credits", "demo_picker"]:
 		var packed: PackedScene = load("res://scenes/%s.tscn" % s)
 		var inst := packed.instantiate()
 		add_child(inst)

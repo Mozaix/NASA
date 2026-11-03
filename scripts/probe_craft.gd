@@ -9,6 +9,7 @@ var velocity := Vector3.ZERO
 var heading := 0.0
 var grounded := false
 var distance := 0.0
+var speed_mult := 1.0
 
 func setup(t: Node, g: float, _dust: Color) -> void:
 	terrain = t
@@ -29,7 +30,7 @@ func forward_dir() -> Vector3:
 
 func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -> void:
 	heading -= steer * 1.5 * delta
-	var cap := MAX_SPEED * (1.5 if boost else 1.0)
+	var cap := MAX_SPEED * (1.5 if boost else 1.0) * speed_mult
 	var target := forward_dir() * throttle * cap
 	var h := Vector2(velocity.x, velocity.z).lerp(Vector2(target.x, target.z), clampf(delta * 1.6, 0.0, 1.0))
 	var p := global_position

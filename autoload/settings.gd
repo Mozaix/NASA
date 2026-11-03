@@ -26,6 +26,8 @@ const ACTIONS := {
 	"lights": ["Headlights", KEY_L, JOY_BUTTON_Y, -1, 0.0],
 	"map": ["Toggle map / scale", KEY_M, JOY_BUTTON_BACK, -1, 0.0],
 	"assist": ["Landing autopilot", KEY_P, JOY_BUTTON_LEFT_SHOULDER, -1, 0.0],
+	"look_down": ["Look down during landing", KEY_C, JOY_BUTTON_RIGHT_STICK, -1, 0.0],
+	"details": ["Show exact numbers", KEY_TAB, JOY_BUTTON_DPAD_UP, -1, 0.0],
 	"pause": ["Pause menu", KEY_ESCAPE, JOY_BUTTON_START, -1, 0.0],
 	"cam_left": ["Camera left", KEY_LEFT, -1, JOY_AXIS_RIGHT_X, -1.0],
 	"cam_right": ["Camera right", KEY_RIGHT, -1, JOY_AXIS_RIGHT_X, 1.0],
@@ -114,8 +116,8 @@ func apply() -> void:
 			DisplayServer.window_set_mode(mode)
 	var vp := get_viewport()
 	if vp:
-		vp.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_4X][quality]
-		vp.scaling_3d_scale = [0.75, 1.0, 1.0][quality]
+		vp.msaa_3d = [Viewport.MSAA_2X, Viewport.MSAA_4X, Viewport.MSAA_8X][quality]
+		vp.scaling_3d_scale = [0.85, 1.0, 1.0][quality]
 
 func _set_bus(bus_name: String, linear: float) -> void:
 	var i := AudioServer.get_bus_index(bus_name)
@@ -140,4 +142,4 @@ func glow() -> bool:
 	return quality > 0
 
 func sphere_segments() -> int:
-	return [64, 96, 128][quality]
+	return [96, 128, 192][quality]
