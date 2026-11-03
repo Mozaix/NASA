@@ -143,3 +143,9 @@ Not tested on real hardware or platforms:
 - Gatekeeper's behaviour on another Mac. This Mac let a quarantined copy run, so it cannot show what a judge would see.
 - A physical gamepad. Bindings were tested with simulated events.
 - A physical USB stick. A real exFAT disk image was used instead.
+
+## Added after the first release
+
+- **Demo mode, new HUD, look-down landing view, smoother terrain.**
+- **2D Rocket Builder.** Part stats are game values. Earth's values and the height milestones come from NASA sources.
+  Each game is 6 launches. Money and parts reset after a score is saved. Scores are kept per calendar day on the local computer.

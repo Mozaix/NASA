@@ -348,7 +348,10 @@ func _arc_fill(center: Vector2, r: float, col_edge: Color, col_low: Color) -> vo
 
 func _draw_earth(center: Vector2, r: float, h: float) -> void:
 	var glow_a := clampf(1.0 - h / 8000000.0, 0.2, 0.7)
-	_arc_fill(center, r * 1.012, Color(0.45, 0.68, 1.0, glow_a), Color(0.2, 0.4, 0.8, glow_a))
+	# A thin glow, drawn over solid dark so stars cannot show through the planet's edge.
+	var edge: float = r + clampf(r * 0.012, 2.0, 12.0)
+	_arc_fill(center, edge, Color(0.02, 0.03, 0.08), Color(0.02, 0.03, 0.08))
+	_arc_fill(center, edge, Color(0.45, 0.68, 1.0, glow_a), Color(0.2, 0.4, 0.8, glow_a))
 	_arc_fill(center, r, Color(0.13, 0.36, 0.62), Color(0.04, 0.14, 0.32))
 	# From far away, simple land shapes show it is a planet.
 	if r < size.x * 0.6:

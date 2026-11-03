@@ -35,6 +35,16 @@ Linux (64-bit)
      running programs, copy the folder to your home directory first.
 
 
+GAME MODES
+----------
+Play Main Game  The full mission: plan, launch, cruise, orbit, land, explore.
+Play Demo       A short version with one simple planning page.
+Play 2D         Build rockets, earn money from height, buy better parts.
+                6 launches per game. Type your name at the end to join today's
+                leaderboard. The next player starts fresh; the day's scores stay.
+                Scores are saved on this computer only.
+
+
 CONTROLS
 --------
 Keyboard and mouse, or any standard gamepad (plug it in before starting).
@@ -49,6 +59,8 @@ Keyboard and mouse, or any standard gamepad (plug it in before starting).
   Headlights            L                 Y
   Map / scale toggle    M                 Back
   Landing autopilot     P                 Left bumper
+  Look down at the pad  C                 Press right stick
+  Show exact numbers    Tab               D-pad up
   Pause                 Esc               Start
 
 Keys can be changed in Settings.
