@@ -15,9 +15,10 @@ var _fact: Label
 var busy := false
 var _pause_layer: ColorRect
 var _fps: Label
+var _pause_end: Button
 var _fps_t := 0.0
 ## Scenes with their own pause menu or none needed are not listed here.
-const PAUSABLE: Array[String] = ["Launch", "Transfer", "Orbit", "Landing"]
+const PAUSABLE: Array[String] = ["Launch", "Transfer", "Orbit", "Landing", "Rocket2DFlight"]
 
 func _ready() -> void:
 	layer = 100
@@ -65,9 +66,10 @@ func _build_pause() -> void:
 	pan.grow_vertical = Control.GROW_DIRECTION_BOTH
 	v.add_child(UI.heading("Paused", 30))
 	v.add_child(UI.button("Resume", _toggle_pause, true))
-	v.add_child(UI.button("End mission and go to debrief", func() -> void:
+	_pause_end = UI.button("End mission and go to debrief", func() -> void:
 		_toggle_pause()
-		go("debrief", "Mission Debrief")))
+		go("debrief", "Mission Debrief"))
+	v.add_child(_pause_end)
 	v.add_child(UI.button("Quit to main menu", func() -> void:
 		_toggle_pause()
 		go("menu")))
@@ -76,6 +78,8 @@ func _toggle_pause() -> void:
 	var now := not get_tree().paused
 	get_tree().paused = now
 	_pause_layer.visible = now
+	var cs := get_tree().current_scene
+	_pause_end.visible = cs != null and str(cs.name) != "Rocket2DFlight"
 	if now:
 		Sfx.stop_loops()
 

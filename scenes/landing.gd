@@ -132,7 +132,7 @@ class PadOverlay extends Control:
 			draw_line(c + Vector2(0, 20), c + Vector2(0, 48), Color(1, 1, 1, 0.7), 2.0)
 			draw_string(font, c + Vector2(-140, 74), "You will land near here", HORIZONTAL_ALIGNMENT_CENTER, 280, 17, Color(1, 1, 1, 0.85))
 		var pad_pos: Vector3 = scene.pad
-		if cam.is_position_behind(pad_pos):
+		if cam.is_position_behind(pad_pos) or scene.craft.global_position.y - pad_pos.y < 12.0:
 			return
 		var pt := cam.unproject_position(pad_pos)
 		var inside := pt.x > 40.0 and pt.y > 40.0 and pt.x < size.x - 40.0 and pt.y < size.y - 40.0
@@ -334,6 +334,7 @@ func _touchdown(dist: float) -> void:
 		_show_result(false, why)
 
 func _show_result(ok: bool, text: String) -> void:
+	_card.set_tip("Touchdown!" if ok else "Lander lost", UI.GOOD if ok else UI.BAD)
 	var v := UI.vbox(12)
 	var pan := UI.panel(v, 26)
 	pan.custom_minimum_size.x = 560.0

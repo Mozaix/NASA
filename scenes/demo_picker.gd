@@ -40,10 +40,10 @@ func _ready() -> void:
 	var we := Space.make_space_env(self, 0.03)
 	we.environment.background_energy_multiplier = 0.18
 	var cam := Camera3D.new()
-	cam.position = Vector3(0, 1.9, 21.0)
+	cam.position = Vector3(0, -2.45, 26.0)
 	cam.fov = 40.0
 	add_child(cam)
-	cam.look_at(Vector3(0, 1.9, 0), Vector3.UP)
+	cam.look_at(Vector3(0, -2.45, 0), Vector3.UP)
 	_holo = Node3D.new()
 	_holo.position = Vector3(0, -0.2, 0)
 	add_child(_holo)
@@ -224,7 +224,7 @@ func _fill_cards() -> void:
 		3:
 			for k: Dictionary in KITS:
 				var id: String = k.id
-				_card(str(k.title), [str(k.desc), "%d samples types" % (Array(k["items"]).size())], _kit == id, func() -> void: _choose_kit(id))
+				_card(str(k.title), [str(k.desc), "Instruments: %d" % (Array(k["items"]).size())], _kit == id, func() -> void: _choose_kit(id))
 
 func _has_real_terrain(d: Dictionary) -> bool:
 	var r: Variant = Data.regions.get(str(d.region))

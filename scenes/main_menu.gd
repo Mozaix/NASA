@@ -48,7 +48,9 @@ func _build_ui() -> void:
 	var modes := UI.hbox(10)
 	col.add_child(modes)
 	modes.add_child(_mode_button("Play Demo", "About 3 minutes, one simple page", func() -> void: Flow.go("demo_picker")))
-	modes.add_child(_mode_button("Play 2D", "Build rockets, chase the high score", func() -> void: Flow.go("rocket2d", "Rocket Builder")))
+	modes.add_child(_mode_button("Play 2D", "Build rockets, chase the high score", func() -> void:
+		Rocket2D.new_game()
+		Flow.go("rocket2d", "Rocket Builder")))
 	var row := UI.hbox(8)
 	col.add_child(row)
 	for pair: Array in [["Leaderboard", "leaderboard"], ["Archive", "archive"], ["Settings", "settings"], ["Credits", "credits"]]:
@@ -89,4 +91,8 @@ func _process(delta: float) -> void:
 	_globe.rotation.y += delta * 0.035
 
 func auto_advance() -> void:
+	if Autotest.two_d:
+		Rocket2D.new_game()
+		Flow.go("rocket2d", "Rocket Builder")
+		return
 	Flow.go("demo_picker" if Autotest.demo else "planner", "Mission Control")

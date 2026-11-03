@@ -320,6 +320,27 @@ EXO_NAMES = [
     "CoRoT-7 b", "GJ 1132 b", "L 98-59 d", "TOI-178 d", "HAT-P-7 b",
 ]
 
+# Height milestones for the 2D rocket game. Heights and quotes are checked against these NASA pages.
+_LAYERS = SCI + "earth/earth-atmosphere/earths-atmosphere-a-multi-layered-cake/"
+MILESTONES = [
+    {"id": "troposphere", "name": "Top of the troposphere", "km": 12, "bonus": 60, "url": _LAYERS,
+     "text": "Earth’s troposphere extends from Earth’s surface to, on average, about 12 kilometers (7.5 miles) in height, with its height lower at Earth’s poles and higher at the equator."},
+    {"id": "stratosphere", "name": "Top of the stratosphere", "km": 50, "bonus": 180, "url": _LAYERS,
+     "text": "Located between approximately 12 and 50 kilometers (7.5 and 31 miles) above Earth’s surface, the stratosphere is perhaps best known as home to Earth’s ozone layer, which protects us from the Sun’s harmful ultraviolet radiation."},
+    {"id": "mesosphere", "name": "Top of the mesosphere", "km": 80, "bonus": 320, "url": _LAYERS,
+     "text": "Located between about 50 and 80 kilometers (31 and 50 miles) above Earth’s surface, the mesosphere gets progressively colder with altitude."},
+    {"id": "iss", "name": "International Space Station height", "km": 370, "bonus": 900, "url": "https://www.nasa.gov/reference/international-space-station/",
+     "text": "ISS orbits at an altitude of between 370–460 km (200–250 nmi)."},
+    {"id": "thermosphere", "name": "Top of the thermosphere", "km": 700, "bonus": 1200, "url": _LAYERS,
+     "text": "Located between about 80 and 700 kilometers (50 and 440 miles) above Earth’s surface is the thermosphere, whose lowest part contains the ionosphere."},
+    {"id": "exosphere", "name": "Top of the exosphere", "km": 10000, "bonus": 2500, "url": _LAYERS,
+     "text": "Located between about 700 and 10,000 kilometers (440 and 6,200 miles) above Earth’s surface, the exosphere is the highest layer of Earth’s atmosphere and, at its top, merges with the solar wind."},
+    {"id": "gto", "name": "Geosynchronous transfer height", "km": 37000, "bonus": 4000, "url": SCI + "learn/basics-of-space-flight/chapter5-1/",
+     "text": "To attain geosynchronous (and also geostationary) Earth orbits, a spacecraft is first launched into an elliptical orbit with an apoapsis altitude in the neighborhood of 37,000 km."},
+    {"id": "moon", "name": "The Moon's distance", "km": 384400, "bonus": 8000, "url": SCI + "moon/facts/",
+     "text": "The Moon is an average of 238,855 miles (384,400 kilometers) away."},
+]
+
 SOURCES_EXTRA = [
     ("NASA Solar System Treks (WMTS tiles and nomenclature)", "https://trek.nasa.gov/"),
     ("Planetary Fact Sheet", "https://nssdc.gsfc.nasa.gov/planetary/factsheet/"),

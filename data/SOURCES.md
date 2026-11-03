@@ -57,6 +57,7 @@ PDS is used instead of the Treks DEM layers because Treks serves those as 8-bit 
 
 Prose facts are verbatim quotes. Each was checked against the page text when this file was generated.
 
+- https://science.nasa.gov/earth/earth-atmosphere/earths-atmosphere-a-multi-layered-cake/ (5 facts)
 - https://science.nasa.gov/earth/facts/ (8 facts)
 - https://science.nasa.gov/exoplanets/gas-giant/ (1 facts)
 - https://science.nasa.gov/exoplanets/neptune-like/ (2 facts)
@@ -68,6 +69,7 @@ Prose facts are verbatim quotes. Each was checked against the page text when thi
 - https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/ (4 facts)
 - https://science.nasa.gov/jupiter/jupiter-moons/ganymede/ (6 facts)
 - https://science.nasa.gov/jupiter/jupiter-moons/io/ (6 facts)
+- https://science.nasa.gov/learn/basics-of-space-flight/chapter5-1/ (1 facts)
 - https://science.nasa.gov/mars/facts/ (6 facts)
 - https://science.nasa.gov/mercury/facts/ (8 facts)
 - https://science.nasa.gov/mission/cassini/ (2 facts)
@@ -82,7 +84,7 @@ Prose facts are verbatim quotes. Each was checked against the page text when thi
 - https://science.nasa.gov/mission/msl-curiosity/ (2 facts)
 - https://science.nasa.gov/mission/msl-curiosity/science/ (2 facts)
 - https://science.nasa.gov/mission/viking-1/ (1 facts)
-- https://science.nasa.gov/moon/facts/ (8 facts)
+- https://science.nasa.gov/moon/facts/ (9 facts)
 - https://science.nasa.gov/moon/lunar-craters/ (2 facts)
 - https://science.nasa.gov/moon/moon-water-and-ices/ (2 facts)
 - https://science.nasa.gov/neptune/facts/ (3 facts)
@@ -95,6 +97,7 @@ Prose facts are verbatim quotes. Each was checked against the page text when thi
 - https://science.nasa.gov/uranus/facts/ (4 facts)
 - https://science.nasa.gov/venus/facts/ (8 facts)
 - https://www.nasa.gov/history/apollo-11-mission-overview/ (1 facts)
+- https://www.nasa.gov/reference/international-space-station/ (1 facts)
 
 Exoplanets: 50 confirmed planets from `pscomppars`; columns `pl_name,hostname,pl_rade,pl_bmasse,pl_orbper,pl_orbsmax,pl_eqt,st_teff,st_rad,sy_dist,disc_year,discoverymethod`.
 Values the game computes rather than reads are labelled "derived" where they appear.
@@ -104,6 +107,7 @@ Values the game computes rather than reads are labelled "derived" where they app
 - Spacecraft part costs, masses and engine figures are game values.
 - Sky colours and exoplanet surfaces are artistic interpretation driven by the data above.
 - Fonts: Space Grotesk and JetBrains Mono (SIL Open Font License), from Google Fonts.
+- 2D Rocket Builder: part stats, prices and rewards are game values. Earth's mass, radius, air density and scale height come from the fact sheets.
 - Sound and music: synthesised by `tools/make_audio.py`.
 - Region colour is display-graded: Viking haze patches are toned down on Mars and dark mare is exposed up on the Moon.
 - Black missing-data areas in Treks mosaics are filled from surrounding pixels. Venus (radar) and Titan (near-infrared) are tinted to suggest their appearance.

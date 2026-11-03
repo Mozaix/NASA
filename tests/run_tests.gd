@@ -20,10 +20,16 @@ func _ready() -> void:
 	test_design_all_targets()
 	test_scoring()
 	test_input()
+	test_rocket_physics()
+	test_rocket_prediction()
+	test_rocket_limits()
+	test_rocket_economy()
+	test_leaderboard()
 	test_terrain()
 	test_rover_contact()
 	await test_autoland()
 	await test_demo()
+	await test_rocket_scenes()
 	await test_scenes()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
@@ -156,6 +162,266 @@ func test_demo() -> void:
 	await get_tree().process_frame
 	Sfx.stop_loops()
 	Game.new_mission()
+
+func test_rocket_physics() -> void:
+	var R := Rocket2D
+	R.new_game()
+	var d: Dictionary = R.design.duplicate()
+	# With no gravity or air, the sim must reproduce the rocket equation.
+	d.tank = "t3"
+	d.engine = "e3"
+	var s = R.make_sim(d)
+	s.mu = 0.0
+	s.rho0 = 0.0
+	s.margin = 1.0
+	s.theta = 0.0
+	var m0: float = s.mass()
+	var m1: float = m0 - s.main_prop
+	while s.burning():
+		s.step(0.02)
+	near(s.vy, Orbital.delta_v(285.0, m0, m1), 12.0, "Sim matches the rocket equation")
+	# Earth's values come from the NASA fact sheet data.
+	var e: Dictionary = Data.body("earth")
+	check(e.has("surface_density") and e.has("scale_height_km"), "Earth air data is bundled")
+	var s2 = R.make_sim(R.design)
+	near(s2.mu / pow(s2.radius, 2.0), 9.8, 0.05, "Surface gravity from real mass and radius")
+	# A vertical shot above the air follows energy conservation.
+	var s3 = R.make_sim(R.design)
+	s3.h = 200000.0
+	s3.vy = 3000.0
+	s3.lifted = true
+	var r: float = s3.radius + s3.h
+	var want: float = 1.0 / (1.0 / r - 3000.0 * 3000.0 / (2.0 * s3.mu)) - s3.radius
+	near(R.apogee_from(s3), want, 1.0, "Apogee from orbital energy")
+
+func test_rocket_prediction() -> void:
+	var R := Rocket2D
+	R.new_game()
+	var start: Dictionary = R.design.duplicate()
+	var bare: Dictionary = R.predict(start)
+	print("  starter rocket: %s, reason %s, twr %.2f" % [R.format_height(float(bare.apogee)), bare.reason, float(bare.twr)])
+	check(bare.reason == "breakup", "Starter with no fins tumbles", bare)
+	var finned: Dictionary = R.predict(R.with_part("fins", "small"))
+	print("  with small fins: %s" % R.format_height(float(finned.apogee)))
+	check(float(finned.apogee) > float(bare.apogee) * 2.0, "Fins make a big difference", finned)
+	check(finned.reason == "ok", "Small fins fix the tumble", finned)
+	# Better noses go higher, once the rocket is stable.
+	R.choose("fins", "small")
+	R.money = 100000
+	var last := 0.0
+	for id: String in ["cap", "cone", "ogive"]:
+		var h: float = R.predict(R.with_part("nose", id)).apogee
+		check(h > last, "Nose %s beats the previous one" % id, h)
+		last = h
+	# A huge tank on a tiny engine never leaves the pad.
+	check(R.predict(R.with_part("tank", "t4")).reason == "no_liftoff", "Too heavy to lift off is predicted")
+	# Half a second stage is dead weight, and predicted to hurt.
+	check(float(R.predict(R.with_part("utank", "u1")).apogee) < float(finned.apogee), "A tank with no engine hurts")
+	# The prediction must match a real flight with no wind and no steering.
+	for parts: Dictionary in [{"fins": "small"}, {"fins": "small", "tank": "t2", "engine": "e2", "nose": "cone"}, {"fins": "large", "tank": "t3", "engine": "e3", "nose": "ogive", "boosters": "b2", "utank": "u2", "uengine": "ue2"}]:
+		var d: Dictionary = R.design.duplicate()
+		d.merge(parts, true)
+		var p: Dictionary = R.predict(d)
+		var s = R.make_sim(d)
+		while s.burning() and not s.broken:
+			s.step(1.0 / 20.0)
+		while not s.broken and s.h < 120000.0 and s.vy > 0.0:
+			s.step(1.0 / 20.0)
+		var actual: float = R.apogee_from(s) if s.h >= 120000.0 else s.h
+		print("  prediction %s, flown %s" % [R.format_height(float(p.apogee)), R.format_height(actual)])
+		check(absf(actual - float(p.apogee)) < maxf(float(p.apogee) * 0.05, 300.0), "Prediction matches the flight", [p.apogee, actual])
+	R.new_game()
+
+func test_rocket_limits() -> void:
+	var R := Rocket2D
+	R.new_game()
+	# No design may ever report a negative or impossible height, whatever is combined.
+	var worst := 0.0
+	var count := 0
+	var stages_help := 0
+	for t: Dictionary in R.PARTS.tank:
+		for e: Dictionary in R.PARTS.engine:
+			for b: Dictionary in R.PARTS.boosters:
+				for u: Array in [["u0", "ue0"], ["u1", "ue1"], ["u2", "ue2"], ["u3", "ue3"], ["u3", "ue1"], ["u0", "ue2"]]:
+					var d := {"nose": "ogive", "fins": "large", "tank": t.id, "engine": e.id, "boosters": b.id, "utank": u[0], "uengine": u[1]}
+					var a := float(R.predict(d).apogee)
+					worst = minf(worst, a)
+					check(a <= R.MOON_M and not is_nan(a), "Height is sensible", [d, a])
+					count += 1
+	check(worst >= 0.0, "No design reports a negative height", worst)
+	print("  checked %d designs" % count)
+	# A second stage must be worth having on a rocket that can carry it.
+	var base := {"nose": "ogive", "fins": "large", "tank": "t3", "engine": "e3", "boosters": "b0", "utank": "u0", "uengine": "ue0"}
+	var staged := base.duplicate()
+	staged.utank = "u2"
+	staged.uengine = "ue2"
+	print("  one stage %s, two stages %s" % [R.format_height(float(R.predict(base).apogee)), R.format_height(float(R.predict(staged).apogee))])
+	check(float(R.predict(staged).apogee) > float(R.predict(base).apogee) * 1.3, "Second stage helps", [base, staged])
+	# The best parts must be able to reach every milestone, so the top of the ladder is real.
+	var top := {"nose": "ogive", "fins": "swept", "tank": "t4", "engine": "e4", "boosters": "b3", "utank": "u3", "uengine": "ue3"}
+	print("  every best part: %s" % R.format_height(float(R.predict(top).apogee)))
+	check(float(R.predict(top).apogee) >= R.MOON_M, "The best rocket can reach the Moon's distance", R.predict(top))
+	check(R.predict(top).reason == "ok", "The best rocket flies", R.predict(top))
+
+func test_rocket_economy() -> void:
+	var R := Rocket2D
+	# Money rules
+	R.new_game()
+	check(R.money == R.START_MONEY, "Game starts with the starter money")
+	check(not R.choose("tank", "t4"), "Cannot buy what you cannot afford")
+	check(R.money == R.START_MONEY and R.design.tank == "t1", "A refused purchase changes nothing")
+	check(R.choose("fins", "small"), "Can buy fins")
+	check(R.money == R.START_MONEY - 60, "Buying costs money")
+	check(R.choose("fins", "nofins") and R.money == R.START_MONEY - 60, "Owned parts swap for free")
+	check(R.choose("fins", "small") and R.money == R.START_MONEY - 60, "No double charge")
+	# Milestone bonuses are paid once.
+	var first: Dictionary = R.record_flight(60000.0, false)
+	check(int(first.earn.bonus) == 60 + 180, "Passing two milestones pays both", first.earn.bonus)
+	var second: Dictionary = R.record_flight(60000.0, false)
+	check(int(second.earn.bonus) == 0, "A milestone pays only once", second.earn.bonus)
+	check(R.flights_left == R.FLIGHTS_PER_GAME - 2, "Flights are used up")
+	# Shuttle pays more for the same height.
+	var plain: Dictionary = R.earnings(100000.0, R.design, false)
+	var shuttle: Dictionary = R.earnings(100000.0, R.with_part("nose", "shuttle"), false)
+	check(int(shuttle.pay) > int(plain.pay), "Winged shuttle earns more")
+	# Reset wipes the player's progress.
+	R.new_game()
+	check(R.money == R.START_MONEY and R.owned.size() == R.SLOT_ORDER.size() and R.flights_left == R.FLIGHTS_PER_GAME and R.best_m == 0.0 and R.reached.is_empty(), "New game resets everything")
+	# A sensible player, buying the best predicted gain per dollar, must keep climbing.
+	var heights: Array[String] = []
+	var prev := 0.0
+	var climbed := 0
+	for f in R.FLIGHTS_PER_GAME:
+		_greedy_buy(R)
+		var p: Dictionary = R.predict(R.design)
+		var h: float = float(p.apogee) * 0.9
+		heights.append(R.format_height(h))
+		if h > prev * 1.05:
+			climbed += 1
+		prev = maxf(prev, h)
+		R.record_flight(h, false)
+	print("  greedy game: ", heights, " money left $", R.money)
+	check(climbed >= R.FLIGHTS_PER_GAME - 1, "Each flight can beat the last", heights)
+	check(prev >= 300000.0, "A good game reaches well into space", prev)
+	check(prev < R.MOON_M, "The Moon stays out of reach of a first-try greedy game", prev)
+	R.new_game()
+
+func _greedy_buy(R: Node) -> void:
+	for round_i in 12:
+		var u: Dictionary = R.best_upgrade()
+		if u.is_empty():
+			return
+		R.apply_upgrade(u)
+
+func test_rocket_scenes() -> void:
+	var R := Rocket2D
+	var keep: String = R.board_path
+	R.board_path = "user://test_board2.json"
+	R.new_game()
+	R.choose("fins", "small")
+	var build: Node = (load("res://scenes/rocket2d.tscn") as PackedScene).instantiate()
+	add_child(build)
+	await get_tree().process_frame
+	var cards: int = build._chips.size()
+	check(cards == 29, "Every part has a card", cards)
+	var waited := 0
+	while (not build._queue.is_empty() or build._suggest_pending) and waited < 600:
+		await get_tree().process_frame
+		waited += 1
+	check(build._queue.is_empty(), "All part predictions finish", waited)
+	var chip: Label = build._chips["nose/cone"]
+	check(chip.text.begins_with("+"), "Cone shows a predicted gain", chip.text)
+	check(build._chips["tank/t4"].text == "Too heavy", "Huge tank on a tiny engine says so", build._chips["tank/t4"].text)
+	build.queue_free()
+	await get_tree().process_frame
+	# Fly whole flights through the real scene: stable, unstable and a rocket too heavy to lift.
+	for case: Array in [["fins", "small", false], ["fins", "nofins", true]]:
+		R.new_game()
+		R.choose(case[0], case[1])
+		var fl: Node = (load("res://scenes/rocket2d_flight.tscn") as PackedScene).instantiate()
+		add_child(fl)
+		await get_tree().process_frame
+		fl.set_physics_process(false)
+		fl.auto_steer = true
+		fl.launch()
+		var n := 0
+		while fl.state != "done" and n < 60 * 240:
+			fl.advance(1.0 / 60.0)
+			n += 1
+		check(fl.state == "done", "Flight ends", n)
+		check(bool(R.last_flight.broke) == case[2], "Flight outcome for " + str(case[1]), R.last_flight)
+		check(R.flights_left == R.FLIGHTS_PER_GAME - 1, "Flight uses one launch")
+		check(R.money > R.START_MONEY - 60, "Flight pays money", R.money)
+		fl.queue_free()
+		await get_tree().process_frame
+	R.new_game()
+	R.money = 100000
+	R.choose("tank", "t4")
+	var heavy: Node = (load("res://scenes/rocket2d_flight.tscn") as PackedScene).instantiate()
+	add_child(heavy)
+	await get_tree().process_frame
+	heavy.set_physics_process(false)
+	heavy.launch()
+	var hn := 0
+	while heavy.state != "done" and hn < 60 * 240:
+		heavy.advance(1.0 / 60.0)
+		hn += 1
+	check(heavy.state == "done" and float(R.last_flight.apogee) == 0.0, "Too heavy stays on the pad and ends", R.last_flight)
+	heavy.queue_free()
+	await get_tree().process_frame
+	# Score entry saves, resets the player, and keeps the board.
+	R.new_game()
+	R.choose("fins", "small")
+	R.record_flight(50000.0, false)
+	R.pending_submit = true
+	var lb: Node = (load("res://scenes/leaderboard.tscn") as PackedScene).instantiate()
+	add_child(lb)
+	await get_tree().process_frame
+	lb._name.text = "  Ada\n "
+	lb.submit()
+	check(R.todays_board().size() == 1 and R.todays_board()[0].name == "Ada", "Name is saved cleanly", R.todays_board())
+	check(R.money == R.START_MONEY and R.best_m == 0.0 and not R.pending_submit, "Saving resets the game for the next player")
+	lb._on_clear()
+	check(R.todays_board().size() == 1, "First press of clear does not delete")
+	lb._on_clear()
+	check(R.todays_board().is_empty(), "Second press of clear deletes")
+	lb.queue_free()
+	await get_tree().process_frame
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(R.board_path))
+	R.board_path = keep
+	R.new_game()
+	Sfx.stop_loops()
+
+func test_leaderboard() -> void:
+	var R := Rocket2D
+	var keep: String = R.board_path
+	R.board_path = "user://test_board.json"
+	R.clear_today()
+	check(R.todays_board().is_empty(), "Board starts empty")
+	R.add_score("Ada", 5000.0, "x")
+	R.add_score("Grace", 90000.0, "x")
+	R.add_score("Katherine", 400000.0, "x")
+	R.add_score("Second Ada", 5000.0, "x")
+	var b: Array = R.todays_board()
+	check(b.size() == 4 and b[0].name == "Katherine" and b[1].name == "Grace", "Highest first", b)
+	check(b[2].name == "Ada" and b[3].name == "Second Ada", "On a tie, the earlier score ranks higher")
+	check(R.clean_name("   ") == "Anonymous", "Blank names become Anonymous")
+	check(R.clean_name("a\nb\tc") == "abc", "Control characters are removed")
+	check(R.clean_name("x".repeat(60)).length() == R.NAME_MAX, "Long names are cut")
+	check(R.clean_name("Zo\u00eb \u6771") == "Zo\u00eb \u6771", "International names survive")
+	# Scores from another day do not count today, and survive a clear.
+	var entries: Array = JSON.parse_string(FileAccess.get_file_as_string(R.board_path))
+	entries.append({"name": "Yesterday", "height": 9e9, "rocket": "", "date": "2020-01-01", "at": 1.0, "id": "y"})
+	R._save_board(entries)
+	check(R.todays_board()[0].name == "Katherine", "Other days are not on today's board")
+	# Starting a new game must not touch the board.
+	R.new_game()
+	check(R.todays_board().size() == 4, "A new game keeps the leaderboard")
+	R.clear_today()
+	check(R.todays_board().is_empty(), "Clearing removes today's scores")
+	check(R._load_board().size() == 1, "Clearing keeps other days")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(R.board_path))
+	R.board_path = keep
 
 func test_scoring() -> void:
 	Game.new_mission()
@@ -384,7 +650,7 @@ func test_scenes() -> void:
 			inst.queue_free()
 			await get_tree().process_frame
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	for s: String in ["main_menu", "planner", "archive", "settings", "credits", "demo_picker"]:
+	for s: String in ["main_menu", "planner", "archive", "settings", "credits", "demo_picker", "rocket2d", "rocket2d_flight", "leaderboard"]:
 		var packed: PackedScene = load("res://scenes/%s.tscn" % s)
 		var inst := packed.instantiate()
 		add_child(inst)

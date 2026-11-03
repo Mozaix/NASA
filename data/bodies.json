@@ -78,6 +78,7 @@
   "surface_pressure_text": "92 bars",
   "composition": "96.5% Carbon Dioxide (CO2), 3.5% Nitrogen (N2)",
   "scale_height_km": 15.9,
+  "surface_density": 65.0,
   "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html",
   "facts": [
    {
@@ -131,6 +132,7 @@
   "surface_pressure_text": "1014 mb",
   "composition": "78.08% Nitrogen (N2), 20.95% Oxygen (O2),",
   "scale_height_km": 8.5,
+  "surface_density": 1.217,
   "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
   "facts": [
    {
@@ -180,6 +182,7 @@
   "surface_pressure_text": "6.36 mb at mean radius (variable from 4.0 to 8.7 mb depending on season)",
   "composition": "Carbon Dioxide (CO2) - 95.1% ; Nitrogen (N2) - 2.59% Argon (Ar) - 1.94%; Oxygen (O2) - 0.16%; Carbon Monoxide (CO) - 0.06%",
   "scale_height_km": 11.0,
+  "surface_density": 0.016,
   "detail_url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
   "facts": [
    {

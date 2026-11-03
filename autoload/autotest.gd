@@ -14,6 +14,7 @@ var _stage := 0
 var _fps: Dictionary = {}
 var _quality := -1
 var demo := false
+var two_d := false
 var _started_ms := 0
 
 func _ready() -> void:
@@ -27,6 +28,9 @@ func _ready() -> void:
 			region_id = a.split("=")[1]
 		elif a.begins_with("--nfe-out="):
 			out_dir = a.split("=")[1]
+		elif a == "--nfe-2d":
+			two_d = true
+			Rocket2D.board_path = "user://autotest_board.json"
 		elif a == "--nfe-demo":
 			demo = true
 		elif a == "--nfe-ui":
@@ -123,6 +127,36 @@ func _process(delta: float) -> void:
 	if sname == "DemoPicker" and _started_ms == 0:
 		_started_ms = Time.get_ticks_msec()
 	match sname:
+		"Rocket2DBuild":
+			if _stage == 0 and _t > 0.8:
+				_stage = 1
+				scene.auto_advance()
+		"Rocket2DFlight":
+			if _stage == 0 and _t > 0.6:
+				_stage = 1
+				scene.auto_advance()
+			elif _stage == 1 and _t > 4.0:
+				_stage = 2
+				_shot("r2d_flight_%d" % Rocket2D.flights_left)
+			elif _stage == 2 and _t > 14.0:
+				_stage = 3
+				_shot("r2d_flight_high_%d" % Rocket2D.flights_left)
+			if _stage >= 1 and scene.state == "done" and _stage < 9:
+				_stage = 9
+				_t = 0.0
+				report("flight_%d" % Rocket2D.flights_left, {"apogee_km": Rocket2D.last_flight.apogee / 1000.0, "predicted_km": Rocket2D.last_flight.predicted / 1000.0, "money": Rocket2D.money, "broke": Rocket2D.last_flight.broke})
+			elif _stage == 9 and _t > 1.0:
+				_stage = 10
+				_shot("r2d_result_%d" % Rocket2D.flights_left)
+				scene.leave()
+		"Leaderboard":
+			if _stage == 0 and _t > 0.8:
+				_stage = 1
+				scene.auto_advance()
+			elif _stage == 1 and _t > 2.5:
+				_stage = 2
+				DirAccess.remove_absolute(ProjectSettings.globalize_path(Rocket2D.board_path))
+				_finish()
 		"DemoPicker":
 			if _stage == 0 and _t > 1.0:
 				_stage = 1
