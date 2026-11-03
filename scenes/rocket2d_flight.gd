@@ -256,10 +256,8 @@ func _draw() -> void:
 	var hgt := size.y
 	var h: float = maxf(_shown_h, 0.0)
 	var sky := _sky_color(h)
-	var rows := 24
-	for r in rows:
-		var t := float(r) / float(rows)
-		draw_rect(Rect2(0, t * hgt, w, hgt / float(rows) + 1.0), (sky[0] as Color).lerp(sky[1], t))
+	# One smooth gradient, not stacked bands.
+	draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(w, 0), Vector2(w, hgt), Vector2(0, hgt)]), PackedColorArray([sky[0], sky[0], sky[1], sky[1]]))
 	# Stars appear as the air thins.
 	var star_a := clampf((h - 20000.0) / 60000.0, 0.0, 1.0)
 	if star_a > 0.0:
@@ -284,14 +282,16 @@ func _draw() -> void:
 		draw_rect(Rect2(0, ground_y, w, hgt - ground_y + 40.0), Color(0.24, 0.38, 0.22))
 		draw_rect(Rect2(w * 0.5 - 90.0, ground_y - 4.0, 180.0, 8.0), Color(0.42, 0.42, 0.45))
 		if h < 40.0:
-			draw_rect(Rect2(w * 0.5 + 60.0, ground_y - 180.0, 10.0, 180.0), Color(0.62, 0.22, 0.13))
+			draw_rect(Rect2(w * 0.5 + 74.0, ground_y - 170.0, 5.0, 170.0), Color(0.62, 0.22, 0.13))
 	for c: Dictionary in _clouds:
 		var cy: float = anchor.y + (h - float(c.h)) * 0.16
 		if cy > -40.0 and cy < hgt + 40.0:
 			var cx: float = w * 0.5 + float(c.x)
-			draw_circle(Vector2(cx, cy), float(c.w) * 0.22, Color(1, 1, 1, 0.5))
-			draw_circle(Vector2(cx + float(c.w) * 0.25, cy + 6.0), float(c.w) * 0.17, Color(1, 1, 1, 0.45))
-			draw_circle(Vector2(cx - float(c.w) * 0.25, cy + 6.0), float(c.w) * 0.15, Color(1, 1, 1, 0.45))
+			# Solid puffs, so the circles do not show through each other.
+			var puff := Color(0.97, 0.98, 1.0)
+			draw_circle(Vector2(cx + float(c.w) * 0.25, cy + 6.0), float(c.w) * 0.17, puff.darkened(0.06))
+			draw_circle(Vector2(cx - float(c.w) * 0.25, cy + 6.0), float(c.w) * 0.15, puff.darkened(0.06))
+			draw_circle(Vector2(cx, cy), float(c.w) * 0.22, puff)
 	# Exhaust trail
 	for tr: Dictionary in _trail:
 		var dy: float = (h - float(tr.h)) * 0.16
@@ -324,15 +324,37 @@ func _debris_design(d: Dictionary, which: String) -> Dictionary:
 		out.fins = "nofins"
 	return out
 
+## A smooth Earth: only the arc that is on screen, so a huge circle never looks like a polygon.
+func _arc_fill(center: Vector2, r: float, col_edge: Color, col_low: Color) -> void:
+	var w := size.x
+	var hgt := size.y
+	var half: float = PI if r < w * 0.6 else asin(clampf(w * 0.75 / r, 0.0, 1.0))
+	var pts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var n := 160
+	for i in n + 1:
+		var a := -PI * 0.5 - half + 2.0 * half * float(i) / float(n)
+		pts.append(center + Vector2(cos(a), sin(a)) * r)
+		cols.append(col_edge)
+	if half < PI:
+		pts.append(Vector2(w * 2.0, hgt * 3.0))
+		cols.append(col_low)
+		pts.append(Vector2(-w, hgt * 3.0))
+		cols.append(col_low)
+	else:
+		pts.remove_at(pts.size() - 1)
+		cols.remove_at(cols.size() - 1)
+	draw_polygon(pts, cols)
+
 func _draw_earth(center: Vector2, r: float, h: float) -> void:
-	var glow_a := clampf(1.0 - h / 8000000.0, 0.15, 0.6)
-	draw_circle(center, r * 1.012, Color(0.35, 0.6, 1.0, glow_a))
-	draw_circle(center, r, Color(0.08, 0.26, 0.5))
-	# Simple land and cloud shapes, drawn only when the planet fits on screen.
-	if r < 1600.0:
+	var glow_a := clampf(1.0 - h / 8000000.0, 0.2, 0.7)
+	_arc_fill(center, r * 1.012, Color(0.45, 0.68, 1.0, glow_a), Color(0.2, 0.4, 0.8, glow_a))
+	_arc_fill(center, r, Color(0.13, 0.36, 0.62), Color(0.04, 0.14, 0.32))
+	# From far away, simple land shapes show it is a planet.
+	if r < size.x * 0.6:
 		for a: Array in [[-1.2, 0.45, 0.2], [-0.4, 0.3, 0.3], [0.6, 0.5, 0.22], [1.5, 0.28, 0.2]]:
 			var c2 := center + Vector2(cos(float(a[0]) - PI * 0.5), sin(float(a[0]) - PI * 0.5)) * r * float(a[1])
-			draw_circle(c2, r * float(a[2]), Color(0.24, 0.42, 0.25, 0.9))
+			draw_circle(c2, r * float(a[2]), Color(0.24, 0.42, 0.25, 0.95))
 
 func _draw_flames(pos: Vector2, s: float, angle: float) -> void:
 	if state != "flying" or sim.thrust_now <= 0.0:
@@ -359,7 +381,7 @@ func _draw_ladder(w: float, hgt: float, h: float) -> void:
 	var y1 := 40.0
 	var yf := func(km: float) -> float:
 		return lerpf(y0, y1, log(maxf(km, 1.0)) / log(400000.0))
-	draw_rect(Rect2(x - 14.0, y1 - 22.0, 304.0, y0 - y1 + 44.0), Color(0.02, 0.03, 0.06, 0.45))
+	draw_rect(Rect2(x - 14.0, y1 - 22.0, 304.0, y0 - y1 + 44.0), Color(0.02, 0.03, 0.06, 0.78))
 	draw_line(Vector2(x, y0), Vector2(x, y1), Color(1, 1, 1, 0.5), 2.0)
 	for m: Dictionary in Data.milestones:
 		var y: float = yf.call(float(m.km))
@@ -373,7 +395,6 @@ func _draw_ladder(w: float, hgt: float, h: float) -> void:
 	var hy: float = yf.call(h / 1000.0)
 	draw_circle(Vector2(x, hy), 7.0, Color.WHITE)
 	draw_circle(Vector2(x, hy), 4.0, UI.ACCENT)
-	var _unused := font
 
 func _show_result(broke: bool) -> void:
 	var R := Rocket2D

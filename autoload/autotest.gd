@@ -15,6 +15,8 @@ var _fps: Dictionary = {}
 var _quality := -1
 var demo := false
 var two_d := false
+var _high_shot := false
+var _flights_override := -1
 var _started_ms := 0
 
 func _ready() -> void:
@@ -28,6 +30,10 @@ func _ready() -> void:
 			region_id = a.split("=")[1]
 		elif a.begins_with("--nfe-out="):
 			out_dir = a.split("=")[1]
+		elif a.begins_with("--nfe-flights="):
+			Rocket2D.new_game()
+			Rocket2D.flights_left = int(a.split("=")[1])
+			_flights_override = Rocket2D.flights_left
 		elif a == "--nfe-2d":
 			two_d = true
 			Rocket2D.board_path = "user://autotest_board.json"
@@ -141,6 +147,9 @@ func _process(delta: float) -> void:
 			elif _stage == 2 and _t > 14.0:
 				_stage = 3
 				_shot("r2d_flight_high_%d" % Rocket2D.flights_left)
+			if scene.state == "finishing" and not _high_shot and scene._finish_t > 2.5:
+				_high_shot = true
+				_shot("r2d_high_view")
 			if _stage >= 1 and scene.state == "done" and _stage < 9:
 				_stage = 9
 				_t = 0.0

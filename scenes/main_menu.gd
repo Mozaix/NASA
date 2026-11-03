@@ -93,6 +93,8 @@ func _process(delta: float) -> void:
 func auto_advance() -> void:
 	if Autotest.two_d:
 		Rocket2D.new_game()
+		if Autotest._flights_override > 0:
+			Rocket2D.flights_left = Autotest._flights_override
 		Flow.go("rocket2d", "Rocket Builder")
 		return
 	Flow.go("demo_picker" if Autotest.demo else "planner", "Mission Control")
