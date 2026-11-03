@@ -48,10 +48,12 @@ func _ready() -> void:
 	if craft.has_node("Chute"):
 		chute = craft.get_node("Chute")
 	# Start high and off-target. Weak-gravity worlds start with more speed so the descent stays short.
-	var start_h := 780.0
-	craft.global_position = pad + Vector3(-210.0, start_h, 170.0)
+	# Weak gravity also means weak thrusters, so tiny moons start lower and closer to the pad.
+	var near_factor := clampf(sqrt(gravity / 1.2), 0.4, 1.0)
+	var start_h := 780.0 * near_factor
+	craft.global_position = pad + Vector3(-210.0, start_h, 170.0) * Vector3(near_factor, 1.0, near_factor)
 	var fall := clampf(sqrt(2.0 * gravity * start_h) * 0.45, 16.0, 62.0)
-	vel = Vector3(12.0, -fall, -9.0)
+	vel = Vector3(12.0, -fall, -9.0) * Vector3(near_factor, 1.0, near_factor)
 	# Thrust scales with gravity but always leaves control authority on tiny moons.
 	thrust_acc = maxf(gravity * 2.6, 1.2)
 	var atmo := Data.has_atmosphere(t)
@@ -166,11 +168,11 @@ func _autopilot(p: Vector3, alt: float) -> Array:
 	var to_pad := Vector2(pad.x - p.x, pad.z - p.z)
 	var dist := to_pad.length()
 	var hv := Vector2(vel.x, vel.z)
-	# Close the distance briskly: every second of hovering burns propellant.
-	var want_h := to_pad * 0.2
-	if want_h.length() > 38.0:
-		want_h = want_h.normalized() * 38.0
-	var steer := ((want_h - hv) * 0.16).limit_length(1.0)
+	# Head for the pad only as fast as the side thrusters can stop, or the craft swings past it.
+	var side_accel := minf(thrust_acc * 0.3, 2.0) + drag * 30.0
+	var approach := minf(sqrt(2.0 * side_accel * 0.6 * dist), 38.0)
+	var want_h := to_pad.normalized() * approach if dist > 0.5 else Vector2.ZERO
+	var steer := ((want_h - hv) * (0.5 / maxf(side_accel, 0.3))).limit_length(1.0)
 	# Look ahead along the flight path, so rising ground is seen before the craft reaches it.
 	var clearance := alt
 	for look: float in [1.0, 2.0, 3.5, 5.0]:
@@ -181,7 +183,7 @@ func _autopilot(p: Vector3, alt: float) -> Array:
 	var net := maxf(thrust_acc - gravity, 0.4)
 	var want_v := -clampf(sqrt(2.0 * net * 0.55 * maxf(clearance, 0.0)) + 0.8, 1.0, 45.0)
 	# Stay above the terrain until over the pad, then come straight down.
-	var safe_height := minf(dist * 0.18, 70.0)
+	var safe_height := 0.0 if dist < 25.0 else minf(dist * 0.18, 70.0)
 	if clearance < safe_height:
 		# Only climb as fast as gravity can stop: on tiny moons a hard climb would never come back down.
 		var coast := sqrt(2.0 * gravity * (safe_height - clearance))

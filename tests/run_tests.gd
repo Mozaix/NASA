@@ -230,6 +230,7 @@ func test_autoland() -> void:
 		var label := "%s/%s" % [c[0], c[1]]
 		print("  land %-26s %-8s %5.0fs  fuel %3.0f%%  sink %.1f m/s  slope %.0f deg  lander %s" % [label, inst.state, float(steps) / 60.0, float(stats.get("fuel_left", 0.0)) * 100.0, float(stats.get("sink", 0.0)), float(stats.get("slope", 0.0)), Game.lander().id])
 		check(inst.state == "landed", "Autopilot lands at " + label, stats)
+		check(steps < 60 * 110, "Descent takes under two minutes at " + label, float(steps) / 60.0)
 		if Game.lander().id != "airbag":
 			check(float(stats.get("fuel_left", 0.0)) > 0.08, "Fuel to spare at " + label, stats.get("fuel_left", 0.0))
 		inst.queue_free()
