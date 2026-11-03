@@ -141,7 +141,7 @@ func _update_visuals(delta: float, n: Vector3) -> void:
 	_spin += along * delta / 0.55
 	for i in _wheels.size():
 		var holder := _wheels[i]
-		var world := global_transform * WHEELS[i]
+		var world: Vector3 = global_transform * (WHEELS[i] as Vector3)
 		var ground: float = terrain.height_at(world.x, world.z)
 		var offset: float = clampf(ground - world.y, -0.5, 0.45) if grounded else -0.25
 		holder.position.y = lerpf(holder.position.y, offset, clampf(delta * 16.0, 0.0, 1.0))

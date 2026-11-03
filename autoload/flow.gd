@@ -12,6 +12,11 @@ var _fade: ColorRect
 var _label: Label
 var _fact: Label
 var busy := false
+var _pause_layer: ColorRect
+var _fps: Label
+var _fps_t := 0.0
+## Scenes with their own pause menu or none needed are not listed here.
+const PAUSABLE: Array[String] = ["Launch", "Transfer", "Orbit", "Landing"]
 
 func _ready() -> void:
 	layer = 100
@@ -36,6 +41,58 @@ func _ready() -> void:
 	_fact.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_fact.modulate.a = 0.0
 	_fade.add_child(_fact)
+	_build_pause()
+	_fps = Label.new()
+	_fps.position = Vector2(8, 4)
+	_fps.visible = false
+	add_child(_fps)
+
+func _build_pause() -> void:
+	_pause_layer = ColorRect.new()
+	_pause_layer.color = Color(0, 0, 0, 0.55)
+	_pause_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_pause_layer.visible = false
+	_pause_layer.theme = UI.theme()
+	add_child(_pause_layer)
+	move_child(_pause_layer, 0)
+	var v := UI.vbox(10)
+	var pan := UI.panel(v, 24)
+	pan.custom_minimum_size.x = 400.0
+	_pause_layer.add_child(pan)
+	pan.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	pan.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	pan.grow_vertical = Control.GROW_DIRECTION_BOTH
+	v.add_child(UI.heading("Paused", 30))
+	v.add_child(UI.button("Resume", _toggle_pause, true))
+	v.add_child(UI.button("End mission and go to debrief", func() -> void:
+		_toggle_pause()
+		go("debrief", "Mission Debrief")))
+	v.add_child(UI.button("Quit to main menu", func() -> void:
+		_toggle_pause()
+		go("menu")))
+
+func _toggle_pause() -> void:
+	var now := not get_tree().paused
+	get_tree().paused = now
+	_pause_layer.visible = now
+	if now:
+		Sfx.stop_loops()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if busy or not event.is_action_pressed("pause"):
+		return
+	var cs := get_tree().current_scene
+	if cs and (str(cs.name) in PAUSABLE or _pause_layer.visible):
+		_toggle_pause()
+		get_viewport().set_input_as_handled()
+
+func _process(delta: float) -> void:
+	_fps.visible = Settings.show_fps
+	if Settings.show_fps:
+		_fps_t += delta
+		if _fps_t > 0.4:
+			_fps_t = 0.0
+			_fps.text = "%d fps" % int(Engine.get_frames_per_second())
 
 func go(scene: String, title: String = "") -> void:
 	if busy:

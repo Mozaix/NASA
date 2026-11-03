@@ -28,12 +28,15 @@ func _build_ui() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.theme = UI.theme()
 	layer.add_child(root)
-	var col := UI.vbox(14)
-	col.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT, Control.PRESET_MODE_MINSIZE, 90)
-	col.custom_minimum_size.x = 470.0
+	var col := UI.vbox(12)
+	col.anchor_top = 0.5
+	col.anchor_bottom = 0.5
+	col.offset_left = 90.0
+	col.offset_right = 580.0
+	col.grow_vertical = Control.GROW_DIRECTION_BOTH
 	root.add_child(col)
 	col.add_child(UI.eyebrow("NASA Space Apps Challenge 2026"))
-	col.add_child(UI.label("Next Frontier\nExplorer", 62, UI.TEXT, "bold"))
+	col.add_child(UI.label("Next Frontier\nExplorer", 58, UI.TEXT, "bold"))
 	col.add_child(UI.para("Design a mission. Fly it. Land it. Then drive across terrain built from real NASA elevation data.", 19))
 	var gap := Control.new()
 	gap.custom_minimum_size.y = 10.0
@@ -53,7 +56,11 @@ func _build_ui() -> void:
 	col.add_child(quit)
 	start.grab_focus.call_deferred()
 	var foot := UI.label("Fan project using NASA data. Not endorsed by NASA.   Works fully offline.", 13, UI.TEXT_DIM)
-	foot.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 24)
+	foot.anchor_top = 1.0
+	foot.anchor_bottom = 1.0
+	foot.offset_left = 90.0
+	foot.offset_top = -40.0
+	foot.offset_bottom = -16.0
 	root.add_child(foot)
 
 func _process(delta: float) -> void:

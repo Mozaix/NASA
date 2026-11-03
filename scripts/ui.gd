@@ -191,6 +191,13 @@ static func grid(cols: int = 2) -> GridContainer:
 static func fmt(v: Variant, pattern: String, fallback: String = "not listed") -> String:
 	return pattern % float(v) if v != null else fallback
 
+## Scientific notation, because GDScript format strings have no %e.
+static func sci(v: float) -> String:
+	if v <= 0.0:
+		return "0"
+	var e := int(floor(log(v) / log(10.0)))
+	return "%.2f \u00d7 10^%d" % [v / pow(10.0, float(e)), e]
+
 static func short_url(url: String) -> String:
 	return url.replace("https://", "").replace("www.", "").trim_suffix("/")
 
@@ -220,7 +227,7 @@ static func stats_grid(t: Dictionary) -> GridContainer:
 		kv(g, "Class", str(t.get("class", "")).replace("_", " ").capitalize())
 		return g
 	kv(g, "Radius", fmt(t.get("radius_km"), "%.0f km"))
-	kv(g, "Mass", "%.3e kg" % float(t.get("mass_kg", 0.0)))
+	kv(g, "Mass", sci(float(t.get("mass_kg", 0.0))) + " kg")
 	var grav := fmt(t.get("gravity"), "%.2f m/s²")
 	if str(t.get("gravity_source", "")).begins_with("derived"):
 		grav += " (derived)"

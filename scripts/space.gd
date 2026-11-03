@@ -25,6 +25,7 @@ static func make_space_env(parent: Node, ambient: float = 0.035) -> WorldEnviron
 		sky.sky_material = p
 	sky.process_mode = Sky.PROCESS_MODE_QUALITY
 	env.sky = sky
+	env.background_energy_multiplier = 0.32
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.55, 0.62, 0.8)
 	env.ambient_light_energy = ambient

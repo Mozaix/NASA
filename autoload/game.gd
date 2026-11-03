@@ -235,7 +235,7 @@ func auto_design() -> void:
 	mission.power = "rtg2" if distance_au() > 2.0 else "solar_big"
 	if t.kind == "exoplanet":
 		mission.stage = "sail"
-		mission.launcher = "heavy"
+		mission.launcher = "medium"
 		mission.propellant_t = 0.0
 		return
 	var best := {}
