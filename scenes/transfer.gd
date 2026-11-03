@@ -242,9 +242,15 @@ func _setup_interstellar() -> void:
 	bodies.append({"data": target, "r": 0.0, "node": planet, "globe": planet.get_node("Globe"), "angle": func(_u: float) -> float: return 0.0, "tag": null})
 	craft = Models.spacecraft(0.5)
 	add_child(craft)
-	var sail := Models.cube(craft, Vector3(9, 0.01, 9), Vector3(0, 0, 0), Models.mat(Color(0.8, 0.85, 0.95), 0.9, 0.1))
+	# A thin reflective sail ahead of the craft, on rigging, seen from the side so the star stays visible.
+	var sail_mat := Models.mat(Color(0.95, 0.82, 0.55), 0.95, 0.12)
+	sail_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var sail := Models.cyl(craft, 4.2, 4.2, 0.02, Vector3(0, 0, -7.0), sail_mat, 32)
 	sail.rotation.x = PI / 2.0
-	sail.position.z = -2.5
+	for a: float in [0.0, 2.094, 4.189]:
+		var tip := Vector3(cos(a) * 4.2, sin(a) * 4.2, -7.0)
+		var cord := Models.cube(craft, Vector3(0.03, 0.03, tip.length()), tip * 0.5, Models.mat(Color(0.8, 0.8, 0.85)))
+		cord.look_at_from_position(tip * 0.5, tip, Vector3.UP)
 	cam.set_process(false)
 
 func _build_hud() -> void:
@@ -384,10 +390,10 @@ func _process_system(now: float, delta: float) -> void:
 
 func _process_interstellar(delta: float) -> void:
 	var k := pow(progress, 3.2)
-	var cz := lerpf(14.0, -380.0, k)
-	cam.global_position = Vector3(0.0, 2.5, cz)
-	cam.look_at(Vector3(2.0, 0.0, -400.0), Vector3.UP)
-	craft.position = Vector3(0, 0, cz - 7.0)
+	var cz := lerpf(14.0, -372.0, k)
+	craft.position = Vector3(0, 0, cz - 9.0)
+	cam.global_position = Vector3(16.0, 5.0, cz + 9.0)
+	cam.look_at(Vector3(0.0, 0.0, lerpf(-40.0, -400.0, k)), Vector3.UP)
 	var ly := float(plan.light_years)
 	(bodies[0].globe as Node3D).rotation.y += delta * 0.1
 	_hud.text = "Distance   %.1f light-years\nCovered    %.2f light-years\nElapsed    %s\nSpeed      20%% of light (concept)\nAt Voyager 1's speed: %s" % [ly, ly * progress, Orbital.format_time(progress * _days), Orbital.format_time(float(plan.voyager_years) * 365.25)]

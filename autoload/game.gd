@@ -195,15 +195,19 @@ func score() -> Dictionary:
 		success += 100.0
 	if float(m.orbit_science) > 0.0:
 		success += 50.0
+	# A probe has nowhere to land: sampling the atmosphere is its equivalent of a landing.
+	var arrived: bool = m.landed or (is_probe_mission() and m.samples.size() > 0)
 	if m.landed:
 		success += 200.0 + float(m.landing_rating) * 100.0
+	elif arrived:
+		success += 250.0
 	if int(m.crashes) > 0:
 		success = maxf(0.0, success - 60.0 * float(m.crashes))
 	if m.assisted:
 		success -= 60.0
 	var budget_left: float = maxf(0.0, BUDGET_LIMIT - cost())
 	var budget_pts: float = budget_left / BUDGET_LIMIT * 250.0
-	if not m.landed:
+	if not arrived:
 		budget_pts *= 0.3
 	var total: float = success + float(m.science) + budget_pts
 	var rank := "Mission Trainee"

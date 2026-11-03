@@ -54,8 +54,12 @@ void fragment() {
 	vec3 c = texture(color_tex, uv).rgb;
 	c *= 1.0 + grain * detail_amt * 1.6;
 	if (lava > 0.0) {
-		float crack = smoothstep(0.60, 0.74, texture(detail_tex, wpos.xz * 0.018 + vec2(time_s * 0.002)).r) * (1.0 - smoothstep(0.0, 0.5, n.y - 0.75));
-		EMISSION = vec3(1.8, 0.5, 0.08) * crack * lava;
+		// Thin glowing veins where the noise crosses its midpoint, brightest in the low ground.
+		float vein = abs(texture(detail_tex, wpos.xz * 0.0052).r - 0.5);
+		float crack = 1.0 - smoothstep(0.004, 0.03, vein);
+		float pulse = 0.8 + 0.2 * sin(time_s * 0.7 + wpos.x * 0.01);
+		EMISSION = vec3(1.5, 0.42, 0.06) * crack * pulse * lava;
+		c *= 1.0 - crack * 0.6;
 	}
 	if (pad_radius > 0.0) {
 		float r = length(wpos.xz - pad_pos.xz);

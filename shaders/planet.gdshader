@@ -52,7 +52,7 @@ void fragment() {
 		float h2 = fbm(obj * 12.0 + vec3(seed * 1.7));
 		c = mix(band_a, band_b, smoothstep(0.32, 0.55, h));
 		c = mix(c, band_c, smoothstep(0.5, 0.72, h * 0.6 + h2 * 0.4));
-		EMISSION = vec3(1.6, 0.45, 0.08) * lava * smoothstep(0.5, 0.62, h2) * (1.0 - smoothstep(0.42, 0.5, h));
+		EMISSION = vec3(1.5, 0.42, 0.07) * lava * (1.0 - smoothstep(0.004, 0.022, abs(h - 0.47)));
 	}
 	ALBEDO = c;
 	ROUGHNESS = 0.9;

@@ -41,7 +41,7 @@ func _ready() -> void:
 	root.add_child(pan)
 	v.add_child(UI.eyebrow("Mission debrief"))
 	v.add_child(UI.heading(str(t.name), 40))
-	var outcome := "Landed and explored." if Game.mission.landed else "Probe mission flown." if Game.is_probe_mission() else "The mission ended before a landing."
+	var outcome := "Landed and explored." if Game.mission.landed else ("Probe flown through the atmosphere." if Game.is_probe_mission() else "The mission ended before a landing.")
 	v.add_child(UI.para(outcome, 18, UI.TEXT))
 	v.add_child(UI.label(str(s.rank), 26, UI.AMBER, "bold"))
 	var total := UI.label("%d points%s" % [int(s.total), "   new best for this target" if best else ""], 22, UI.TEXT, "mono")

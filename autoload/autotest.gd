@@ -25,6 +25,8 @@ func _ready() -> void:
 			region_id = a.split("=")[1]
 		elif a.begins_with("--nfe-out="):
 			out_dir = a.split("=")[1]
+		elif a == "--nfe-novsync":
+			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 		elif a.begins_with("--nfe-quality="):
 			_quality = int(a.split("=")[1])
 	if active and _quality >= 0:

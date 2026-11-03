@@ -18,6 +18,7 @@ func _ready() -> void:
 	test_orbital()
 	test_data()
 	test_design_all_targets()
+	test_scoring()
 	test_terrain()
 	test_rover_contact()
 	await test_autoland()
@@ -82,6 +83,18 @@ func test_data() -> void:
 		for f: String in ["height.f32", "color.jpgdata", "normal.pngdata", "minimap.jpgdata"]:
 			check(FileAccess.file_exists("res://data/regions/%s/%s" % [rid, f]), rid + "/" + f)
 	check(FileAccess.file_exists("res://data/SOURCES.md"), "SOURCES.md exists")
+
+func test_scoring() -> void:
+	Game.new_mission()
+	Game.mission.target_id = "jupiter"
+	Game.auto_design()
+	Game.mission.phase = "debrief"
+	var before: Dictionary = Game.score()
+	Game.mission.samples.append({"poi": "A", "type": "gas"})
+	var after: Dictionary = Game.score()
+	check(float(after.success) > float(before.success) + 200.0, "Sampling counts as success on a probe mission")
+	check(float(after.budget) > float(before.budget), "Probe missions keep their budget points", after)
+	Game.new_mission()
 
 func test_design_all_targets() -> void:
 	var impossible: Array[String] = []
@@ -207,6 +220,8 @@ func test_autoland() -> void:
 	for rid: String in Data.regions:
 		cases.append([Data.regions[rid].body, rid])
 	cases.append_array([["triton", ""], ["exo_trappist_1_e", ""], ["exo_55_cnc_e", ""], ["exo_proxima_cen_b", ""], ["exo_k2_18_b", ""]])
+	cases.append(["mars", "gale", "airbag"])
+	cases.append(["titan", "titan_site", "airbag"])
 	for c: Array in cases:
 		var body: Dictionary = Data.body(str(c[0]))
 		if body.is_empty() or not body.get("has_surface", false):
@@ -215,6 +230,8 @@ func test_autoland() -> void:
 		Game.mission.target_id = c[0]
 		Game.mission.region_id = c[1]
 		Game.auto_design()
+		if c.size() > 2:
+			Game.mission.lander = c[2]
 		# Worst flying the planner allows, so the margin is tested rather than the best case.
 		Game.mission.launch_quality = 0.6
 		Game.mission.correction_quality = 0.7

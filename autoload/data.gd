@@ -12,7 +12,7 @@ var _tex_cache: Dictionary = {}
 ## Visual art direction only (not data). Sky colours for each world.
 const ART := {
 	"mercury": {"top": Color(0.0, 0.0, 0.01), "horizon": Color(0.03, 0.03, 0.04), "atmo": Color(0.6, 0.6, 0.6), "atmo_amt": 0.0, "stars": 1.0, "fog": 0.0},
-	"venus": {"top": Color(0.55, 0.36, 0.12), "horizon": Color(0.95, 0.68, 0.30), "atmo": Color(1.0, 0.8, 0.45), "atmo_amt": 1.0, "stars": 0.0, "fog": 0.0012},
+	"venus": {"top": Color(0.55, 0.36, 0.12), "horizon": Color(0.95, 0.68, 0.30), "atmo": Color(1.0, 0.8, 0.45), "atmo_amt": 1.0, "stars": 0.0, "fog": 0.0005},
 	"earth": {"top": Color(0.13, 0.33, 0.72), "horizon": Color(0.68, 0.82, 0.96), "atmo": Color(0.35, 0.6, 1.0), "atmo_amt": 0.9, "stars": 0.0, "fog": 0.00022},
 	"moon": {"top": Color(0.0, 0.0, 0.0), "horizon": Color(0.01, 0.01, 0.015), "atmo": Color(0.5, 0.5, 0.5), "atmo_amt": 0.0, "stars": 1.0, "fog": 0.0},
 	"mars": {"top": Color(0.42, 0.28, 0.20), "horizon": Color(0.86, 0.62, 0.42), "atmo": Color(0.95, 0.6, 0.38), "atmo_amt": 0.45, "stars": 0.05, "fog": 0.00022},
@@ -24,7 +24,7 @@ const ART := {
 	"europa": {"top": Color(0.0, 0.0, 0.01), "horizon": Color(0.02, 0.03, 0.05), "atmo": Color(0.7, 0.8, 1.0), "atmo_amt": 0.0, "stars": 1.0, "fog": 0.0},
 	"ganymede": {"top": Color(0.0, 0.0, 0.01), "horizon": Color(0.02, 0.03, 0.04), "atmo": Color(0.7, 0.8, 1.0), "atmo_amt": 0.0, "stars": 1.0, "fog": 0.0},
 	"callisto": {"top": Color(0.0, 0.0, 0.01), "horizon": Color(0.02, 0.02, 0.03), "atmo": Color(0.7, 0.7, 0.8), "atmo_amt": 0.0, "stars": 1.0, "fog": 0.0},
-	"titan": {"top": Color(0.42, 0.26, 0.06), "horizon": Color(0.86, 0.58, 0.20), "atmo": Color(1.0, 0.65, 0.2), "atmo_amt": 1.0, "stars": 0.0, "fog": 0.0011},
+	"titan": {"top": Color(0.42, 0.26, 0.06), "horizon": Color(0.86, 0.58, 0.20), "atmo": Color(1.0, 0.65, 0.2), "atmo_amt": 1.0, "stars": 0.0, "fog": 0.00042},
 	"enceladus": {"top": Color(0.0, 0.0, 0.01), "horizon": Color(0.03, 0.04, 0.06), "atmo": Color(0.8, 0.9, 1.0), "atmo_amt": 0.0, "stars": 1.0, "fog": 0.0},
 	"triton": {"top": Color(0.0, 0.01, 0.03), "horizon": Color(0.06, 0.1, 0.17), "atmo": Color(0.6, 0.75, 1.0), "atmo_amt": 0.12, "stars": 0.9, "fog": 0.00004, "ground": [Color(0.42, 0.40, 0.42), Color(0.78, 0.72, 0.70), Color(0.92, 0.88, 0.85)]},
 }
