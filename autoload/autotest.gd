@@ -25,6 +25,8 @@ func _ready() -> void:
 			region_id = a.split("=")[1]
 		elif a.begins_with("--nfe-out="):
 			out_dir = a.split("=")[1]
+		elif a == "--nfe-ui":
+			ui_tour.call_deferred()
 		elif a == "--nfe-novsync":
 			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 		elif a.begins_with("--nfe-quality="):
@@ -32,6 +34,32 @@ func _ready() -> void:
 	if active and _quality >= 0:
 		Settings.quality = _quality
 		Settings.apply()
+
+## Photograph every menu screen. Used to review layouts without playing through a mission.
+func ui_tour() -> void:
+	await get_tree().create_timer(2.0).timeout
+	_shot("ui_menu")
+	for step: Array in [["archive", "ui_archive"], ["settings", "ui_settings"], ["credits", "ui_credits"]]:
+		await Flow.go(step[0])
+		await get_tree().create_timer(1.5).timeout
+		_shot(step[1])
+	await Flow.go("planner", "Mission Control")
+	await get_tree().create_timer(1.5).timeout
+	var planner := get_tree().current_scene
+	for i in 4:
+		planner._show_step(i)
+		await get_tree().create_timer(0.6).timeout
+		_shot("ui_planner_%d" % i)
+	planner._select_target("neptune")
+	planner._list_tab = 0
+	planner._show_step(2)
+	await get_tree().create_timer(1.0).timeout
+	_shot("ui_neptune_window")
+	planner._select_target("saturn")
+	planner._show_step(1)
+	await get_tree().create_timer(1.0).timeout
+	_shot("ui_saturn_design")
+	get_tree().quit(0)
 
 func report(key: String, value: Variant) -> void:
 	results[key] = value

@@ -131,6 +131,7 @@ static func make_planet(target: Dictionary, radius: float, sun_dir: Vector3, seg
 		root.add_child(shell)
 	if id == "saturn":
 		root.add_child(make_rings(radius))
+		root.rotation.x = 0.42  # lean toward the viewer: edge-on rings almost vanish
 	return root
 
 static func make_rings(radius: float) -> MeshInstance3D:

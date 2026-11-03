@@ -10,8 +10,9 @@ HOW TO START THE GAME
 
 macOS (Apple Silicon or Intel)
   1. Open the "macOS" folder.
-  2. Copy NextFrontierExplorer.app to your computer's Desktop or
-     Applications folder. It runs faster from there than from the USB stick.
+  2. Double-click NextFrontierExplorer-macOS.zip to unpack it, then drag the
+     app to your Desktop. It loads faster from there than from the USB stick.
+     (NextFrontierExplorer.app beside the zip also runs directly from the stick.)
   3. The first time only: RIGHT-CLICK the app and choose "Open", then click
      "Open" again in the box that appears. The app is not signed by Apple,
      so double-clicking it the first time will be refused.

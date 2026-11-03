@@ -3,6 +3,8 @@ extends Node3D
 
 func _ready() -> void:
 	Space.make_space_env(self)
+	var cam := Camera3D.new()
+	add_child(cam)
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var root := Control.new()

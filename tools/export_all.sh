@@ -18,6 +18,8 @@ codesign --force --deep --sign - --identifier org.spaceapps.nextfrontierexplorer
 codesign --verify --deep --strict "$SIGN_DIR/NextFrontierExplorer.app"
 rm -rf "$APP"
 ditto --norsrc --noextattr --noacl "$SIGN_DIR/NextFrontierExplorer.app" "$APP"
+# A zip keeps the signed bundle intact on any USB stick format.
+ditto -c -k --norsrc --noextattr --keepParent "$SIGN_DIR/NextFrontierExplorer.app" USB_BUILD/macOS/NextFrontierExplorer-macOS.zip
 rm -rf "$SIGN_DIR"
 echo "macOS signature valid"
 cp tools/USB_README.txt USB_BUILD/README.txt

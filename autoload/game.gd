@@ -222,6 +222,8 @@ func score() -> Dictionary:
 func save_best(total: float) -> bool:
 	var id: String = mission.target_id
 	var better := total > float(best_scores.get(id, 0.0))
+	if Autotest.active:
+		return better  # automated runs must not fill the player's score table
 	if better:
 		best_scores[id] = total
 		var f := ConfigFile.new()

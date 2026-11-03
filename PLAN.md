@@ -115,3 +115,31 @@ and stops with an error if an image comes out mostly black, instead of shipping 
 ### D11. Natural colour over science products
 Mercury uses the MESSENGER BDR basemap rather than the false-colour enhanced map, which is bright blue
 and would mislead. Venus (radar) and Titan (near-infrared) are tinted, and the credit says so.
+
+### D12. Colour is display-graded, and says so
+Viking's blue-white haze reads as snow, and dark lunar mare is hard to see, so region colour is graded for
+display. Heights and positions are untouched. Missing-data gaps are filled from nearby pixels. `SOURCES.md` states both.
+
+### D13. Landing pads move to the nearest flat ground
+Height exaggeration turns real slopes into impossible ones. A pad stays on its real coordinate when that ground
+is safe (Gale, Jezero, Olympus, Tranquility), and otherwise moves to the nearest safe spot (Valles 7.5 km real, Shackleton 1.8 km).
+On procedural sites the move can be larger in "real" km, which has no meaning there because the relief is generated.
+
+### D14. Physics follows the rendered triangles
+`Terrain.height_at()` uses the same triangles and diagonal as the finest mesh, and the chunk under the vehicle is
+always the finest mesh. This removed a gap of up to 0.35 m that let vehicles sink into the ground.
+
+### D15. macOS signing happens outside `~/Documents`
+iCloud's file provider adds attributes to files in `~/Documents`, and `codesign` rejects them. `tools/export_all.sh`
+signs ad hoc in a temporary folder, verifies the result, and also ships a zip. The app is not notarized,
+because that needs a paid Apple Developer account.
+
+## Status
+
+All seven milestones are complete. `godot --headless --path . res://tests/run_tests.tscn` runs the test suite.
+
+Not tested on real hardware or platforms:
+- The Windows and Linux executables were never run. Only their game data packs were run, on this Mac's engine.
+- Gatekeeper's behaviour on another Mac. This Mac let a quarantined copy run, so it cannot show what a judge would see.
+- A physical gamepad. Bindings were tested with simulated events.
+- A physical USB stick. A real exFAT disk image was used instead.

@@ -19,6 +19,7 @@ func _ready() -> void:
 	test_data()
 	test_design_all_targets()
 	test_scoring()
+	test_input()
 	test_terrain()
 	test_rover_contact()
 	await test_autoland()
@@ -95,6 +96,36 @@ func test_scoring() -> void:
 	check(float(after.success) > float(before.success) + 200.0, "Sampling counts as success on a probe mission")
 	check(float(after.budget) > float(before.budget), "Probe missions keep their budget points", after)
 	Game.new_mission()
+
+func test_input() -> void:
+	# Every action needs a keyboard binding. Everything used in play also needs a gamepad binding.
+	for action: String in Settings.ACTIONS:
+		check(InputMap.has_action(action), "Action exists: " + action)
+		var has_key := false
+		var has_pad := false
+		for e: InputEvent in InputMap.action_get_events(action):
+			has_key = has_key or e is InputEventKey
+			has_pad = has_pad or e is InputEventJoypadButton or e is InputEventJoypadMotion
+		check(has_key, action + " has a key")
+		check(has_pad, action + " has a gamepad binding")
+	# A simulated gamepad press must reach the game through the same action a key uses.
+	var pad := InputEventJoypadButton.new()
+	pad.button_index = JOY_BUTTON_A
+	pad.pressed = true
+	check(InputMap.event_is_action(pad, "thrust"), "Gamepad A triggers the main action")
+	var stick := InputEventJoypadMotion.new()
+	stick.axis = JOY_AXIS_LEFT_Y
+	stick.axis_value = -1.0
+	check(InputMap.event_is_action(stick, "move_forward"), "Left stick up moves forward")
+	# Rebinding works, and is restored so the test leaves no trace.
+	var keep: Dictionary = Settings.custom_keys.duplicate()
+	Settings.custom_keys["thrust"] = KEY_J
+	Settings.rebuild_input()
+	var j := InputEventKey.new()
+	j.physical_keycode = KEY_J
+	check(InputMap.action_has_event("thrust", j), "Rebinding a key takes effect")
+	Settings.custom_keys = keep
+	Settings.rebuild_input()
 
 func test_design_all_targets() -> void:
 	var impossible: Array[String] = []
