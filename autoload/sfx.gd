@@ -20,6 +20,19 @@ func _ready() -> void:
 		add_child(p)
 		_pool.append(p)
 
+## Stop everything before shutdown: a stream still playing would otherwise outlive the audio server.
+func _exit_tree() -> void:
+	_music.stop()
+	_music.stream = null
+	for p in _pool:
+		p.stop()
+		p.stream = null
+	for k: String in _loops:
+		var lp: AudioStreamPlayer = _loops[k]
+		lp.stop()
+		lp.stream = null
+	_streams.clear()
+
 func _stream(sound: String) -> AudioStreamWAV:
 	if _streams.has(sound):
 		return _streams[sound]

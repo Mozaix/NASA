@@ -65,8 +65,8 @@ Hold **E** to collect a sample. Turn toward Mount Sharp: "This mountain is real,
 ## Technical facts
 
 - Godot 4.7.2 with the Mobile renderer. Terrain is displaced on the GPU from one shared mesh per detail level.
-- 120 to 187 fps on average per scene, uncapped at 1600x900 on Medium, measured on an Apple M3 with 8 GB of memory. About 393 MB of video memory.
-- About 700 MB total on the USB stick, under the 4 GB limit.
+- Roughly 120 to 170 fps on average per scene, uncapped at 1600x900 on Medium, measured on an Apple M3 with 8 GB of memory. About 393 MB of video memory.
+- About 870 MB total on the USB stick, under the 4 GB limit.
 - Automated tests check the physics against published values, fly the autopilot onto every site, and drive the rover over real terrain.
 
 ## Known limits
