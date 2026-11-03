@@ -136,10 +136,11 @@ func _physics_process(delta: float) -> void:
 	flame.emitting = firing
 	Sfx.loop("engine", 0.45 if firing else 0.0, 0.8 + throttle * 0.2)
 	if uses_chute:
-		if chute and alt < 650.0:
+		if chute and alt < 170.0:
 			chute.visible = true
 		# Canopy: strong drag toward a gentle terminal speed. Steering comes from vanes.
-		var terminal := minf(tolerance * 0.65, 8.5)
+		# Falls fast under a drogue, then the main canopy slows it for the last stretch.
+		var terminal := minf(tolerance * 0.65, 8.5) if alt < 170.0 else 26.0
 		vel.y = lerpf(vel.y, -terminal, clampf(delta * 0.8, 0.0, 1.0))
 		accel = Vector3(steer.x * 5.0, 0.0, steer.y * 5.0)
 	elif drag > 0.0:
