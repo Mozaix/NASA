@@ -591,7 +591,7 @@
      "text": "Because the planet is so close to the Sun, day temperatures can reach highs of 800°F (430°C).",
      "url": "https://science.nasa.gov/mercury/facts/"
     },
-    "elev_game": -109.06942749023438
+    "elev_game": -89.92236328125
    },
    {
     "name": "Survey site B",
@@ -603,7 +603,7 @@
      "text": "Without an atmosphere to retain that heat at night, temperatures can dip as low as -290°F (-180°C).",
      "url": "https://science.nasa.gov/mercury/facts/"
     },
-    "elev_game": 49.57136917114258
+    "elev_game": 7.31591796875
    },
    {
     "name": "Survey site C",
@@ -615,7 +615,7 @@
      "text": "Despite its proximity to the Sun, Mercury is not the hottest planet in our solar system – that title belongs to nearby Venus, thanks to its dense atmosphere.",
      "url": "https://science.nasa.gov/mercury/facts/"
     },
-    "elev_game": 61.12377166748047
+    "elev_game": 43.8778076171875
    },
    {
     "name": "Survey site D",
@@ -627,7 +627,7 @@
      "text": "But Mercury is the fastest planet, zipping around the Sun every 88 Earth days.",
      "url": "https://science.nasa.gov/mercury/facts/"
     },
-    "elev_game": -211.7449188232422
+    "elev_game": -185.579345703125
    }
   ],
   "landing_uv": [
@@ -639,7 +639,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 249.47640880313475,
-  "vexag": 36.786793336475036
+  "vexag": 20.437107409152798
  },
  "venus_site": {
   "id": "venus_site",
@@ -664,7 +664,7 @@
      "text": "It's the hottest planet in our solar system, and is sometimes called Earth's twin.",
      "url": "https://science.nasa.gov/venus/facts/"
     },
-    "elev_game": 578.6937866210938
+    "elev_game": 372.239501953125
    },
    {
     "name": "Survey site B",
@@ -676,7 +676,7 @@
      "text": "And the atmospheric pressure at the surface is about 93 times what it is at sea level on Earth.",
      "url": "https://science.nasa.gov/venus/facts/"
     },
-    "elev_game": -425.6248474121094
+    "elev_game": -776.883056640625
    },
    {
     "name": "Survey site C",
@@ -688,7 +688,7 @@
      "text": "Below Venus' dense, persistent clouds, the surface has volcanoes and deformed mountains.",
      "url": "https://science.nasa.gov/venus/facts/"
     },
-    "elev_game": 98.1827621459961
+    "elev_game": -220.36669921875
    },
    {
     "name": "Survey site D",
@@ -700,7 +700,7 @@
      "text": "At the tops of Venus’ clouds, whipped around the planet by winds measured as high as 224 mph (360 kph), we find another transformation.",
      "url": "https://science.nasa.gov/venus/facts/"
     },
-    "elev_game": -26.040233612060547
+    "elev_game": -551.444580078125
    }
   ],
   "landing_uv": [
@@ -712,7 +712,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 670.4859581538373,
-  "vexag": 40.0
+  "vexag": 22.885920704984315
  },
  "earth_site": {
   "id": "earth_site",
@@ -737,7 +737,7 @@
      "text": "Most notably, Earth is unique in that most of our planet is covered in liquid water, since the temperature allows liquid water to exist for extended periods of time.",
      "url": "https://science.nasa.gov/earth/facts/"
     },
-    "elev_game": -186.9463348388672
+    "elev_game": -186.1049346923828
    },
    {
     "name": "Survey site B",
@@ -749,7 +749,7 @@
      "text": "Earth's vast oceans provided a convenient place for life to begin about 3.8 billion years ago.",
      "url": "https://science.nasa.gov/earth/facts/"
     },
-    "elev_game": -129.71249389648438
+    "elev_game": -129.5496826171875
    },
    {
     "name": "Survey site C",
@@ -761,7 +761,7 @@
      "text": "Earth's axis of rotation is tilted 23.4 degrees with respect to the plane of Earth's orbit around the Sun.",
      "url": "https://science.nasa.gov/earth/facts/"
     },
-    "elev_game": -293.2101745605469
+    "elev_game": -293.4358825683594
    },
    {
     "name": "Survey site D",
@@ -773,7 +773,7 @@
      "text": "As Earth orbits the Sun, it completes one rotation every 23.9 hours.",
      "url": "https://science.nasa.gov/earth/facts/"
     },
-    "elev_game": -17.121740341186523
+    "elev_game": -12.381500244140625
    }
   ],
   "landing_uv": [
@@ -785,7 +785,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 597.8945784248933,
-  "vexag": 40.0
+  "vexag": 30.0
  },
  "io_site": {
   "id": "io_site",
@@ -810,7 +810,7 @@
      "text": "Io is caught in a tug-of-war between Jupiter's massive gravity and the smaller but precisely timed pulls from two neighboring moons that orbit farther from Jupiter—Europa and Ganymede.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
     },
-    "elev_game": -357.3282470703125
+    "elev_game": -366.3824462890625
    },
    {
     "name": "Survey site B",
@@ -822,7 +822,7 @@
      "text": "Io’s volcanoes are at times so powerful that they are seen with large telescopes on Earth, and Io even has lakes of molten silicate lava on its surface.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
     },
-    "elev_game": 187.67584228515625
+    "elev_game": 236.9283447265625
    },
    {
     "name": "Survey site C",
@@ -834,7 +834,7 @@
      "text": "It was Voyager 1 that spotted the first signs of the little moon’s powerful volcanism in 1979.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/io/"
     },
-    "elev_game": 442.0904541015625
+    "elev_game": 411.993896484375
    }
   ],
   "landing_uv": [
@@ -846,7 +846,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 201.79943370410024,
-  "vexag": 21.254669497337
+  "vexag": 11.808149720742781
  },
  "europa_site": {
   "id": "europa_site",
@@ -871,7 +871,7 @@
      "text": "It shows strong evidence for an ocean of liquid water beneath its icy crust.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/"
     },
-    "elev_game": 261.7574768066406
+    "elev_game": 245.6737060546875
    },
    {
     "name": "Survey site B",
@@ -883,7 +883,7 @@
      "text": "Based on Europa's icy composition, scientists think the most likely material to create this magnetic signature is a global ocean of salty water.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/"
     },
-    "elev_game": 267.9329833984375
+    "elev_game": 250.92291259765625
    },
    {
     "name": "Survey site C",
@@ -895,7 +895,7 @@
      "text": "Europa Clipper will try to determine if Jupiter's icy moon Europa currently has habitable conditions.",
      "url": "https://science.nasa.gov/mission/europa-clipper/"
     },
-    "elev_game": 280.7413635253906
+    "elev_game": 283.3446044921875
    },
    {
     "name": "Survey site D",
@@ -907,7 +907,7 @@
      "text": "It will orbit Jupiter, and conduct 49 close flybys of Europa.",
      "url": "https://science.nasa.gov/mission/europa-clipper/"
     },
-    "elev_game": 293.9234313964844
+    "elev_game": 288.64605712890625
    }
   ],
   "landing_uv": [
@@ -919,7 +919,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 159.61581424879392,
-  "vexag": 40.0
+  "vexag": 30.0
  },
  "ganymede_site": {
   "id": "ganymede_site",
@@ -944,7 +944,7 @@
      "text": "Jupiter’s icy moon Ganymede is the largest moon in our solar system, even bigger than the planet Mercury, and the dwarf planet Pluto.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
     },
-    "elev_game": -218.09506225585938
+    "elev_game": -179.27679443359375
    },
    {
     "name": "Survey site B",
@@ -956,7 +956,7 @@
      "text": "There’s strong evidence that Ganymede has an underground saltwater ocean that may hold more water than all the water on Earth's surface.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
     },
-    "elev_game": -466.34332275390625
+    "elev_game": -452.9393005371094
    },
    {
     "name": "Survey site C",
@@ -968,7 +968,7 @@
      "text": "The dark areas are the older, more heavily cratered regions and the light areas are younger, tectonically deformed regions.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/"
     },
-    "elev_game": -124.38451385498047
+    "elev_game": -105.0614013671875
    }
   ],
   "landing_uv": [
@@ -980,7 +980,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 269.08068327231325,
-  "vexag": 40.0
+  "vexag": 30.0
  },
  "callisto_site": {
   "id": "callisto_site",
@@ -1005,7 +1005,7 @@
      "text": "Callisto is Jupiter’s second largest moon and the third largest moon in our solar system.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
     },
-    "elev_game": -460.0776672363281
+    "elev_game": -436.00372314453125
    },
    {
     "name": "Survey site B",
@@ -1017,7 +1017,7 @@
      "text": "Data from NASA’s Galileo spacecraft in the 1990s revealed Callisto may have a secret: a salty ocean beneath its surface.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
     },
-    "elev_game": 86.81362915039062
+    "elev_game": 151.2823486328125
    },
    {
     "name": "Survey site C",
@@ -1029,7 +1029,7 @@
      "text": "Galileo orbited Jupiter until the mission ended in 2003.",
      "url": "https://science.nasa.gov/jupiter/jupiter-moons/callisto/"
     },
-    "elev_game": -499.161376953125
+    "elev_game": -451.65167236328125
    }
   ],
   "landing_uv": [
@@ -1041,7 +1041,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 267.0311144973884,
-  "vexag": 40.0
+  "vexag": 24.85816920412052
  },
  "titan_site": {
   "id": "titan_site",
@@ -1066,7 +1066,7 @@
      "text": "It has clouds, rain, rivers, lakes and seas of liquid hydrocarbons like methane and ethane.",
      "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
     },
-    "elev_game": -304.316162109375
+    "elev_game": -306.30035400390625
    },
    {
     "name": "Survey site B",
@@ -1078,7 +1078,7 @@
      "text": "This mammoth moon is the only moon in the solar system with a dense atmosphere, and it’s the only world besides Earth that has standing bodies of liquid, including rivers, lakes and seas, on its surface.",
      "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
     },
-    "elev_game": 195.8153076171875
+    "elev_game": 198.55291748046875
    },
    {
     "name": "Survey site C",
@@ -1090,7 +1090,7 @@
      "text": "Like Earth, Titan’s atmosphere is primarily nitrogen, plus a small amount of methane.",
      "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
     },
-    "elev_game": -81.83976745605469
+    "elev_game": -81.6715087890625
    },
    {
     "name": "Survey site D",
@@ -1102,7 +1102,7 @@
      "text": "Titan is also thought to have a subsurface ocean of water.",
      "url": "https://science.nasa.gov/saturn/moons/titan/facts/"
     },
-    "elev_game": -13.787439346313477
+    "elev_game": -11.5516357421875
    }
   ],
   "landing_uv": [
@@ -1114,7 +1114,7 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 307.2222633515409,
-  "vexag": 40.0
+  "vexag": 30.0
  },
  "enceladus_site": {
   "id": "enceladus_site",
@@ -1139,7 +1139,7 @@
      "text": "A handful of worlds are thought to have liquid water oceans beneath their frozen shell, but Enceladus sprays its ocean out into space where spacecraft can sample it.",
      "url": "https://science.nasa.gov/saturn/moons/enceladus/"
     },
-    "elev_game": 516.7843017578125
+    "elev_game": 489.3250732421875
    },
    {
     "name": "Survey site B",
@@ -1151,7 +1151,7 @@
      "text": "From these samples, scientists have determined that Enceladus has most of the chemical ingredients needed for life, and likely has hydrothermal vents releasing hot, mineral-rich water into its ocean.",
      "url": "https://science.nasa.gov/saturn/moons/enceladus/"
     },
-    "elev_game": 520.703125
+    "elev_game": 485.6085205078125
    },
    {
     "name": "Survey site C",
@@ -1163,7 +1163,7 @@
      "text": "Because Enceladus reflects so much sunlight, the surface temperature is extremely cold, about minus 330 degrees Fahrenheit (minus 201 degrees Celsius).",
      "url": "https://science.nasa.gov/saturn/moons/enceladus/"
     },
-    "elev_game": 473.9851379394531
+    "elev_game": 453.3868408203125
    },
    {
     "name": "Survey site D",
@@ -1175,7 +1175,7 @@
      "text": "In particular, the south polar region of Enceladus is almost entirely free of impact craters.",
      "url": "https://science.nasa.gov/saturn/moons/enceladus/"
     },
-    "elev_game": 524.0819702148438
+    "elev_game": 491.8275146484375
    }
   ],
   "landing_uv": [
@@ -1187,6 +1187,6 @@
   "height_n": 1024,
   "world_m": 4096.0,
   "hscale": 32.213596545598456,
-  "vexag": 9.896016858807844
+  "vexag": 5.497787143782137
  }
 }

@@ -107,7 +107,7 @@ func setup_procedural(body: Dictionary, art: Dictionary) -> void:
 	ridge.frequency = 0.0045
 	# Stronger gravity gives flatter terrain: a real tendency, used here as a rule of thumb.
 	var g: float = maxf(float(body.get("gravity", 9.8)), 0.3)
-	var amp: float = clampf(420.0 * pow(9.8 / g, 0.45), 90.0, 620.0)
+	var amp: float = clampf(190.0 * pow(9.8 / g, 0.4), 70.0, 280.0)
 	heights.resize(n * n)
 	for z in n:
 		for x in n:
@@ -141,7 +141,7 @@ func setup_procedural(body: Dictionary, art: Dictionary) -> void:
 
 func _carve_crater(cx: float, cz: float, r: float, amp: float) -> void:
 	var rad := int(r * 1.5)
-	var depth := amp * 0.05 + r * 0.9
+	var depth := amp * 0.03 + r * 0.45
 	for z in range(maxi(int(cz) - rad, 0), mini(int(cz) + rad, n)):
 		for x in range(maxi(int(cx) - rad, 0), mini(int(cx) + rad, n)):
 			var d := Vector2(float(x) - cx, float(z) - cz).length() / r
@@ -189,7 +189,8 @@ func _build_chunks() -> void:
 		_meshes.append(_grid_mesh(step_t))
 	var size := float(CHUNK_TEXELS) * texel
 	var ls := Settings.lod_scale()
-	_lod_dist = [size * 1.4 * ls, size * 2.8 * ls, size * 5.5 * ls]
+	var finest := maxf(size * 1.4 * ls, size * 0.71 + 75.0)
+	_lod_dist = [finest, maxf(size * 2.8 * ls, finest + size), maxf(size * 5.5 * ls, finest + size * 2.0)]
 	# y range for culling boxes
 	var lo := INF
 	var hi := -INF
@@ -260,9 +261,31 @@ func _sample_raw(x: float, z: float) -> float:
 	var d := heights[(iz + 1) * n + ix + 1]
 	return lerpf(lerpf(a, b, tx), lerpf(c, d, tx), tz)
 
-## Game-world height in metres at a world position.
+## World height of one grid vertex, exactly as the terrain shader displaces it.
+func vertex_height(ix: int, iz: int) -> float:
+	var i := clampi(iz, 0, n - 1) * n + clampi(ix, 0, n - 1)
+	return (heights[i] - y_ref) * y_scale
+
+## Game-world height in metres at a world position. Follows the same two triangles per cell, with
+## the same diagonal, as the finest mesh, so vehicles sit on exactly the surface the player sees.
 func height_at(x: float, z: float) -> float:
-	return (_sample_raw(x, z) - y_ref) * y_scale
+	var fx := clampf(x / texel, 0.0, float(n - 1))
+	var fz := clampf(z / texel, 0.0, float(n - 1))
+	var ix := mini(int(fx), n - 2)
+	var iz := mini(int(fz), n - 2)
+	var tx := fx - float(ix)
+	var tz := fz - float(iz)
+	var i := iz * n + ix
+	var b := heights[i + 1]
+	var c := heights[i + n]
+	var h: float
+	if tx + tz < 1.0:
+		var a := heights[i]
+		h = a + (b - a) * tx + (c - a) * tz
+	else:
+		var d := heights[i + n + 1]
+		h = d + (c - d) * (1.0 - tx) + (b - d) * (1.0 - tz)
+	return (h - y_ref) * y_scale
 
 func normal_at(x: float, z: float) -> Vector3:
 	var e := texel
@@ -275,6 +298,38 @@ func normal_at(x: float, z: float) -> Vector3:
 ## True elevation in metres from the dataset, for readouts.
 func real_elevation(x: float, z: float) -> float:
 	return _sample_raw(x, z)
+
+## Steepest slope, in degrees, under a lander-sized footprint.
+func footprint_slope(x: float, z: float, r: float = 12.0) -> float:
+	var worst := 0.0
+	for offset: Vector2 in [Vector2(r, 0.0), Vector2(0.0, r), Vector2(r, r).normalized() * r, Vector2(r, -r).normalized() * r]:
+		var rise := absf(height_at(x + offset.x, z + offset.y) - height_at(x - offset.x, z - offset.y))
+		worst = maxf(worst, rad_to_deg(atan2(rise, 2.0 * r)))
+	return worst
+
+## The named site if it is safe, otherwise the nearest ground gentle enough to land on.
+## Height exaggeration steepens real slopes, so a real coordinate can still be too steep in the game.
+func flat_spot(u: float, v: float, max_slope: float = 11.0) -> Vector3:
+	var x0 := u * world_m
+	var z0 := v * world_m
+	if footprint_slope(x0, z0) <= max_slope:
+		return Vector3(x0, height_at(x0, z0), z0)
+	var best := Vector3(x0, 0.0, z0)
+	var best_slope := INF
+	for ring in range(1, 41):
+		var radius := float(ring) * 30.0
+		for i in 24:
+			var a := float(i) / 24.0 * TAU
+			var x := clampf(x0 + cos(a) * radius, 60.0, world_m - 60.0)
+			var z := clampf(z0 + sin(a) * radius, 60.0, world_m - 60.0)
+			var s := footprint_slope(x, z)
+			if s < best_slope:
+				best_slope = s
+				best = Vector3(x, 0.0, z)
+		if best_slope <= max_slope:
+			break
+	best.y = height_at(best.x, best.z)
+	return best
 
 func uv_to_world(u: float, v: float) -> Vector3:
 	var x := u * world_m

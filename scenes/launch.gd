@@ -2,6 +2,7 @@ extends Node3D
 ## Launch: ignite, keep the rocket out of the dynamic-pressure danger zone, then fire the departure burn.
 
 const EARTH_R := 637.0  # 1 unit = 10 km
+const ROCKET_SCALE := 0.03
 const SKY_SHADER := preload("res://shaders/sky.gdshader")
 
 var rocket: Node3D
@@ -29,6 +30,7 @@ var _timing: TimingBar
 var _globe: Node3D
 var _detached: Node3D
 var _detached_v := Vector3.ZERO
+var _land: MeshInstance3D
 
 class TimingBar extends Control:
 	var marker := 0.0
@@ -78,15 +80,30 @@ func _ready() -> void:
 	var site := Space.latlon_to_unit(28.57, -80.65)
 	var q := Quaternion(site, Vector3.UP)
 	_globe.quaternion = q
-	var pad := Models.cube(self, Vector3(0.6, 0.06, 0.6), Vector3(0, EARTH_R + 0.03, 0), Models.mat(Color(0.3, 0.3, 0.32)))
-	pad.name = "Pad"
+	# NASA Blue Marble crop of Florida under the pad, at true scale. It is flat, so it hides as Earth curves away.
+	var land := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	var region: Dictionary = Data.regions.get("earth_site", {})
+	var land_size := float(region.get("width_km", 2400.0)) / 10.0
+	plane.size = Vector2(land_size, land_size)
+	land.mesh = plane
+	var land_mat := StandardMaterial3D.new()
+	land_mat.albedo_texture = Data.texture("res://data/regions/earth_site/color.jpgdata")
+	land_mat.roughness = 1.0
+	land.material_override = land_mat
+	land.position = Vector3(0, EARTH_R + 0.05, 0)
+	add_child(land)
+	_land = land
+	var pad_y := EARTH_R + 0.05
+	Models.cyl(self, 0.05, 0.06, 0.012, Vector3(0, pad_y + 0.006, 0), Models.mat(Color(0.42, 0.42, 0.44)), 24)
+	Models.cube(self, Vector3(0.005, 0.3, 0.005), Vector3(0.036, pad_y + 0.16, 0), Models.mat(Color(0.65, 0.22, 0.12), 0.3, 0.7))
 	rocket = Models.rocket()
-	rocket.scale = Vector3.ONE * 0.03
-	rocket.position = Vector3(0, EARTH_R + 0.06, 0)
+	rocket.scale = Vector3.ONE * ROCKET_SCALE
+	rocket.position = Vector3(0, pad_y + 0.012, 0)
 	add_child(rocket)
 	booster = rocket.get_node("Booster")
-	flame = Models.flame(booster, Vector3(0, -0.3, 0), 1.4)
-	flame2 = Models.flame(rocket.get_node("Upper"), Vector3(0, 6.1, 0), 0.8, Color(0.6, 0.75, 1.0))
+	flame = Models.flame(booster, Vector3(0, -0.2, 0), 1.3, Color(1.0, 0.62, 0.22), true, ROCKET_SCALE)
+	flame2 = Models.flame(rocket.get_node("Upper"), Vector3(0, 5.95, 0), 0.7, Color(0.55, 0.72, 1.0), true, ROCKET_SCALE)
 	cam = Camera3D.new()
 	cam.far = 10000.0
 	cam.near = 0.02
@@ -199,7 +216,8 @@ func _ascent(delta: float) -> void:
 	var tilt := clampf(altitude / 280.0, 0.0, 1.0) * 1.35
 	rocket.rotation.z = -tilt
 	var along := altitude * 0.55 * tilt
-	var r := EARTH_R + 0.06 + altitude / 10.0
+	var r := EARTH_R + 0.062 + altitude / 10.0
+	_land.visible = altitude < 55.0
 	rocket.position = Vector3(along * 0.1, r, 0)
 	if altitude > 15.0 and _status.text == "Liftoff":
 		_status.text = "Max Q"
@@ -268,12 +286,13 @@ func _next_scene() -> void:
 
 func _camera(delta: float) -> void:
 	var near_t := clampf(altitude / 12.0, 0.0, 1.0)
-	var dist := lerpf(0.55, 3.2, clampf(altitude / 300.0, 0.0, 1.0))
-	var off := Vector3(0.45, -0.1 + near_t * 0.5, 1.0).normalized() * dist
-	var tgt := rocket.global_position + Vector3.UP * 0.15
+	# Stay close enough that the rocket remains the subject of the shot all the way to orbit.
+	var dist := lerpf(0.62, 0.95, clampf(altitude / 300.0, 0.0, 1.0))
+	var off := Vector3(0.7, 0.04 + near_t * 0.5, 1.0).normalized() * dist
+	var tgt: Vector3 = rocket.global_transform * Vector3(0, 7.5 if _detached else 5.0, 0)
 	var pos := tgt + off
-	pos.y = maxf(pos.y, EARTH_R + 0.1)
-	cam.global_position = cam.global_position.lerp(pos, clampf(delta * 6.0, 0.0, 1.0)) if cam.global_position.length() > 1.0 else pos
+	pos.y = maxf(pos.y, EARTH_R + 0.14)
+	cam.global_position = cam.global_position.lerp(pos, clampf(delta * 9.0, 0.0, 1.0)) if cam.global_position.length() > 1.0 else pos
 	cam.look_at(tgt, Vector3.UP)
 
 func auto_advance() -> void:

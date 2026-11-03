@@ -1,58 +1,5 @@
 {
  "generated": "2026-11-03",
  "dropped_facts": [],
- "regions": {
-  "gale": {
-   "dem": "MOLA MEGDR 128 pixels/degree",
-   "check": {
-    "correlation": 0.9987,
-    "treks_m_per_grey_level": 115.1,
-    "treks_grey_levels_here": 52
-   }
-  },
-  "jezero": {
-   "dem": "MOLA MEGDR 128 pixels/degree",
-   "check": {
-    "correlation": 0.9905,
-    "treks_m_per_grey_level": 113.9,
-    "treks_grey_levels_here": 22
-   }
-  },
-  "valles": {
-   "dem": "MOLA MEGDR 128 pixels/degree",
-   "check": {
-    "correlation": 0.9996,
-    "treks_m_per_grey_level": 114.8,
-    "treks_grey_levels_here": 101
-   }
-  },
-  "olympus": {
-   "dem": "MOLA MEGDR 128 pixels/degree",
-   "check": {
-    "correlation": 0.9999,
-    "treks_m_per_grey_level": 114.9,
-    "treks_grey_levels_here": 209
-   }
-  },
-  "shackleton": {
-   "dem": "LOLA polar LDEM, 20 m/pixel",
-   "check": null
-  },
-  "tranquility": {
-   "dem": "LOLA LDEM 128 pixels/degree",
-   "check": {
-    "correlation": 0.9935,
-    "treks_m_per_grey_level": 76.5,
-    "treks_grey_levels_here": 16
-   }
-  },
-  "tycho": {
-   "dem": "LOLA LDEM 128 pixels/degree",
-   "check": {
-    "correlation": 0.9994,
-    "treks_m_per_grey_level": 77.8,
-    "treks_grey_levels_here": 70
-   }
-  }
- }
+ "regions": {}
 }

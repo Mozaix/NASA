@@ -19,6 +19,8 @@ func _ready() -> void:
 	test_data()
 	test_design_all_targets()
 	test_terrain()
+	test_rover_contact()
+	await test_autoland()
 	await test_scenes()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
@@ -116,6 +118,124 @@ func test_terrain() -> void:
 	t.queue_free()
 	var oly: Dictionary = Data.regions["olympus"]
 	near(float(oly.height_max_m), 21200.0, 300.0, "Olympus Mons summit from MOLA")
+
+## Drive the real rover over real terrain and measure how far it cuts into the ground.
+func test_rover_contact() -> void:
+	for rid: String in ["gale", "valles", "shackleton"]:
+		var world := Node3D.new()
+		add_child(world)
+		var t := Terrain.new()
+		world.add_child(t)
+		t.setup_region(Data.regions[rid])
+		var r := Rover.new()
+		world.add_child(r)
+		var uv: Array = Data.regions[rid].landing_uv
+		r.global_position = t.uv_to_world(float(uv[0]), float(uv[1]))
+		r.setup(t, 3.7, Color.WHITE)
+		r.place(r.global_position)
+		var worst_wheel := 0.0
+		var worst_body := 0.0
+		var worst_axle_drift := 0.0
+		for i in 2400:
+			var steer := sin(float(i) * 0.013) * 0.7
+			r.tick(1.0 / 60.0, 1.0, steer, i % 400 < 200, false)
+			if i < 30:
+				continue
+			var axles := r.wheel_axles()
+			for a in axles.size():
+				var w: Node3D = axles[a]
+				# In the chassis frame an axle may only move up and down. Any fore-aft motion means orbiting.
+				var local: Vector3 = r.body_node().to_local(w.global_position)
+				worst_axle_drift = maxf(worst_axle_drift, absf(local.z - (Rover.WHEELS[a] as Vector3).z))
+			for w: Node3D in axles:
+				var ground := t.height_at(w.global_position.x, w.global_position.z)
+				worst_wheel = maxf(worst_wheel, ground - (w.global_position.y - Rover.WHEEL_R))
+			for c: Vector3 in Rover.BODY_CORNERS:
+				var pt: Vector3 = r.body_node().global_transform * c
+				worst_body = maxf(worst_body, t.height_at(pt.x, pt.z) - pt.y)
+		print("  %s: wheel penetration %.2f m, body penetration %.2f m, axle drift %.2f m, driven %.0f m" % [rid, worst_wheel, worst_body, worst_axle_drift, r.distance])
+		check(r.distance > 500.0, rid + " rover actually drove", r.distance)
+		check(worst_wheel < 0.12, rid + " wheels stay on the ground", worst_wheel)
+		check(worst_body < 0.02, rid + " body stays above the ground", worst_body)
+		check(worst_axle_drift < 0.01, rid + " wheels spin on their own axles", worst_axle_drift)
+		world.queue_free()
+	for rid: String in Data.regions:
+		var t3 := Terrain.new()
+		add_child(t3)
+		t3.setup_region(Data.regions[rid])
+		var uv3: Array = Data.regions[rid].landing_uv
+		var spot := t3.flat_spot(float(uv3[0]), float(uv3[1]))
+		var slope := t3.footprint_slope(spot.x, spot.z)
+		var moved := Vector2(spot.x - float(uv3[0]) * t3.world_m, spot.z - float(uv3[1]) * t3.world_m).length()
+		print("  %s: pad slope %.1f deg, moved %.0f m in game (%.1f km real)" % [rid, slope, moved, moved * float(Data.regions[rid].hscale) / 1000.0])
+		check(slope <= 11.0, rid + " has a landable pad", slope)
+		t3.queue_free()
+	# Physics must use the same surface the player sees: the exact triangles of the finest mesh.
+	var t2 := Terrain.new()
+	add_child(t2)
+	t2.setup_region(Data.regions["valles"])
+	var worst := 0.0
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	for i in 4000:
+		var x := rng.randf_range(100.0, 3900.0)
+		var z := rng.randf_range(100.0, 3900.0)
+		worst = maxf(worst, absf(t2.height_at(x, z) - _mesh_height(t2, x, z)))
+	print("  physics vs rendered surface, worst gap: %.3f m" % worst)
+	check(worst < 0.01, "Physics height matches rendered triangles", worst)
+	t2.queue_free()
+
+## Height of the finest LOD mesh, from the same vertices and diagonal the renderer draws.
+func _mesh_height(t: Terrain, x: float, z: float) -> float:
+	var fx := x / t.texel
+	var fz := z / t.texel
+	var ix := int(fx)
+	var iz := int(fz)
+	var tx := fx - float(ix)
+	var tz := fz - float(iz)
+	var a := t.vertex_height(ix, iz)
+	var b := t.vertex_height(ix + 1, iz)
+	var c := t.vertex_height(ix, iz + 1)
+	var d := t.vertex_height(ix + 1, iz + 1)
+	if tx + tz < 1.0:
+		return a + (b - a) * tx + (c - a) * tz
+	return d + (c - d) * (1.0 - tx) + (b - d) * (1.0 - tz)
+
+## Fly the landing autopilot, the option players have, onto every site in the game.
+func test_autoland() -> void:
+	var cases: Array = []
+	for rid: String in Data.regions:
+		cases.append([Data.regions[rid].body, rid])
+	cases.append_array([["triton", ""], ["exo_trappist_1_e", ""], ["exo_55_cnc_e", ""], ["exo_proxima_cen_b", ""], ["exo_k2_18_b", ""]])
+	for c: Array in cases:
+		var body: Dictionary = Data.body(str(c[0]))
+		if body.is_empty() or not body.get("has_surface", false):
+			continue
+		Game.new_mission()
+		Game.mission.target_id = c[0]
+		Game.mission.region_id = c[1]
+		Game.auto_design()
+		# Worst flying the planner allows, so the margin is tested rather than the best case.
+		Game.mission.launch_quality = 0.6
+		Game.mission.correction_quality = 0.7
+		var inst: Node = (load("res://scenes/landing.tscn") as PackedScene).instantiate()
+		add_child(inst)
+		await get_tree().process_frame
+		inst.auto_pilot = true
+		var steps := 0
+		while inst.state == "fly" and steps < 60 * 300:
+			inst._physics_process(1.0 / 60.0)
+			steps += 1
+		var stats: Dictionary = Game.mission.get("landing_stats", {})
+		var label := "%s/%s" % [c[0], c[1]]
+		print("  land %-26s %-8s %5.0fs  fuel %3.0f%%  sink %.1f m/s  slope %.0f deg  lander %s" % [label, inst.state, float(steps) / 60.0, float(stats.get("fuel_left", 0.0)) * 100.0, float(stats.get("sink", 0.0)), float(stats.get("slope", 0.0)), Game.lander().id])
+		check(inst.state == "landed", "Autopilot lands at " + label, stats)
+		if Game.lander().id != "airbag":
+			check(float(stats.get("fuel_left", 0.0)) > 0.08, "Fuel to spare at " + label, stats.get("fuel_left", 0.0))
+		inst.queue_free()
+		await get_tree().process_frame
+		Sfx.stop_loops()
+	Game.new_mission()
 
 func test_scenes() -> void:
 	# Every scene must load and run a frame without script errors, for each kind of target.

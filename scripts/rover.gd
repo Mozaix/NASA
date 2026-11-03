@@ -6,6 +6,12 @@ const MAX_SPEED := 24.0
 const BOOST_SPEED := 40.0
 const WHEELS := [Vector3(-1.4, 0, 1.7), Vector3(1.4, 0, 1.7), Vector3(-1.5, 0, 0), Vector3(1.5, 0, 0), Vector3(-1.4, 0, -1.7), Vector3(1.4, 0, -1.7)]
 
+const WHEEL_R := 0.55
+const TRAVEL_UP := 0.7
+const TRAVEL_DOWN := 0.35
+## Lowest points of the chassis, in body space.
+const BODY_CORNERS: Array[Vector3] = [Vector3(-1.0, 0.97, -1.8), Vector3(1.0, 0.97, -1.8), Vector3(-1.0, 0.97, 1.8), Vector3(1.0, 0.97, 1.8), Vector3(0.0, 0.97, 0.0)]
+
 var terrain: Node
 var gravity := 3.7
 var velocity := Vector3.ZERO
@@ -41,7 +47,11 @@ func setup(t: Node, g: float, dust_color: Color) -> void:
 		var holder := Node3D.new()
 		holder.position = w
 		_body.add_child(holder)
-		var wheel := Models.cyl(holder, 0.55, 0.55, 0.45, Vector3(0, 0.55, 0), tire, 14)
+		# holder moves with the suspension; axle sits at the wheel's centre and is what spins.
+		var axle := Node3D.new()
+		axle.position = Vector3(0, WHEEL_R, 0)
+		holder.add_child(axle)
+		var wheel := Models.cyl(axle, WHEEL_R, WHEEL_R, 0.45, Vector3.ZERO, tire, 14)
 		wheel.rotation.z = PI / 2.0
 		Models.cube(wheel, Vector3(0.14, 0.5, 1.15), Vector3.ZERO, dark)
 		_wheels.append(holder)
@@ -64,6 +74,16 @@ func setup(t: Node, g: float, dust_color: Color) -> void:
 func place(p: Vector3) -> void:
 	global_position = Vector3(p.x, terrain.height_at(p.x, p.z), p.z)
 	velocity = Vector3.ZERO
+
+func body_node() -> Node3D:
+	return _body
+
+## The node at each wheel's axle.
+func wheel_axles() -> Array[Node3D]:
+	var out: Array[Node3D] = []
+	for h in _wheels:
+		out.append(h.get_child(0) as Node3D)
+	return out
 
 func toggle_lights() -> bool:
 	var on: bool = not _lights[0].visible
@@ -130,22 +150,57 @@ func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -
 	set_meta("hit_edge", hit_edge)
 	_update_visuals(delta, n)
 
-func _update_visuals(delta: float, n: Vector3) -> void:
+func _update_visuals(delta: float, _n: Vector3) -> void:
 	var fwd := forward_dir()
-	var up := n if grounded else transform.basis.y.lerp(Vector3.UP, delta).normalized()
+	var p := global_position
+	var side := Vector3(fwd.z, 0.0, -fwd.x)
+	# Fit the chassis to the ground under the wheels, not to the single point at its centre.
+	var f := _ground_point(p + fwd * 1.7)
+	var b := _ground_point(p - fwd * 1.7)
+	var r := _ground_point(p + side * 1.45)
+	var l := _ground_point(p - side * 1.45)
+	var fit_fwd := (f - b).normalized()
+	var fit_right := (r - l).normalized()
+	var up := fit_fwd.cross(fit_right).normalized()
+	if up.y < 0.0:
+		up = -up
+	if not grounded:
+		up = transform.basis.y.lerp(Vector3.UP, delta).normalized()
 	var right := up.cross(fwd).normalized()
-	var f2 := right.cross(up).normalized()
-	var target := Basis(right, up, f2).orthonormalized()
-	transform.basis = transform.basis.orthonormalized().slerp(target, clampf(delta * 9.0, 0.0, 1.0))
+	var target := Basis(right, up, right.cross(up).normalized()).orthonormalized()
+	transform.basis = transform.basis.orthonormalized().slerp(target, clampf(delta * 14.0, 0.0, 1.0))
 	var along := velocity.dot(fwd)
-	_spin += along * delta / 0.55
+	_spin += along * delta / WHEEL_R
+	_solve_contacts(delta)
+	_dust.emitting = grounded and absf(along) > 4.0
+
+func _ground_point(q: Vector3) -> Vector3:
+	return Vector3(q.x, terrain.height_at(q.x, q.z), q.z)
+
+## How far a body-space point must rise along the chassis' up axis to clear the ground.
+func _clearance_needed(local: Vector3, xf: Transform3D, up_y: float) -> float:
+	var world: Vector3 = xf * local
+	return (terrain.height_at(world.x, world.z) - world.y) / up_y
+
+## Each wheel finds the ground on its own. If the travel runs out, or the chassis would touch the
+## ground on a crest, the whole body rises so nothing cuts through the surface.
+func _solve_contacts(delta: float) -> void:
+	var xf := global_transform
+	var up_y := maxf(xf.basis.y.normalized().y, 0.35)
+	var needs: Array[float] = []
+	var lift := 0.0
+	for i in WHEELS.size():
+		var need := _clearance_needed(WHEELS[i] as Vector3, xf, up_y)
+		needs.append(need)
+		lift = maxf(lift, need - TRAVEL_UP)
+	for c: Vector3 in BODY_CORNERS:
+		lift = maxf(lift, _clearance_needed(c, xf, up_y) + 0.05)
+	# Rising is instant so the ground can never show through; settling back is gentle.
+	_body.position.y = maxf(lift, lerpf(_body.position.y, 0.0, clampf(delta * 3.0, 0.0, 1.0)))
+	var droop := -TRAVEL_DOWN if not grounded else -0.2
 	for i in _wheels.size():
 		var holder := _wheels[i]
-		var world: Vector3 = global_transform * (WHEELS[i] as Vector3)
-		var ground: float = terrain.height_at(world.x, world.z)
-		var offset: float = clampf(ground - world.y, -0.5, 0.45) if grounded else -0.25
-		holder.position.y = lerpf(holder.position.y, offset, clampf(delta * 16.0, 0.0, 1.0))
-		(holder.get_child(0) as Node3D).rotation.x = 0.0
-		holder.rotation.x = _spin
-		holder.get_child(0).position = Vector3(0, 0.55, 0)
-	_dust.emitting = grounded and absf(along) > 4.0
+		var want := maxf(needs[i] - _body.position.y, droop)
+		# Compression is instant for the same reason; extension is smoothed so wheels do not flicker.
+		holder.position.y = want if want > holder.position.y else lerpf(holder.position.y, want, clampf(delta * 16.0, 0.0, 1.0))
+		(holder.get_child(0) as Node3D).rotation.x = _spin

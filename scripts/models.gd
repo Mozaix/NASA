@@ -50,37 +50,57 @@ static func ball(parent: Node3D, r: float, pos: Vector3, m: Material) -> MeshIns
 	parent.add_child(mi)
 	return mi
 
-static func flame(parent: Node3D, pos: Vector3, scale_f: float = 1.0, color: Color = Color(1.0, 0.65, 0.25)) -> CPUParticles3D:
+static var _flame_tex: GradientTexture2D
+
+static func _soft_dot() -> GradientTexture2D:
+	if _flame_tex:
+		return _flame_tex
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 1))
+	g.set_color(1, Color(1, 1, 1, 0))
+	var t := GradientTexture2D.new()
+	t.gradient = g
+	t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.5)
+	t.fill_to = Vector2(1.0, 0.5)
+	t.width = 64
+	t.height = 64
+	_flame_tex = t
+	return t
+
+## Soft glowing exhaust. With attached = true it stays in the parent's space, which the rocket needs
+## because it moves so fast that a world-space trail would be enormous. Particle billboards ignore the
+## node's scale, so a scaled-down parent must pass its scale as world_scale to size the sprites.
+static func flame(parent: Node3D, pos: Vector3, scale_f: float = 1.0, color: Color = Color(1.0, 0.62, 0.22), attached: bool = false, world_scale: float = 1.0) -> CPUParticles3D:
 	var p := CPUParticles3D.new()
-	var q := SphereMesh.new()
-	q.radius = 0.5 * scale_f
-	q.height = 1.0 * scale_f
-	q.radial_segments = 8
-	q.rings = 4
+	var q := QuadMesh.new()
+	q.size = Vector2.ONE * 1.5 * scale_f * world_scale
 	p.mesh = q
 	p.amount = [24, 48, 80][Settings.quality]
-	p.lifetime = 0.45
-	p.local_coords = false
+	p.lifetime = 0.42
+	p.local_coords = attached
 	p.direction = Vector3.DOWN
-	p.spread = 7.0
-	p.initial_velocity_min = 12.0 * scale_f
-	p.initial_velocity_max = 20.0 * scale_f
+	p.spread = 6.0
+	p.initial_velocity_min = 10.0 * scale_f
+	p.initial_velocity_max = 17.0 * scale_f
 	p.gravity = Vector3.ZERO
-	p.scale_amount_min = 0.5
+	p.scale_amount_min = 0.65
 	p.scale_amount_max = 1.0
 	var curve := Curve.new()
 	curve.add_point(Vector2(0, 1))
-	curve.add_point(Vector2(1, 0))
+	curve.add_point(Vector2(1, 0.15))
 	p.scale_amount_curve = curve
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = color
-	m.emission_enabled = true
-	m.emission = color
-	m.emission_energy_multiplier = 4.0
-	m.vertex_color_use_as_albedo = true
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.no_depth_test = false
+	m.albedo_texture = _soft_dot()
+	m.albedo_color = Color(color.r * 1.6, color.g * 1.6, color.b * 1.6, 0.55)
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	p.material_override = m
-	p.color = color
+	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	p.position = pos
 	p.emitting = false
 	parent.add_child(p)

@@ -81,6 +81,8 @@ func _process(delta: float) -> void:
 	_t += delta
 	if _t > 1.0:  # skip the frames spent loading
 		_record(sname, delta)
+	if sname == "Launch":
+		_watch_rocket(scene)
 	match sname:
 		"MainMenu", "Launch", "Transfer", "Orbit":
 			if _stage == 0 and _t > 3.0:
@@ -132,6 +134,25 @@ func _process(delta: float) -> void:
 				_shot("debrief")
 				scene.auto_advance()
 				_finish()
+
+var _rocket_marks: Array[float] = [15.0, 60.0, 85.0, 120.0, 180.0, 225.0, 295.0]
+
+## Measure the rocket as the player sees it: where it is on screen and how many pixels tall.
+func _watch_rocket(scene: Node) -> void:
+	if _rocket_marks.is_empty() or float(scene.altitude) < _rocket_marks[0]:
+		return
+	var mark: float = _rocket_marks.pop_front()
+	var rocket: Node3D = scene.rocket
+	var cam: Camera3D = scene.cam
+	var low: Vector3 = rocket.global_transform * Vector3(0, 6.0, 0)
+	var top: Vector3 = rocket.global_transform * Vector3(0, 10.1, 0)
+	var a := cam.unproject_position(low)
+	var b := cam.unproject_position(top)
+	var vs := get_viewport().get_visible_rect().size
+	var mid := (a + b) * 0.5
+	var on_screen := Rect2(Vector2.ZERO, vs).has_point(mid) and not cam.is_position_behind(top)
+	print("[rocket] alt %.0f km: upper stage %.0f px long, at (%.0f, %.0f), on screen %s, cam dist %.2f, flames %s/%s" % [scene.altitude, a.distance_to(b), mid.x, mid.y, on_screen, cam.global_position.distance_to(top), scene.flame.emitting, scene.flame2.emitting])
+	_shot("rocket_%d" % int(mark))
 
 func _drive_test(scene: Node) -> void:
 	# Press the real input action, so rover physics runs exactly as it does for a player.

@@ -158,7 +158,7 @@ func _build_pois() -> void:
 	beacon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	beacon_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	beacon_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	beacon_mat.albedo_color = Color(0.2, 1.0, 0.75, 0.5)
+	beacon_mat.albedo_color = Color(0.2, 1.0, 0.75, 0.22)
 	beacon_mat.emission_enabled = true
 	beacon_mat.emission = Color(0.2, 1.0, 0.75)
 	beacon_mat.emission_energy_multiplier = 1.4
@@ -169,7 +169,7 @@ func _build_pois() -> void:
 		var root := Node3D.new()
 		add_child(root)
 		root.global_position = pos
-		var pillar := Models.cyl(root, 1.2, 1.2, 500.0, Vector3(0, 250, 0), beacon_mat, 8)
+		var pillar := Models.cyl(root, 0.45, 0.45, 500.0, Vector3(0, 250, 0), beacon_mat, 8)
 		pillar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var tag := Label3D.new()
 		tag.text = str(src.name)
@@ -187,7 +187,7 @@ func _build_pois() -> void:
 		pm.emission_enabled = true
 		pm.emission = Color(0.3, 0.95, 0.7)
 		pm.emission_energy_multiplier = 1.5
-		Models.ball(root, 0.9, Vector3(0, 0.9, 0), pm)
+		Models.ball(root, 0.35, Vector3(0, 0.35, 0), pm)
 		pois.append({"src": src, "pos": pos, "root": root, "tag": tag, "pillar": pillar, "visited": false, "sampled": false})
 
 func _build_hud() -> void:
@@ -403,7 +403,7 @@ func _dist_real_km(world_dist: float) -> float:
 func _update_hud() -> void:
 	var v := vehicle.global_position
 	var speed: float = Vector2(vehicle.velocity.x, vehicle.velocity.z).length()
-	var txt := "Gravity    %.2f m/s²\nSpeed      %.0f km/h on map\n" % [float(target.get("gravity") if target.get("gravity") != null else 0.0), speed * _hscale * 3.6 / 1000.0 * 1.0]
+	var txt := "Gravity    %.2f m/s²\nSpeed      %.0f m/s\n" % [float(target.get("gravity") if target.get("gravity") != null else 0.0), speed]
 	if region.get("real_elevation", false):
 		txt += "Elevation  %s m\n" % UI.grouped(int(terrain.real_elevation(v.x, v.z)))
 	if _probe:

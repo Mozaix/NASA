@@ -40,7 +40,7 @@ func _ready() -> void:
 	tolerance = float(lander_part.tolerance)
 	uses_chute = lander_part.id == "airbag"
 	var uv: Array = region.landing_uv
-	pad = terrain.uv_to_world(float(uv[0]), float(uv[1]))
+	pad = terrain.flat_spot(float(uv[0]), float(uv[1])) if terrain is Terrain else terrain.uv_to_world(float(uv[0]), float(uv[1]))
 	terrain.set_pad(pad, 34.0)
 	craft = Models.lander(uses_chute or lander_part.id == "skycrane")
 	add_child(craft)
@@ -53,13 +53,14 @@ func _ready() -> void:
 	var fall := clampf(sqrt(2.0 * gravity * start_h) * 0.45, 16.0, 62.0)
 	vel = Vector3(12.0, -fall, -9.0)
 	# Thrust scales with gravity but always leaves control authority on tiny moons.
-	thrust_acc = maxf(gravity * 2.6, 2.4)
+	thrust_acc = maxf(gravity * 2.6, 1.2)
 	var atmo := Data.has_atmosphere(t)
 	var pressure := float(t.get("pressure_bar") if t.get("pressure_bar") != null else (1.4 if t.id == "titan" else 0.0))
 	drag = 0.0 if not atmo else clampf(0.012 + 0.03 * log(1.0 + pressure * 40.0), 0.01, 0.2)
 	# Delta-v margin buys fuel. Sky cranes and retro landers both benefit; airbags need less.
 	var margin := Game.dv_margin()
-	var fuel_fraction := clampf(0.42 + margin / 2500.0, 0.42, 1.0) * float(lander_part.fuel)
+	var flight_quality := float(Game.mission.launch_quality) * float(Game.mission.correction_quality)
+	var fuel_fraction := clampf(0.8 + margin / 2500.0, 0.8, 1.2) * float(lander_part.fuel) * (0.85 + 0.15 * flight_quality)
 	fuel = 1.0
 	fuel_burn = 1.0 / (fall / thrust_acc * 2.2 + 26.0) / fuel_fraction
 	cam = Camera3D.new()
@@ -119,6 +120,13 @@ func _physics_process(delta: float) -> void:
 	var basis := Basis.from_euler(Vector3(tilt.y, 0.0, -tilt.x))
 	craft.transform.basis = basis
 	var accel := Vector3.DOWN * gravity
+	# Side thrusters steer without the main engine, at a small propellant cost.
+	if fuel > 0.0 and not uses_chute and steer.length() > 0.05:
+		accel += Vector3(steer.x, 0.0, steer.y) * minf(thrust_acc * 0.3, 2.0)
+		fuel = maxf(fuel - fuel_burn * 0.12 * steer.length() * delta, 0.0)
+	# Dense air gives the shell aerodynamic lift to steer with, at no propellant cost.
+	if drag > 0.0 and not uses_chute:
+		accel += Vector3(steer.x, 0.0, steer.y) * drag * 30.0
 	if throttle > 0.0 and fuel > 0.0:
 		accel += basis.y * thrust_acc * throttle
 		fuel = maxf(fuel - fuel_burn * delta, 0.0)
@@ -156,16 +164,30 @@ func _physics_process(delta: float) -> void:
 
 func _autopilot(p: Vector3, alt: float) -> Array:
 	var to_pad := Vector2(pad.x - p.x, pad.z - p.z)
+	var dist := to_pad.length()
 	var hv := Vector2(vel.x, vel.z)
-	var want_h := to_pad * 0.08
-	if want_h.length() > 26.0:
-		want_h = want_h.normalized() * 26.0
-	var err := want_h - hv
-	var steer := (err * 0.09).limit_length(1.0)
-	var want_v := -clampf(alt * 0.11 + 0.8, 1.0, 45.0)
+	# Close the distance briskly: every second of hovering burns propellant.
+	var want_h := to_pad * 0.2
+	if want_h.length() > 38.0:
+		want_h = want_h.normalized() * 38.0
+	var steer := ((want_h - hv) * 0.16).limit_length(1.0)
+	# Look ahead along the flight path, so rising ground is seen before the craft reaches it.
+	var clearance := alt
+	for look: float in [1.0, 2.0, 3.5, 5.0]:
+		var ahead := p + Vector3(vel.x, 0.0, vel.z) * look
+		clearance = minf(clearance, p.y - float(terrain.height_at(ahead.x, ahead.z)))
+	# Fastest safe descent for this world: the speed that can still be stopped with the thrust left
+	# over after gravity, using 55% of it so there is margin. v = sqrt(2 a h).
+	var net := maxf(thrust_acc - gravity, 0.4)
+	var want_v := -clampf(sqrt(2.0 * net * 0.55 * maxf(clearance, 0.0)) + 0.8, 1.0, 45.0)
+	# Stay above the terrain until over the pad, then come straight down.
+	var safe_height := minf(dist * 0.18, 70.0)
+	if clearance < safe_height:
+		# Only climb as fast as gravity can stop: on tiny moons a hard climb would never come back down.
+		var coast := sqrt(2.0 * gravity * (safe_height - clearance))
+		want_v = clampf(minf((safe_height - clearance) * 0.25, coast), -2.0, 8.0)
 	var v_err := want_v - vel.y
-	var needed := gravity + v_err * 2.2
-	return [steer, 1.0 if needed > 0.0 and v_err > 0.0 else 0.0]
+	return [steer, 1.0 if v_err > 0.0 else 0.0]
 
 func _touchdown(dist: float) -> void:
 	var p := craft.global_position
@@ -178,7 +200,7 @@ func _touchdown(dist: float) -> void:
 	flame.emitting = false
 	Sfx.loop("engine", 0.0)
 	var limit := tolerance
-	var ok := sink <= limit and drift <= limit * 1.3 and slope < 26.0 / maxf(float(Game.mission.vexag_hint if Game.mission.has("vexag_hint") else 1.0), 1.0) + 6.0
+	var ok := sink <= limit and drift <= limit * 1.3 and slope < 34.0
 	if uses_chute and _bounce < 2 and ok:
 		_bounce += 1
 	if ok:
@@ -190,13 +212,14 @@ func _touchdown(dist: float) -> void:
 		Game.mission.landed = true
 		Game.mission.landing_rating = rating
 		Game.mission.landing_pos = [p.x, p.z]
-		Game.mission.landing_stats = {"sink": sink, "dist_real_km": dist * float(region.get("hscale", 24.0)) / 1000.0, "fuel_left": fuel}
+		Game.mission.landing_stats = {"sink": sink, "drift": drift, "slope": slope, "dist_real_km": dist * float(region.get("hscale", 24.0)) / 1000.0, "fuel_left": fuel}
 		_show_result(true, "Touchdown at %.1f m/s, %.1f km from the target." % [sink, dist * float(region.get("hscale", 24.0)) / 1000.0])
 	else:
 		state = "crashed"
 		Sfx.play("crash")
 		Game.mission.crashes = int(Game.mission.crashes) + 1
 		craft.visible = false
+		Game.mission.landing_stats = {"sink": sink, "drift": drift, "slope": slope, "fuel_left": fuel, "limit": limit, "dist_m": dist}
 		var why := "Impact at %.1f m/s (limit %.0f)." % [sink, limit]
 		if drift > limit * 1.3:
 			why = "Too much sideways drift: %.1f m/s." % drift

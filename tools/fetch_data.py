@@ -680,6 +680,9 @@ def procedural_relief(style, relief_m, lum, seed):
         h = base * 0.8
     if lum is not None:
         h = h + 0.5 * (lum - lum.mean()) / max(lum.std(), 1e-3)  # bright/dark terrain follows the imagery
+    # Remove the sharpest detail: it reads as noise and makes slopes unfairly steep at game scale.
+    small = Image.fromarray(h.astype(np.float32), mode="F").resize((n // 3, n // 3), Image.BOX)
+    h = np.asarray(small.resize((n, n), Image.BICUBIC), dtype=np.float32)
     h = (h - h.min()) / (h.max() - h.min())
     return (h * relief_m - relief_m / 2).astype(np.float32)
 
@@ -711,7 +714,7 @@ def build_image_region(rid, r, bodies):
     body_R = bodies[r["body"]]["radius_km"]
     width_km = (lat0 - lat1) * 2 * math.pi * body_R / 360
     hscale = width_km * 1000 / WORLD_M
-    vexag = max(1.0, min(40.0, 0.09 * WORLD_M * hscale / r["relief_m"]))  # keep relief readable on small moons
+    vexag = max(1.0, min(30.0, 0.05 * WORLD_M * hscale / r["relief_m"]))  # keep relief readable on small moons
     rng = np.random.default_rng(seed)
     facts = bodies[r["body"]].get("facts", [])
     samples = ["regolith", "core", "rock", "core"]
