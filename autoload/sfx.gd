@@ -11,6 +11,7 @@ var _next := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_ready_quit_handling()
 	_music = AudioStreamPlayer.new()
 	_music.bus = "Music"
 	add_child(_music)
@@ -20,8 +21,24 @@ func _ready() -> void:
 		add_child(p)
 		_pool.append(p)
 
+func _ready_quit_handling() -> void:
+	get_tree().auto_accept_quit = false
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit_game()
+
+## Silence audio, give the audio thread a moment to let go of its streams, then exit.
+func quit_game() -> void:
+	_stop_all()
+	await get_tree().create_timer(0.15).timeout
+	get_tree().quit()
+
 ## Stop everything before shutdown: a stream still playing would otherwise outlive the audio server.
 func _exit_tree() -> void:
+	_stop_all()
+
+func _stop_all() -> void:
 	_music.stop()
 	_music.stream = null
 	for p in _pool:

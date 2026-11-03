@@ -27,6 +27,8 @@ func _ready() -> void:
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
+	Sfx._stop_all()
+	await get_tree().create_timer(0.15).timeout
 	get_tree().quit(1 if fails.size() > 0 else 0)
 
 func test_orbital() -> void:

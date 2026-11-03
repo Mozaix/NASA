@@ -52,7 +52,7 @@ func _build_ui() -> void:
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(b)
 	col.add_child(row)
-	var quit := UI.button("Quit", func() -> void: get_tree().quit())
+	var quit := UI.button("Quit", func() -> void: Sfx.quit_game())
 	col.add_child(quit)
 	start.grab_focus.call_deferred()
 	var foot := UI.label("Fan project using NASA data. Not endorsed by NASA.   Works fully offline.", 13, UI.TEXT_DIM)

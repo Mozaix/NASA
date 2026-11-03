@@ -94,7 +94,7 @@ func _finish() -> void:
 		if f:
 			f.store_string(JSON.stringify(results, "  "))
 			f.close()
-	get_tree().quit(0)
+	Sfx.quit_game()
 
 func _process(delta: float) -> void:
 	if not active:
