@@ -23,6 +23,27 @@ var _spin := 0.0
 var _body: Node3D
 var _dust: CPUParticles3D
 var _lights: Array[SpotLight3D] = []
+var _fill: OmniLight3D
+const MAX_HEALTH := 100.0
+## Below this closing speed a rock only stops the rover.
+const SAFE_IMPACT := 6.0
+const BAIL_DAMAGE := 15.0
+const FLIP_RATE := 4.5
+const SPIN_RATE := 5.5
+var health := MAX_HEALTH
+var trick_held := false
+var damage_scale := 1.0
+## Solid rocks nearby: x, y, z of the base and w for radius. Pebbles are left out, and the rover rolls over those.
+var rocks: Array[Vector4] = []
+var trick := TrickScore.new()
+var last_hit := 0.0
+var last_paid := 0
+var bailed := false
+var _flip := 0.0
+var _lift := 0.0
+var _air_time := 0.0
+var _hit_cool := 0.0
+var _smoke: CPUParticles3D
 var _hop_cool := 0.0
 var speed_mult := 1.0
 
@@ -60,15 +81,29 @@ func setup(t: Node, g: float, dust_color: Color) -> void:
 		s.position = Vector3(sx, 1.6, 1.9)
 		s.rotation.y = PI
 		s.rotation.x = -0.15
-		s.spot_range = 90.0
-		s.spot_angle = 38.0
-		s.light_energy = 4.0
+		s.spot_range = 170.0
+		s.spot_angle = 48.0
+		s.spot_attenuation = 0.55
+		s.light_energy = 9.0
 		s.light_color = Color(1.0, 0.96, 0.86)
 		s.visible = false
 		_body.add_child(s)
 		_lights.append(s)
+	# Soft pool of light around the rover, so the ground beside it and the rover itself show in deep shadow.
+	var fill := OmniLight3D.new()
+	fill.position = Vector3(0, 5.0, 1.0)
+	fill.omni_range = 34.0
+	fill.omni_attenuation = 0.7
+	fill.light_energy = 1.6
+	fill.light_color = Color(1.0, 0.96, 0.88)
+	fill.visible = false
+	_body.add_child(fill)
+	_fill = fill
 	_dust = Models.dust(self, dust_color)
 	_dust.position = Vector3(0, 0.3, -1.5)
+	_smoke = Models.dust(self, Color(0.12, 0.12, 0.13))
+	_smoke.position = Vector3(0, 2.2, -0.6)
+	_smoke.emitting = false
 	place(global_position)
 
 func place(p: Vector3) -> void:
@@ -89,6 +124,7 @@ func toggle_lights() -> bool:
 	var on: bool = not _lights[0].visible
 	for s in _lights:
 		s.visible = on
+	_fill.visible = on
 	return on
 
 func forward_dir() -> Vector3:
@@ -100,6 +136,17 @@ func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -
 	var n: Vector3 = terrain.normal_at(p.x, p.z)
 	grounded = p.y <= ground + 0.25
 	_hop_cool = maxf(_hop_cool - delta, 0.0)
+	_hit_cool = maxf(_hit_cool - delta, 0.0)
+	last_hit = 0.0
+	last_paid = 0
+	bailed = false
+	# A wrecked rover has no drive left. It only coasts to a stop.
+	if health <= 0.0:
+		throttle = 0.0
+		steer = 0.0
+		boost = false
+		hop = false
+	_touch_down_if_needed()
 	var speed := Vector2(velocity.x, velocity.z).length()
 	# Weak gravity means little wheel grip, so low-g worlds accelerate gently and drift.
 	var grip := clampf(gravity / 3.7, 0.3, 1.1)
@@ -131,7 +178,16 @@ func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -
 			grounded = false
 	else:
 		velocity.y -= gravity * delta
-		heading -= steer * 1.2 * delta
+		_air_time += delta
+		# The trick button plus a direction spins the rover in the air: W S flips about X, A D spins about Y.
+		if trick_held:
+			var dx := -throttle * FLIP_RATE * delta
+			var dy := -steer * SPIN_RATE * delta
+			_flip += dx
+			heading += dy
+			trick.spin(dx, dy)
+		else:
+			heading -= steer * 1.2 * delta
 	p += velocity * delta
 	var w: float = terrain.world_m
 	var hit_edge := false
@@ -140,6 +196,7 @@ func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -
 		p.x = clampf(p.x, 12.0, w - 12.0)
 		p.z = clampf(p.z, 12.0, w - 12.0)
 		velocity *= 0.3
+	p = _collide_rocks(p)
 	var new_ground: float = terrain.height_at(p.x, p.z)
 	if p.y < new_ground:
 		p.y = new_ground
@@ -149,6 +206,53 @@ func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -
 	global_position = p
 	set_meta("hit_edge", hit_edge)
 	_update_visuals(delta, n)
+
+## Landing a jump pays the combo, unless the rover comes down on its back or its nose.
+func _touch_down_if_needed() -> void:
+	if not grounded or _air_time <= 0.0:
+		return
+	_air_time = 0.0
+	if not trick.in_combo() and absf(wrapf(_flip, -PI, PI)) < 0.2:
+		_flip = 0.0
+		return
+	if absf(wrapf(_flip, -PI, PI)) < 1.0:
+		last_paid = trick.land()
+	else:
+		trick.bail()
+		bailed = true
+		velocity *= 0.25
+		_take_damage(BAIL_DAMAGE)
+	_flip = wrapf(_flip, -PI, PI)
+
+func _collide_rocks(p: Vector3) -> Vector3:
+	for r: Vector4 in rocks:
+		var off := Vector2(p.x - r.x, p.z - r.z)
+		var reach := r.w * 0.8 + 1.2
+		if off.length_squared() >= reach * reach or p.y > r.y + r.w * 0.9:
+			continue
+		var n := off.normalized() if off.length_squared() > 0.001 else Vector2(-sin(heading), -cos(heading))
+		var v := Vector2(velocity.x, velocity.z)
+		var closing := -v.dot(n)
+		p.x = r.x + n.x * reach
+		p.z = r.z + n.y * reach
+		if closing > 0.0:
+			v += n * closing * 1.35
+			velocity.x = v.x
+			velocity.z = v.y
+			if closing > SAFE_IMPACT and _hit_cool <= 0.0:
+				_hit_cool = 0.5
+				_take_damage((closing - SAFE_IMPACT) * damage_scale)
+	return p
+
+func _take_damage(amount: float) -> void:
+	var before := health
+	health = maxf(health - amount, 0.0)
+	last_hit = before - health
+	_smoke.emitting = health < MAX_HEALTH * 0.4
+
+func repair(amount: float) -> void:
+	health = minf(health + amount, MAX_HEALTH)
+	_smoke.emitting = health < MAX_HEALTH * 0.4
 
 func _update_visuals(delta: float, _n: Vector3) -> void:
 	var fwd := forward_dir()
@@ -196,11 +300,17 @@ func _solve_contacts(delta: float) -> void:
 	for c: Vector3 in BODY_CORNERS:
 		lift = maxf(lift, _clearance_needed(c, xf, up_y) + 0.05)
 	# Rising is instant so the ground can never show through; settling back is gentle.
-	_body.position.y = maxf(lift, lerpf(_body.position.y, 0.0, clampf(delta * 3.0, 0.0, 1.0)))
+	_lift = maxf(lift, lerpf(_lift, 0.0, clampf(delta * 3.0, 0.0, 1.0)))
+	if grounded:
+		_flip = move_toward(_flip, 0.0, 12.0 * delta)
+	# A flip turns about the middle of the chassis.
+	var pivot := Vector3(0, 1.3, 0)
+	_body.rotation.x = _flip
+	_body.position = Vector3(0, _lift, 0) + pivot - Basis(Vector3.RIGHT, _flip) * pivot
 	var droop := -TRAVEL_DOWN if not grounded else -0.2
 	for i in _wheels.size():
 		var holder := _wheels[i]
-		var want := maxf(needs[i] - _body.position.y, droop)
+		var want := maxf(needs[i] - _lift, droop)
 		# Compression is instant for the same reason; extension is smoothed so wheels do not flicker.
 		holder.position.y = want if want > holder.position.y else lerpf(holder.position.y, want, clampf(delta * 16.0, 0.0, 1.0))
 		(holder.get_child(0) as Node3D).rotation.x = _spin

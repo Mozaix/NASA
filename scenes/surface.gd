@@ -41,6 +41,14 @@ var _done_shown := false
 var _cam_pos := Vector3.ZERO
 var _near: Variant = null
 var _cam_aim := Vector3.ZERO
+var _rover_lost := false
+var _hit_flash: ColorRect
+var _trick_hud: TrickHud
+var _last_mouse_ms := -100000
+const REPAIR_RADIUS := 45.0
+const REPAIR_PER_S := 10.0
+## Rocks at least this big stop the rover. Smaller ones are rolled over.
+const SOLID_ROCK := 0.9
 
 func _ready() -> void:
 	target = Game.target()
@@ -73,8 +81,13 @@ func _ready() -> void:
 	vehicle.global_position = start + Vector3(16, 0, 10)
 	vehicle.setup(terrain, g, dust)
 	vehicle.speed_mult = 1.4 if Game.is_demo() else 1.0
+	if not _probe:
+		vehicle.damage_scale = 0.5 if Game.is_demo() else 1.0
 	vehicle.place(vehicle.global_position)
 	vehicle.heading = 0.6
+	# The Sun barely clears the horizon at the lunar pole, so the crater floor starts with the lights on.
+	if not _probe and region.get("polar", false):
+		vehicle.toggle_lights()
 	_yaw = PI + vehicle.heading
 	cam = Camera3D.new()
 	cam.far = 30000.0
@@ -156,6 +169,7 @@ func _update_rocks(center: Vector3) -> void:
 	var cz := int(floor(center.z / cell))
 	var side := int(sqrt(float(mm.instance_count)))
 	var i := 0
+	var solid: Array[Vector4] = []
 	for z in side:
 		for x in side:
 			var gx := cx + x - side / 2
@@ -168,10 +182,13 @@ func _update_rocks(center: Vector3) -> void:
 			var py: float = terrain.height_at(px, pz)
 			var xf := Transform3D(Basis.from_euler(Vector3(_rng.randf() * TAU, _rng.randf() * TAU, _rng.randf() * TAU)).scaled(Vector3.ONE * s), Vector3(px, py + s * 0.2, pz))
 			mm.set_instance_transform(i, xf)
+			if s >= SOLID_ROCK:
+				solid.append(Vector4(px, py, pz, s))
 			var col := img.get_pixel(clampi(int(px / terrain.world_m * iw), 0, iw - 1), clampi(int(pz / terrain.world_m * ih), 0, ih - 1))
 			mm.set_instance_color(i, col.darkened(_rng.randf_range(0.0, 0.3)))
 			i += 1
 	mm.visible_instance_count = i
+	vehicle.rocks = solid
 
 func _build_pois() -> void:
 	var beacon_mat := StandardMaterial3D.new()
@@ -242,6 +259,8 @@ func _build_hud() -> void:
 	_card = HudCard.new(str(target.name), str(region.name))
 	_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 18)
 	root.add_child(_card)
+	if not _probe:
+		_card.add_row("health", "Rover health", true, UI.GOOD)
 	_card.add_row("speed", "Speed", true)
 	_card.add_row("gravity", "Gravity")
 	if region.get("real_elevation", false):
@@ -259,6 +278,15 @@ func _build_hud() -> void:
 	op.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 18)
 	op.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	root.add_child(op)
+	if not _probe:
+		_trick_hud = TrickHud.new(vehicle.trick, "In a jump, hold %s: W S flip, A D spin" % Settings.key_name("trick"))
+		_trick_hud.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT, Control.PRESET_MODE_MINSIZE, 18)
+		root.add_child(_trick_hud)
+	_hit_flash = ColorRect.new()
+	_hit_flash.color = Color(0.9, 0.1, 0.05, 0.0)
+	_hit_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hit_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_hit_flash)
 	# Navigation strip
 	_nav = UI.label("", 18, UI.GOOD, "bold")
 	_nav.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 24)
@@ -290,7 +318,7 @@ func _build_hud() -> void:
 	pv.add_child(_progress)
 	root.add_child(pv)
 	# Bottom-left controls
-	var hint := UI.para("WASD drive   Mouse look   %s %s   %s collect   %s map   %s lights   Esc pause" % [Settings.key_name("thrust"), "thrusters" if _probe else "hop", Settings.key_name("interact"), Settings.key_name("map"), Settings.key_name("lights")], 13)
+	var hint := UI.para("WASD %s   Mouse look   %s %s   %s collect   %s map   %s lights   Esc pause" % ["fly" if _probe else "drive", Settings.key_name("thrust"), "thrusters" if _probe else "jump", Settings.key_name("interact"), Settings.key_name("map"), Settings.key_name("lights")], 13)
 	hint.custom_minimum_size.x = 560.0
 	hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 18)
 	root.add_child(hint)
@@ -394,6 +422,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_show_toast("Headlights on" if on else "Headlights off", 1.5)
 	elif event is InputEventMouseMotion and _mouse_captured:
 		var mm := event as InputEventMouseMotion
+		_last_mouse_ms = Time.get_ticks_msec()
 		_yaw -= mm.relative.x * 0.0035 * Settings.mouse_sens
 		var inv := -1.0 if Settings.invert_y else 1.0
 		_pitch = clampf(_pitch + mm.relative.y * 0.0035 * Settings.mouse_sens * inv, -0.2, 1.2)
@@ -409,7 +438,11 @@ func _physics_process(delta: float) -> void:
 	var steer := Input.get_axis("move_left", "move_right")
 	var boost := Input.is_action_pressed("boost")
 	var hop := Input.is_action_pressed("thrust") if _probe else Input.is_action_just_pressed("thrust")
+	if not _probe:
+		vehicle.trick_held = Input.is_action_pressed("trick")
 	vehicle.tick(delta, throttle, steer, boost, hop)
+	if not _probe:
+		_rover_events(delta)
 	if _probe:
 		Sfx.loop("engine", 0.25 if hop else 0.0)
 	else:
@@ -419,7 +452,45 @@ func _physics_process(delta: float) -> void:
 			_show_toast("Edge of the mapped region.", 1.5)
 	_process_pois(delta)
 
+func _rover_events(delta: float) -> void:
+	var r: Rover = vehicle
+	if r.last_hit > 0.0:
+		Sfx.play("crash", -6.0)
+		_hit_flash.color.a = 0.32
+		_show_toast("Rock strike! -%d health" % int(ceil(r.last_hit)), 2.0)
+	if r.last_paid > 0:
+		_trick_hud.flash("+%s" % UI.grouped(r.last_paid))
+		Sfx.play("chime")
+	if r.bailed:
+		_trick_hud.flash("Bailed! Combo lost", UI.BAD)
+	if r.health <= 0.0 and not _rover_lost:
+		_rover_lost = true
+		_rover_wrecked()
+	elif not _rover_lost and r.health < Rover.MAX_HEALTH and r.global_position.distance_to(_lander_pos) < REPAIR_RADIUS:
+		r.repair(REPAIR_PER_S * delta)
+
+func _rover_wrecked() -> void:
+	Game.mission.rover_lost = true
+	Sfx.loop("rover", 0.0)
+	Sfx.play("alarm")
+	_set_capture(false)
+	var v := UI.vbox(12)
+	var pan := UI.panel(v, 24)
+	pan.custom_minimum_size.x = 480.0
+	_done_panel.get_parent().add_child(pan)
+	UI.center_panel(pan)
+	v.add_child(UI.heading("The rover is wrecked", 28))
+	v.add_child(UI.para("Too many rock strikes. The science you already collected is safe.", 16, UI.TEXT))
+	var end := UI.button("End mission", end_mission, true)
+	v.add_child(end)
+	end.grab_focus.call_deferred()
+
 func _process(delta: float) -> void:
+	if _hit_flash.color.a > 0.0:
+		_hit_flash.color.a = maxf(_hit_flash.color.a - delta * 0.7, 0.0)
+	# The probe's camera swings round behind it through a turn, unless the player has been looking around.
+	if _probe and Time.get_ticks_msec() - _last_mouse_ms > 2500 and absf(Input.get_axis("cam_left", "cam_right")) < 0.1:
+		_yaw = lerp_angle(_yaw, PI + vehicle.heading, 1.0 - exp(-delta * 1.4))
 	_yaw += Input.get_axis("cam_left", "cam_right") * delta * 1.6
 	_pitch = clampf(_pitch + Input.get_axis("cam_up", "cam_down") * delta, -0.2, 1.2)
 	var v := vehicle.global_position
@@ -464,6 +535,8 @@ func _what_now() -> String:
 	for p: Dictionary in pois:
 		if not p.sampled:
 			left += 1
+	if not _probe and vehicle.health < Rover.MAX_HEALTH * 0.3 and vehicle.health > 0.0:
+		return "Rover badly damaged! Drive back to the lander to repair"
 	if left == 0:
 		return "All done! Open the pause menu to finish"
 	if _probe:
@@ -483,6 +556,9 @@ func _update_hud() -> void:
 		pace = "Boosting" if speed > top * 0.62 else "Cruising"
 	if not _probe and not vehicle.grounded:
 		pace = "In the air!"
+	if not _probe:
+		var hp: float = vehicle.health / Rover.MAX_HEALTH
+		_card.set_row("health", "%d%%" % int(ceil(hp * 100.0)), UI.BAD if hp < 0.3 else (UI.AMBER if hp < 0.6 else UI.GOOD), hp)
 	_card.set_row("speed", pace, UI.AMBER if pace == "In the air!" else UI.TEXT, speed / top)
 	_card.set_row("gravity", HudCard.gravity_words(g))
 	_card.set_row("driven", "%.1f km" % _dist_real_km(vehicle.distance))
@@ -642,6 +718,9 @@ func _show_toast(text: String, seconds: float) -> void:
 func end_mission() -> void:
 	get_tree().paused = false
 	Game.mission.distance_m = vehicle.distance * _hscale
+	if not _probe:
+		Game.mission.rover_health = vehicle.health
+		vehicle.trick.land()
 	Sfx.stop_loops()
 	Flow.go("debrief", "Mission Debrief")
 

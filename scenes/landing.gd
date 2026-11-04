@@ -33,6 +33,11 @@ var _low_alarm := false
 var uses_chute := false
 var tolerance := 5.0
 var _bounce := 0
+var autopilot_diverted := false
+const MAX_OVERDRIVE := 2.2
+var overdrive := 1.0
+var _divert_spot := Vector3.INF
+var _divert_from := Vector2.ZERO
 
 func _ready() -> void:
 	var t := Game.target()
@@ -61,7 +66,7 @@ func _ready() -> void:
 	var fall := clampf(sqrt(2.0 * gravity * start_h) * 0.45, 16.0, 62.0)
 	vel = Vector3(12.0, -fall, -9.0) * Vector3(near_factor, 1.0, near_factor)
 	# Thrust scales with gravity but always leaves control authority on tiny moons.
-	thrust_acc = maxf(gravity * 2.6, 1.2)
+	thrust_acc = maxf(gravity * 3.4, 1.2)
 	var atmo := Data.has_atmosphere(t)
 	var pressure := float(t.get("pressure_bar") if t.get("pressure_bar") != null else (1.4 if t.id == "titan" else 0.0))
 	drag = 0.0 if not atmo else clampf(0.012 + 0.03 * log(1.0 + pressure * 40.0), 0.01, 0.2)
@@ -181,6 +186,7 @@ func _physics_process(delta: float) -> void:
 		auto_pilot = not auto_pilot
 		if auto_pilot and not Game.is_demo():
 			Game.mission.assisted = true
+	overdrive = 1.0
 	if auto_pilot:
 		var c := _autopilot(p, alt)
 		steer = c[0]
@@ -199,8 +205,8 @@ func _physics_process(delta: float) -> void:
 	if drag > 0.0 and not uses_chute:
 		accel += Vector3(steer.x, 0.0, steer.y) * drag * 30.0
 	if throttle > 0.0 and fuel > 0.0:
-		accel += basis.y * thrust_acc * throttle
-		fuel = maxf(fuel - fuel_burn * delta, 0.0)
+		accel += basis.y * thrust_acc * throttle * overdrive
+		fuel = maxf(fuel - fuel_burn * overdrive * delta, 0.0)
 	var firing := throttle > 0.0 and fuel > 0.0
 	flame.emitting = firing
 	Sfx.loop("engine", 0.45 if firing else 0.0, 0.8 + throttle * 0.2)
@@ -257,6 +263,10 @@ func _update_card(alt: float, dist: float) -> void:
 	var tip := "Steer toward the green ring with W A S D"
 	if auto_pilot:
 		tip = "Autopilot is flying. Press %s to look down, %s to take over" % [Settings.key_name("look_down"), Settings.key_name("assist")]
+		if overdrive > 1.0:
+			tip = "Autopilot is on emergency thrust!"
+		elif autopilot_diverted:
+			tip = "Autopilot can't reach the pad, so it's landing on the nearest safe ground"
 	elif uses_chute:
 		tip = "The parachute does the work. Steer to the ring"
 	elif fuel <= 0.0:
@@ -269,31 +279,67 @@ func _update_card(alt: float, dist: float) -> void:
 	_card.set_details(PackedStringArray(["Descent %.1f m/s (limit %.0f)" % [sink, limit], "Drift %.1f m/s" % Vector2(vel.x, vel.z).length(), "Gravity %.2f m/s\u00b2" % gravity, "Distance on map %.0f m" % dist]))
 
 func _autopilot(p: Vector3, alt: float) -> Array:
-	var to_pad := Vector2(pad.x - p.x, pad.z - p.z)
-	var dist := to_pad.length()
 	var hv := Vector2(vel.x, vel.z)
-	# Head for the pad only as fast as the side thrusters can stop, or the craft swings past it.
-	var side_accel := minf(thrust_acc * 0.3, 2.0) + drag * 30.0
-	var approach := minf(sqrt(2.0 * side_accel * 0.6 * dist), 38.0)
-	var want_h := to_pad.normalized() * approach if dist > 0.5 else Vector2.ZERO
-	var steer := ((want_h - hv) * (0.5 / maxf(side_accel, 0.3))).limit_length(1.0)
 	# Look ahead along the flight path, so rising ground is seen before the craft reaches it.
 	var clearance := alt
 	for look: float in [1.0, 2.0, 3.5, 5.0]:
 		var ahead := p + Vector3(vel.x, 0.0, vel.z) * look
 		clearance = minf(clearance, p.y - float(terrain.height_at(ahead.x, ahead.z)))
+	var net := maxf(thrust_acc - gravity, 0.4)
+	var down := maxf(-vel.y, 0.0)
+	# Propellant for the latest possible stopping burn from here, including any climb still to coast through.
+	var fall := maxf(alt, 0.0) + (vel.y * vel.y / (2.0 * gravity) if vel.y > 0.0 else 0.0)
+	var entry := sqrt((fall + down * down / (2.0 * gravity)) * 2.0 * gravity * net / (gravity + net))
+	var fuel_needed := entry / net * fuel_burn * 1.25 + 0.03
+	var low_fuel := fuel <= fuel_needed
+	var braking_hard := down * down / (2.0 * net) >= maxf(clearance, 0.0) * 0.8
+	# With no propellant to reach the pad, or no height left to steer, land on the nearest ground that is safe.
+	var aim := pad
+	autopilot_diverted = low_fuel or (braking_hard and alt < 300.0 and Vector2(pad.x - p.x, pad.z - p.z).length() > 40.0)
+	if autopilot_diverted:
+		aim = _nearest_safe_ground(p)
+	var to_aim := Vector2(aim.x - p.x, aim.z - p.z)
+	var dist := to_aim.length()
+	# Head for the target only as fast as the side thrusters can stop, or the craft swings past it.
+	var side_accel := minf(thrust_acc * 0.3, 2.0) + drag * 30.0
+	var approach := minf(sqrt(2.0 * side_accel * 0.6 * dist), 38.0)
+	var want_h := to_aim.normalized() * approach if dist > 0.5 else Vector2.ZERO
+	var steer := ((want_h - hv) * (0.5 / maxf(side_accel, 0.3))).limit_length(1.0)
 	# Fastest safe descent for this world: the speed that can still be stopped with the thrust left
 	# over after gravity, using 55% of it so there is margin. v = sqrt(2 a h).
-	var net := maxf(thrust_acc - gravity, 0.4)
-	var want_v := -clampf(sqrt(2.0 * net * 0.55 * maxf(clearance, 0.0)) + 0.8, 1.0, 45.0)
-	# Stay above the terrain until over the pad, then come straight down.
-	var safe_height := 0.0 if dist < 25.0 else minf(dist * 0.18, 70.0)
+	var margin := 0.8 if low_fuel else 0.55
+	var want_v := -maxf(sqrt(2.0 * net * margin * maxf(clearance, 0.0)) + 0.8, 1.0)
+	# The speed cap saves time, but holding it burns propellant against gravity, so it is dropped when fuel is short.
+	if not low_fuel:
+		want_v = maxf(want_v, -45.0)
+	# Stay above the terrain until over the target, then come straight down.
+	var safe_height := 0.0 if dist < 25.0 or low_fuel else minf(dist * 0.18, 70.0)
 	if clearance < safe_height:
 		# Only climb as fast as gravity can stop: on tiny moons a hard climb would never come back down.
 		var coast := sqrt(2.0 * gravity * (safe_height - clearance))
 		want_v = clampf(minf((safe_height - clearance) * 0.25, coast), -2.0, 8.0)
+	# Close to the ground with too much sideways speed: hold height until the drift is gone, or the legs will fold.
+	if alt < 28.0 and hv.length() > tolerance * 0.8 and not low_fuel:
+		want_v = maxf(want_v, -1.0)
+	# When the normal engine cannot stop the fall in time, the autopilot overdrives it, at a matching fuel cost.
+	overdrive = 1.0
+	if braking_hard and down > 1.0:
+		var needed := down * down / (2.0 * maxf(clearance, 1.0)) + gravity
+		overdrive = clampf(needed / thrust_acc * 1.15, 1.0, MAX_OVERDRIVE)
+	# At the limit, stay nearly upright so the whole engine pushes against the fall.
+	if overdrive >= MAX_OVERDRIVE:
+		steer = steer.limit_length(0.3)
 	var v_err := want_v - vel.y
 	return [steer, 1.0 if v_err > 0.0 else 0.0]
+
+## Closest gentle ground below the craft. Searching is slow, so the answer is kept until the craft has moved on.
+func _nearest_safe_ground(p: Vector3) -> Vector3:
+	if not (terrain is Terrain):
+		return pad
+	if _divert_spot == Vector3.INF or Vector2(p.x - _divert_from.x, p.z - _divert_from.y).length() > 60.0:
+		_divert_from = Vector2(p.x, p.z)
+		_divert_spot = terrain.flat_spot(p.x / terrain.world_m, p.z / terrain.world_m, 14.0)
+	return _divert_spot
 
 func _touchdown(dist: float) -> void:
 	var p := craft.global_position
@@ -356,7 +402,7 @@ func _show_result(ok: bool, text: String) -> void:
 	_result_panel.add_child(pan)
 	_result_panel.visible = true
 	_result_panel.mouse_filter = Control.MOUSE_FILTER_PASS
-	pan.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	UI.center_panel(pan)
 
 func _go_surface() -> void:
 	Flow.go("surface", str(region.name))

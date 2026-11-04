@@ -13,6 +13,7 @@ uniform float y_scale = 1.0;
 uniform float y_ref = 0.0;
 uniform float skirt = 18.0;
 uniform float detail_amt = 0.16;
+uniform float bump_amt = 9.0;
 uniform float lava = 0.0;
 uniform float time_s = 0.0;
 uniform vec3 pad_pos = vec3(0.0);
@@ -80,7 +81,7 @@ void fragment() {
 	if (near_fade > 0.0) {
 		float e = 0.006;
 		bump = vec2(texture(detail_tex, wpos.xz * 0.07 + vec2(e, 0.0)).r - d2, texture(detail_tex, wpos.xz * 0.07 + vec2(0.0, e)).r - d2);
-		n.xz -= bump * 9.0 * near_fade;
+		n.xz -= bump * bump_amt * near_fade;
 	}
 	vec3 c = texture(color_tex, uv).rgb;
 	c *= 1.0 + grain * detail_amt * 1.6;

@@ -21,6 +21,9 @@ var _r2 := 0.0
 var _a := 0.0
 var _e := 0.0
 var _start_angle := 0.0
+## Extra sweep so the path meets the target on arrival day. Zero for an ideal window; an off-window launch or
+## a slower engine needs a non-Hohmann path, which is what the off-window delta-v penalty pays for.
+var _arrival_fix := 0.0
 var _outward := true
 var _mu := Orbital.MU_SUN
 var _days := 0.0
@@ -142,6 +145,8 @@ func _setup_solar() -> void:
 	_r2 = float(Data.elements.planets[_parent_id].a_au) * Orbital.AU
 	_mu = Orbital.MU_SUN
 	_start_angle = deg_to_rad(Orbital.mean_longitude("earth", _start_unix))
+	var arrive := deg_to_rad(Orbital.mean_longitude(_parent_id, _start_unix + _days * 86400.0))
+	_arrival_fix = wrapf(arrive - (_start_angle + PI), -PI, PI)
 	_finish_transfer_setup()
 
 func _setup_lunar() -> void:
@@ -221,7 +226,7 @@ func _kepler_state(f: float) -> Dictionary:
 	var r := _a * (1.0 - ecc * cos(ea))
 	var nu := 2.0 * atan2(sqrt(1.0 + ecc) * sin(ea / 2.0), sqrt(1.0 - ecc) * cos(ea / 2.0))
 	var base := 0.0 if _outward else -PI
-	var angle := _start_angle + nu + base
+	var angle := _start_angle + nu + base + _arrival_fix * f
 	return {"r": r, "angle": angle}
 
 func _path_point(f: float) -> Vector3:

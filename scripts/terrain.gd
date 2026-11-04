@@ -14,6 +14,7 @@ var heights := PackedFloat32Array()
 var material: ShaderMaterial
 var color_image: Image
 var _chunks: Array[MeshInstance3D] = []
+var _ring: Array[MeshInstance3D] = []
 var _meshes: Array[ArrayMesh] = []
 var _lod_dist: Array[float] = []
 var _time := 0.0
@@ -82,6 +83,9 @@ func setup_region(region: Dictionary) -> void:
 	var normal := Data.load_image("res://data/regions/%s/normal.pngdata" % rid)
 	color_image = Data.load_image("res://data/regions/%s/minimap.jpgdata" % rid, false)
 	_finish(ImageTexture.create_from_image(color), ImageTexture.create_from_image(normal), 0.0)
+	# Under a Sun skimming the horizon, strong fine bumps throw hard black blotches across the ground.
+	if region.get("polar", false):
+		material.set_shader_parameter("bump_amt", 2.5)
 
 ## Procedural world, for exoplanets and Triton. Clearly labelled in the HUD.
 func setup_procedural(body: Dictionary, art: Dictionary) -> void:
@@ -214,9 +218,11 @@ func _build_chunks() -> void:
 			_chunks.append(mi)
 			_morph_now.append(0.0)
 	# Coarse mirrored ring beyond the map edge, so the world does not visibly end.
-	var ring_scale := 8.0
+	# Its tiles must divide the map exactly: a tile that overhangs the map draws a second, coarse layer of ground
+	# above or below the real one, which looks like driving through the floor onto ground underneath.
+	var ring_n := maxi(ceili(float(count) / 8.0), 1)
+	var ring_scale := float(count) / float(ring_n)
 	var ring_size := size * ring_scale
-	var ring_n := count / int(ring_scale)
 	for cz in range(-ring_n, ring_n * 2):
 		for cx in range(-ring_n, ring_n * 2):
 			if cx >= 0 and cx < ring_n and cz >= 0 and cz < ring_n:
@@ -229,6 +235,7 @@ func _build_chunks() -> void:
 			mi.custom_aabb = AABB(Vector3(0, ylo, 0), Vector3(CHUNK_TEXELS, yhi - ylo, CHUNK_TEXELS))
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			add_child(mi)
+			_ring.append(mi)
 
 func update_lod(cam_pos: Vector3, delta: float) -> void:
 	_time += delta

@@ -51,12 +51,20 @@ func _ready() -> void:
 	UI.kv(g, "Mission success", "%d" % int(s.success))
 	UI.kv(g, "Science", "%d" % int(s.science))
 	UI.kv(g, "Budget left", "%d  ($%s M unspent)" % [int(s.budget), UI.grouped(int(maxf(Game.BUDGET_LIMIT - Game.cost(), 0.0)))])
+	if int(Game.mission.trick_points) > 0:
+		UI.kv(g, "Trick score", "%s  (+%d)" % [UI.grouped(int(Game.mission.trick_points)), int(s.tricks)], UI.AMBER)
 	UI.kv(g, "Samples", str(Game.mission.samples.size()))
 	UI.kv(g, "Sites visited", str(Game.mission.pois.size()))
 	if float(Game.mission.distance_m) > 0.0:
 		UI.kv(g, "Distance on map", "%.1f km" % (float(Game.mission.distance_m) / 1000.0))
 	if int(Game.mission.crashes) > 0:
 		UI.kv(g, "Landers lost", str(Game.mission.crashes), UI.BAD)
+	if int(Game.mission.rockets_lost) > 0:
+		UI.kv(g, "Rockets lost", str(Game.mission.rockets_lost), UI.BAD)
+	if bool(Game.mission.rover_lost):
+		UI.kv(g, "Rover", "wrecked by rock strikes", UI.BAD)
+	elif float(Game.mission.rover_health) >= 0.0:
+		UI.kv(g, "Rover health", "%d%%" % int(ceil(float(Game.mission.rover_health))))
 	if Game.mission.assisted:
 		UI.kv(g, "Autopilot used", "yes, -60", UI.AMBER)
 	var row := UI.hbox()

@@ -374,8 +374,14 @@ func _draw_flames(pos: Vector2, s: float, angle: float) -> void:
 		R2DDraw.flame(self, pos - rot * off * s, s, angle, float(bo.w) * 1.2, 1.2, Color(1.0, 0.75, 0.3))
 	if sim.up_on:
 		var ut: Dictionary = R.part("utank", design.utank)
-		var up_base := pos + Vector2(sin(angle), -cos(angle)) * float(tank.h) * s
-		R2DDraw.flame(self, up_base, s, angle, float(ut.w), 0.9, Color(0.55, 0.75, 1.0))
+		R2DDraw.flame(self, upper_flame_base(pos, s, angle), s, angle, float(ut.w), 0.9, Color(0.55, 0.75, 1.0))
+
+## Where the upper engine sits. Once the main stage has dropped, the upper stage is drawn from the base point itself.
+func upper_flame_base(pos: Vector2, s: float, angle: float) -> Vector2:
+	if not sim.main_attached:
+		return pos
+	var main_h := float(Rocket2D.part("tank", design.tank).h) + 0.6
+	return pos + Vector2(sin(angle), -cos(angle)) * main_h * s
 
 func _draw_ladder(w: float, hgt: float, h: float) -> void:
 	var font := UI.font()

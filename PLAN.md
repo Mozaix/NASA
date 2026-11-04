@@ -149,3 +149,6 @@ Not tested on real hardware or platforms:
 - **Demo mode, new HUD, look-down landing view, smoother terrain.**
 - **2D Rocket Builder.** Part stats are game values. Earth's values and the height milestones come from NASA sources.
   Each game is 6 launches. Money and parts reset after a score is saved. Scores are kept per calendar day on the local computer.
+- **Player-report fixes.** Launch stress can break up the rocket (a game value shaped like real dynamic pressure), spin tricks with a multiplier on the rocket and in rover jumps (bonus capped at 100 mission points), rover health and solid rocks (repair at the lander), brighter headlights, smoother probe.
+  The autopilot can overdrive the engine when a late handover needs it (a game value), and diverts to safe ground if it can't reach the pad.
+  An off-window or slow-engine transfer now bends its path to meet the planet on arrival day. It is not a true Hohmann arc in those cases, and the off-window delta-v penalty stands for that cost.

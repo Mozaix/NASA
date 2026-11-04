@@ -3,6 +3,8 @@ extends Node
 ## Part costs, masses and engine figures are GAME VALUES, not NASA data.
 
 const BUDGET_LIMIT := 2500.0  # $M
+const TRICK_POINTS_PER_SCORE := 50.0
+const TRICK_BONUS_CAP := 100.0
 
 const LAUNCHERS := [
 	{"id": "medium", "name": "Medium Lift", "lift_t": 25.0, "cost": 160.0, "desc": "Reliable and cheap. Inner solar system only, unless the payload is tiny."},
@@ -55,6 +57,7 @@ func new_mission() -> void:
 		"landed": false, "crashes": 0, "landing_rating": 0.0, "assisted": false, "orbit_science": 0.0,
 		"pois": {}, "samples": [], "facts_seen": [], "science": 0.0,
 		"phase": "planning", "aborted": false, "distance_m": 0.0, "demo": false,
+		"reached_orbit": true, "rockets_lost": 0, "trick_points": 0, "rover_health": -1.0, "rover_lost": false,
 	}
 
 func part(list: Array, id: String) -> Dictionary:
@@ -191,7 +194,7 @@ func add_science(amount: float) -> void:
 func score() -> Dictionary:
 	var m := mission
 	var success := 0.0
-	if m.phase in ["transfer", "orbit", "landing", "surface", "debrief"]:
+	if m.phase in ["transfer", "orbit", "landing", "surface", "debrief"] and m.reached_orbit:
 		success += 100.0
 	if float(m.orbit_science) > 0.0:
 		success += 50.0
@@ -203,13 +206,17 @@ func score() -> Dictionary:
 		success += 250.0
 	if int(m.crashes) > 0:
 		success = maxf(0.0, success - 60.0 * float(m.crashes))
+	if int(m.rockets_lost) > 0:
+		success = maxf(0.0, success - 60.0 * float(m.rockets_lost))
 	if m.assisted:
 		success -= 60.0
+	# Stunts are worth a bonus, capped so they cannot outweigh the mission itself.
+	var tricks: float = minf(float(m.trick_points) / TRICK_POINTS_PER_SCORE, TRICK_BONUS_CAP)
 	var budget_left: float = maxf(0.0, BUDGET_LIMIT - cost())
 	var budget_pts: float = budget_left / BUDGET_LIMIT * 250.0
 	if not arrived:
 		budget_pts *= 0.3
-	var total: float = success + float(m.science) + budget_pts
+	var total: float = success + float(m.science) + budget_pts + tricks
 	var rank := "Mission Trainee"
 	if total >= 1000.0:
 		rank = "Flight Director"
@@ -217,7 +224,7 @@ func score() -> Dictionary:
 		rank = "Principal Investigator"
 	elif total >= 500.0:
 		rank = "Mission Specialist"
-	return {"success": success, "science": float(m.science), "budget": budget_pts, "total": total, "rank": rank}
+	return {"success": success, "science": float(m.science), "budget": budget_pts, "tricks": tricks, "total": total, "rank": rank}
 
 func save_best(total: float) -> bool:
 	var id: String = mission.target_id

@@ -56,6 +56,7 @@ Keyboard and mouse, or any standard gamepad (plug it in before starting).
   (ignite, burn, hop)
   Collect sample, scan  E (hold)          X (hold)
   Boost                 Shift             Right bumper
+  Spin tricks (hold)    Q + W A S D       Left trigger + left stick
   Headlights            L                 Y
   Map / scale toggle    M                 Back
   Landing autopilot     P                 Left bumper
@@ -64,6 +65,10 @@ Keyboard and mouse, or any standard gamepad (plug it in before starting).
   Pause                 Esc               Start
 
 Keys can be changed in Settings.
+
+Launch: W/S throttle, A/D steer. If the stress needle stays in the red too long, the rocket breaks up.
+Tricks: hold Q and press W/S to flip or A/D to spin, on the rocket or in a rover jump. Land the combo to bank it.
+Rover: rocks cost health. Drive back to the lander to repair.
 
 
 IF THE GAME RUNS SLOWLY

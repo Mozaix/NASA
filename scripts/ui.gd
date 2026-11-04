@@ -138,6 +138,22 @@ static func hbox(sep: int = 10) -> HBoxContainer:
 	h.add_theme_constant_override("separation", sep)
 	return h
 
+## Centres a panel on screen, sized to its contents. Wrapped text only knows its height after a layout pass,
+## so the size is worked out again once that has happened.
+static func center_panel(pan: Control) -> void:
+	pan.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	pan.grow_vertical = Control.GROW_DIRECTION_BOTH
+	pan.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	var fit := func() -> void:
+		if not is_instance_valid(pan) or not pan.is_inside_tree():
+			return
+		await pan.get_tree().process_frame
+		if not is_instance_valid(pan):
+			return
+		pan.reset_size()
+		pan.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
+	fit.call_deferred()
+
 static func panel(child: Control = null, pad: int = 16) -> PanelContainer:
 	var p := PanelContainer.new()
 	p.add_theme_stylebox_override("panel", box(PANEL_BG, PANEL_LINE, 12, pad))

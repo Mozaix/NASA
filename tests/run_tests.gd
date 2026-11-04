@@ -28,6 +28,7 @@ func _ready() -> void:
 	test_terrain()
 	test_rover_contact()
 	await test_autoland()
+	await test_player_reports()
 	await test_demo()
 	await test_rocket_scenes()
 	await test_scenes()
@@ -659,3 +660,270 @@ func test_scenes() -> void:
 		inst.queue_free()
 		await get_tree().process_frame
 		check(true, "ui scene: " + s)
+
+## Regression checks for the second round of player reports.
+func test_player_reports() -> void:
+	# The coarse ring beyond the map must never overlap the map, on any map size.
+	for setup: Array in [["gale", null], ["", "exo_trappist_1_e"], ["shackleton", null]]:
+		var t := Terrain.new()
+		add_child(t)
+		if setup[1] == null:
+			t.setup_region(Data.regions[setup[0]])
+		else:
+			t.setup_procedural(Data.body(setup[1]), Data.art(setup[1]))
+		var overlaps := 0
+		for mi: MeshInstance3D in t._ring:
+			var span: float = float(Terrain.CHUNK_TEXELS) * mi.scale.x
+			if mi.position.x < t.world_m - 0.01 and mi.position.x + span > 0.01 and mi.position.z < t.world_m - 0.01 and mi.position.z + span > 0.01:
+				overlaps += 1
+		check(overlaps == 0, "No second layer of ground over the map, n=%d" % t.n, overlaps)
+		check(t._ring.size() > 0, "Map still has an outer ring, n=%d" % t.n)
+		t.queue_free()
+	await get_tree().process_frame
+
+	# The ship meets the planet on arrival, for any launch date and any engine.
+	var worst_start := 0.0
+	var worst_end := 0.0
+	var dates: Array[float] = [1798761600.0, 1798761600.0 + 86400.0 * 137.0, 1798761600.0 + 86400.0 * 501.0]
+	for id: String in ["mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "titan", "europa"]:
+		for stage: String in ["hydrolox", "ion"]:
+			for u: float in dates:
+				Game.new_mission()
+				Game.mission.target_id = id
+				Game.mission.lander = "probe" if not Data.body(id).get("has_surface", false) else "retro"
+				Game.mission.stage = stage
+				Game.mission.launch_unix = u
+				var inst: Node = (load("res://scenes/transfer.tscn") as PackedScene).instantiate()
+				add_child(inst)
+				inst.set_process(false)
+				var parent: String = id if Data.body(id).kind == "planet" else str(Data.body(id).parent)
+				var arrive := u + float(inst._days) * 86400.0
+				var body: Dictionary = {}
+				var earth: Dictionary = {}
+				for b: Dictionary in inst.bodies:
+					if b.data.id == parent:
+						body = b
+					if b.data.id == "earth":
+						earth = b
+				var end_a: float = (body.angle as Callable).call(arrive)
+				var end_r: float = inst.dist_units(float(body.r))
+				worst_end = maxf(worst_end, inst._path_point(1.0).distance_to(Vector3(cos(end_a) * end_r, 0.0, -sin(end_a) * end_r)))
+				var start_a: float = (earth.angle as Callable).call(u)
+				var start_r: float = inst.dist_units(float(earth.r))
+				worst_start = maxf(worst_start, inst._path_point(0.0).distance_to(Vector3(cos(start_a) * start_r, 0.0, -sin(start_a) * start_r)))
+				inst.free()
+	check(worst_end < 0.05, "Path ends at the planet's real arrival position", worst_end)
+	check(worst_start < 0.05, "Path starts at Earth", worst_start)
+	print("  transfer alignment worst: start %.4f, end %.4f units" % [worst_start, worst_end])
+	Game.new_mission()
+
+	# Autopilot handover: it must land whenever the engine could physically still stop the fall.
+	var hand_fails := 0
+	var hand_runs := 0
+	for rid: String in ["tranquility", "tycho", "shackleton"]:
+		for delay: float in [0.0, 3.0, 6.0, 10.0, 12.0, 15.0, 17.0]:
+			Game.new_mission()
+			Game.mission.target_id = "moon"
+			Game.mission.region_id = rid
+			Game.auto_design()
+			var land: Node = (load("res://scenes/landing.tscn") as PackedScene).instantiate()
+			add_child(land)
+			await get_tree().process_frame
+			land.auto_pilot = false
+			var steps := 0
+			while land.state == "fly" and steps < 60 * 300:
+				land.auto_pilot = float(steps) / 60.0 >= delay
+				land._physics_process(1.0 / 60.0)
+				steps += 1
+			hand_runs += 1
+			if land.state != "landed":
+				hand_fails += 1
+				print("  autopilot handover failed: %s after %.0fs: %s" % [rid, delay, Game.mission.get("landing_stats", {})])
+			land.queue_free()
+			await get_tree().process_frame
+			Sfx.stop_loops()
+	check(hand_fails == 0, "Autopilot recovers a late handover on the Moon", "%d of %d failed" % [hand_fails, hand_runs])
+	Game.new_mission()
+
+	# Launch: no input at full throttle breaks up, managed flight reaches orbit, spins are scored.
+	var pad_rocket := func() -> Node:
+		Game.new_mission()
+		Game.auto_design()
+		var l: Node = (load("res://scenes/launch.tscn") as PackedScene).instantiate()
+		add_child(l)
+		return l
+	var hands_off: Node = pad_rocket.call()
+	await get_tree().process_frame
+	hands_off.ignite()
+	var n := 0
+	while hands_off.state == "ascent" and n < 60 * 60:
+		hands_off._ascent(1.0 / 60.0)
+		n += 1
+	check(hands_off.state == "broken", "Full throttle with no input breaks the rocket up", hands_off.state)
+	check(int(Game.mission.rockets_lost) == 1, "A lost rocket is counted")
+	check(float(Game.score().success) == 0.0, "A rocket lost before orbit earns no launch credit", Game.score().success)
+	hands_off.queue_free()
+	await get_tree().process_frame
+	var managed: Node = pad_rocket.call()
+	await get_tree().process_frame
+	managed.auto_fly = true
+	managed.ignite()
+	n = 0
+	var peak := 0.0
+	while managed.state == "ascent" and n < 60 * 90:
+		managed._ascent(1.0 / 60.0)
+		peak = maxf(peak, float(managed.stress))
+		n += 1
+	check(managed.state == "coast", "Managed throttle reaches orbit", managed.state)
+	print("  managed ascent: %.0fs, peak stress %.2f, red time %.2fs" % [float(n) / 60.0, peak, float(managed.red_time)])
+	check(bool(Game.mission.reached_orbit), "Reaching orbit is recorded")
+	managed.queue_free()
+	await get_tree().process_frame
+	var flips: Node = pad_rocket.call()
+	await get_tree().process_frame
+	flips.ignite()
+	flips.altitude = 40.0
+	flips.speed = 2.0
+	Input.action_press("move_forward")
+	Input.action_press("trick")
+	for i in 60 * 2:
+		flips._spin_controls(1.0 / 60.0)
+		flips._ascent(1.0 / 60.0)
+	check(float(flips.stress) >= 0.0 and flips.trick.in_combo() and flips.trick.half_turns == 2, "Two seconds of flipping counts half-turns", flips.trick.half_turns)
+	Input.action_release("move_forward")
+	Input.action_press("move_right")
+	for i in 60:
+		flips._spin_controls(1.0 / 60.0)
+	Input.action_release("move_right")
+	Input.action_release("trick")
+	var expected: int = flips.trick.payout()
+	check(flips.trick.mult >= 3, "Changing axis raises the multiplier", flips.trick.mult)
+	for i in 60 * 5:
+		flips._spin_controls(1.0 / 60.0)
+	check(int(Game.mission.trick_points) == expected and expected > 0, "An idle moment with the nose straight banks the combo", Game.mission.trick_points)
+	flips.queue_free()
+	await get_tree().process_frame
+
+	# 2D: with the main stage gone, the upper engine's flame starts at the bottom of the upper stage.
+	var r2d_flight: Node = (load("res://scenes/rocket2d_flight.tscn") as PackedScene).instantiate()
+	add_child(r2d_flight)
+	await get_tree().process_frame
+	r2d_flight.sim.main_attached = false
+	check(r2d_flight.upper_flame_base(Vector2(100, 200), 4.0, 0.3) == Vector2(100, 200), "Upper stage flame sits under the upper stage")
+	r2d_flight.queue_free()
+	await get_tree().process_frame
+
+	# Wiggling earns nothing.
+	var tr := TrickScore.new()
+	for i in 200:
+		tr.spin(0.5 if i % 2 == 0 else -0.5, 0.0)
+	check(not tr.in_combo(), "Wiggling back and forth scores nothing", tr.half_turns)
+
+	# Rover: rock damage, immunity at low speed, wreck, bail, repair, and the heading stays free of damage.
+	Game.new_mission()
+	var tw := Terrain.new()
+	add_child(tw)
+	tw.setup_region(Data.regions["gale"])
+	var make_rover := func() -> Rover:
+		var ro := Rover.new()
+		add_child(ro)
+		ro.global_position = tw.uv_to_world(0.5, 0.5)
+		ro.setup(tw, 3.7, Color.GRAY)
+		ro.place(ro.global_position)
+		ro.heading = 0.0
+		return ro
+	var r1: Rover = make_rover.call()
+	var ahead := r1.global_position + Vector3(0, 0, 12)
+	r1.rocks = [Vector4(ahead.x, tw.height_at(ahead.x, ahead.z), ahead.z, 1.5)]
+	r1.velocity = Vector3(0, 0, 24.0)
+	var hit := 0.0
+	for i in 60:
+		r1.tick(1.0 / 60.0, 1.0, 0.0, false, false)
+		hit += r1.last_hit
+	check(hit > 5.0 and r1.health < 100.0, "Hitting a rock at speed hurts", r1.health)
+	check(r1.velocity.z < 10.0, "A rock stops the rover", r1.velocity.z)
+	check(r1.global_position.distance_to(ahead) > 1.0, "The rover does not pass through the rock", r1.global_position.distance_to(ahead))
+	r1.queue_free()
+	var r2: Rover = make_rover.call()
+	var slow_at := r2.global_position + Vector3(0, 0, 4)
+	r2.rocks = [Vector4(slow_at.x, tw.height_at(slow_at.x, slow_at.z), slow_at.z, 1.5)]
+	for i in 120:
+		r2.velocity = Vector3(0, r2.velocity.y, 3.0)
+		r2.tick(1.0 / 60.0, 0.0, 0.0, false, false)
+	check(is_equal_approx(r2.health, 100.0), "A gentle bump does no damage", r2.health)
+	r2.repair(5.0)
+	r2.queue_free()
+	var r3: Rover = make_rover.call()
+	r3._take_damage(200.0)
+	check(r3.health == 0.0, "Health stops at zero", r3.health)
+	r3.velocity = Vector3.ZERO
+	var p0 := r3.global_position
+	for i in 60:
+		r3.tick(1.0 / 60.0, 1.0, 0.0, true, false)
+	check(r3.global_position.distance_to(p0) < 1.0, "A wrecked rover cannot drive", r3.global_position.distance_to(p0))
+	r3.repair(30.0)
+	check(is_equal_approx(r3.health, 30.0), "Repair restores health", r3.health)
+	r3.queue_free()
+	# A clean flip pays out; landing inverted is a bail that costs health.
+	var r4: Rover = make_rover.call()
+	r4.global_position.y += 40.0
+	r4.grounded = false
+	for i in 60 * 3:
+		var going: bool = r4._flip > -TAU + 0.05
+		r4.trick_held = going
+		r4.tick(1.0 / 60.0, 1.0 if going else 0.0, 0.0, false, false)
+		if r4.grounded:
+			break
+	var before_paid := int(Game.mission.trick_points)
+	check(r4.trick.half_turns == 2 or before_paid > 0, "A full flip in the air counts", r4.trick.half_turns)
+	while not r4.grounded:
+		r4.tick(1.0 / 60.0, 0.0, 0.0, false, false)
+	r4.tick(1.0 / 60.0, 0.0, 0.0, false, false)
+	check(int(Game.mission.trick_points) >= 200, "Landing a full flip pays out", Game.mission.trick_points)
+	check(is_equal_approx(r4.health, 100.0), "A clean landing costs no health", r4.health)
+	r4.queue_free()
+	var r5: Rover = make_rover.call()
+	r5.global_position.y += 30.0
+	r5.grounded = false
+	r5._flip = PI
+	r5.trick.spin(PI + 0.01, 0.0)
+	while not r5.grounded:
+		r5.tick(1.0 / 60.0, 0.0, 0.0, false, false)
+		r5._flip = PI
+	r5.tick(1.0 / 60.0, 0.0, 0.0, false, false)
+	check(r5.health < 100.0 and not r5.trick.in_combo(), "Landing upside down is a bail", r5.health)
+	r5.queue_free()
+	tw.queue_free()
+	await get_tree().process_frame
+
+	# Probe: a sudden full-stick turn eases in, and the body never snaps.
+	var pr := ProbeCraft.new()
+	var cloud := World.CloudWorld.new()
+	cloud.setup(Data.art("jupiter"))
+	add_child(cloud)
+	add_child(pr)
+	pr.setup(cloud, 24.0, Color.WHITE)
+	pr.place(Vector3(2000, 70, 2000))
+	for i in 120:
+		pr.tick(1.0 / 60.0, 1.0, 0.0, false, false)
+	var worst_bank := 0.0
+	var worst_rate_step := 0.0
+	var prev_bank: float = pr.rotation.z
+	var prev_heading: float = pr.heading
+	var prev_rate := 0.0
+	for i in 240:
+		var st := 1.0 if i < 120 else -1.0
+		pr.tick(1.0 / 60.0, 1.0, st, false, false)
+		worst_bank = maxf(worst_bank, absf(pr.rotation.z - prev_bank))
+		var rate: float = pr.heading - prev_heading
+		worst_rate_step = maxf(worst_rate_step, absf(rate - prev_rate))
+		prev_bank = pr.rotation.z
+		prev_heading = pr.heading
+		prev_rate = rate
+	check(worst_bank < 0.03, "Probe banking changes gradually", worst_bank)
+	check(worst_rate_step < 0.002, "Probe turn rate builds gradually", worst_rate_step)
+	print("  probe: worst bank step %.4f rad, worst turn-rate step %.5f rad/frame" % [worst_bank, worst_rate_step])
+	pr.queue_free()
+	cloud.queue_free()
+	await get_tree().process_frame
+	Game.new_mission()
