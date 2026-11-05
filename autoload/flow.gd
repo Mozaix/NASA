@@ -48,6 +48,18 @@ func _ready() -> void:
 	_fps.position = Vector2(8, 4)
 	_fps.visible = false
 	add_child(_fps)
+	add_child(_version_stamp())
+
+## Small version number in the corner of every screen. Labels ignore the mouse, so it can't block clicks.
+func _version_stamp() -> Label:
+	var stamp := UI.label(version_text(), 11, UI.TEXT_DIM)
+	stamp.name = "VersionStamp"
+	stamp.modulate.a = 0.6
+	stamp.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 3)
+	return stamp
+
+static func version_text() -> String:
+	return "v" + str(ProjectSettings.get_setting("application/config/version", ""))
 
 func _build_pause() -> void:
 	_pause_layer = ColorRect.new()

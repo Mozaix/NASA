@@ -154,3 +154,14 @@ Not tested on real hardware or platforms:
   An off-window or slow-engine transfer now bends its path to meet the planet on arrival day. It is not a true Hohmann arc in those cases, and the off-window delta-v penalty stands for that cost.
 - **Learning and quiz.** Failure panels and the debrief explain what happened using the mission's own numbers (`Game.lessons()`), beside verified NASA quotes (`data/lessons.json`). New game values are labelled on screen.
   The demo asks the same 3 questions before and after the mission and keeps anonymous totals on the local computer. This is an informal check with repeated questions and self-selected players, so it can't prove learning.
+
+## Versions
+
+The number lives in `project.godot` (`config/version`). The stamp on screen and the exports read it from there, so bump it once with each release.
+
+| Version | What it covers | Last commit |
+|---|---|---|
+| 1.0 | Original game | `5cc1a01` |
+| 1.1 | Demo mode, new HUD, 2D game | `5441fe6` |
+| 1.2 | Launch stress, tricks, rover health, bug fixes | `108cf9c` |
+| 1.3 | Failure explanations, demo quiz, version stamp | current `main` |

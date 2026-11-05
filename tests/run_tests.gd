@@ -30,6 +30,7 @@ func _ready() -> void:
 	await test_autoland()
 	await test_player_reports()
 	await test_learning()
+	test_version_stamp()
 	await test_demo()
 	await test_rocket_scenes()
 	await test_scenes()
@@ -998,3 +999,13 @@ func test_learning() -> void:
 	quiz.queue_free()
 	DirAccess.remove_absolute(path)
 	Game.new_mission()
+
+func test_version_stamp() -> void:
+	var v := str(ProjectSettings.get_setting("application/config/version", ""))
+	check(v.is_valid_float(), "project.godot has a version number", v)
+	var stamp: Label = Flow.get_node("VersionStamp")
+	check(stamp.text == "v" + v, "stamp shows the project version", stamp.text)
+	check(stamp.mouse_filter == Control.MOUSE_FILTER_IGNORE, "stamp can't block clicks")
+	# An empty number here makes the macOS export use the one in project.godot.
+	var presets := FileAccess.get_file_as_string("res://export_presets.cfg")
+	check(presets.contains('application/short_version=""') and presets.contains('application/version=""'), "exports don't carry their own version number")
