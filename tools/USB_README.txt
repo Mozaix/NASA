@@ -10,9 +10,8 @@ HOW TO START THE GAME
 
 macOS (Apple Silicon or Intel)
   1. Open the "macOS" folder.
-  2. Double-click NextFrontierExplorer-macOS.zip to unpack it, then drag the
-     app to your Desktop. It loads faster from there than from the USB stick.
-     (NextFrontierExplorer.app beside the zip also runs directly from the stick.)
+  2. Copy NextFrontierExplorer.app to your computer's Desktop or
+     Applications folder. It runs faster from there than from the USB stick.
   3. The first time only: RIGHT-CLICK the app and choose "Open", then click
      "Open" again in the box that appears. The app is not signed by Apple,
      so double-clicking it the first time will be refused.
@@ -35,17 +34,6 @@ Linux (64-bit)
      running programs, copy the folder to your home directory first.
 
 
-GAME MODES
-----------
-Play Main Game  The full mission: plan, launch, cruise, orbit, land, explore.
-Play Demo       A short version with one simple planning page and a 3-question
-                quiz before and after. Quiz results stay on this computer.
-Play 2D         Build rockets, earn money from height, buy better parts.
-                6 launches per game. Type your name at the end to join today's
-                leaderboard. The next player starts fresh; the day's scores stay.
-                Scores are saved on this computer only.
-
-
 CONTROLS
 --------
 Keyboard and mouse, or any standard gamepad (plug it in before starting).
@@ -57,19 +45,12 @@ Keyboard and mouse, or any standard gamepad (plug it in before starting).
   (ignite, burn, hop)
   Collect sample, scan  E (hold)          X (hold)
   Boost                 Shift             Right bumper
-  Spin tricks (hold)    Q + W A S D       Left trigger + left stick
   Headlights            L                 Y
   Map / scale toggle    M                 Back
   Landing autopilot     P                 Left bumper
-  Look down at the pad  C                 Press right stick
-  Show exact numbers    Tab               D-pad up
   Pause                 Esc               Start
 
 Keys can be changed in Settings.
-
-Launch: W/S throttle, A/D steer. If the stress needle stays in the red too long, the rocket breaks up.
-Tricks: hold Q and press W/S to flip or A/D to spin, on the rocket or in a rover jump. Land the combo to bank it.
-Rover: rocks cost health. Drive back to the lander to repair.
 
 
 IF THE GAME RUNS SLOWLY
@@ -88,5 +69,5 @@ and in SOURCES.md next to this file. Facts shown in the game are direct quotes
 from NASA pages, or numbers from NASA data. Numbers the game computes are
 labelled "derived".
 
-This is a fan project made for the NASA Space Apps Challenge. It is not
+This is a fan project made for the NASA Space Apps Challenge by Hosam and his team. It is not
 endorsed by NASA. Godot Engine is used under the MIT licence.
