@@ -6,7 +6,7 @@ const SCENES := {
 	"transfer": "res://scenes/transfer.tscn", "orbit": "res://scenes/orbit.tscn", "landing": "res://scenes/landing.tscn",
 	"surface": "res://scenes/surface.tscn", "debrief": "res://scenes/debrief.tscn", "archive": "res://scenes/archive.tscn",
 	"settings": "res://scenes/settings.tscn", "credits": "res://scenes/credits.tscn",
-	"demo_picker": "res://scenes/demo_picker.tscn", "rocket2d": "res://scenes/rocket2d.tscn", "rocket2d_flight": "res://scenes/rocket2d_flight.tscn", "leaderboard": "res://scenes/leaderboard.tscn",
+	"demo_picker": "res://scenes/demo_picker.tscn", "quiz": "res://scenes/quiz.tscn", "rocket2d": "res://scenes/rocket2d.tscn", "rocket2d_flight": "res://scenes/rocket2d_flight.tscn", "leaderboard": "res://scenes/leaderboard.tscn",
 }
 
 var _fade: ColorRect

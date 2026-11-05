@@ -152,3 +152,5 @@ Not tested on real hardware or platforms:
 - **Player-report fixes.** Launch stress can break up the rocket (a game value shaped like real dynamic pressure), spin tricks with a multiplier on the rocket and in rover jumps (bonus capped at 100 mission points), rover health and solid rocks (repair at the lander), brighter headlights, smoother probe.
   The autopilot can overdrive the engine when a late handover needs it (a game value), and diverts to safe ground if it can't reach the pad.
   An off-window or slow-engine transfer now bends its path to meet the planet on arrival day. It is not a true Hohmann arc in those cases, and the off-window delta-v penalty stands for that cost.
+- **Learning and quiz.** Failure panels and the debrief explain what happened using the mission's own numbers (`Game.lessons()`), beside verified NASA quotes (`data/lessons.json`). New game values are labelled on screen.
+  The demo asks the same 3 questions before and after the mission and keeps anonymous totals on the local computer. This is an informal check with repeated questions and self-selected players, so it can't prove learning.

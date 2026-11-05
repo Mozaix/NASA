@@ -48,6 +48,10 @@ func _ready() -> void:
 	if f.load("user://scores.cfg") == OK:
 		best_scores = f.get_value("scores", "best", {})
 
+## The demo quiz: which round comes next, and the score from the round before the mission (-1 when it was skipped).
+var quiz_stage := "before"
+var quiz_before := -1
+
 func new_mission() -> void:
 	mission = {
 		"target_id": "mars", "region_id": "gale",
@@ -58,6 +62,7 @@ func new_mission() -> void:
 		"pois": {}, "samples": [], "facts_seen": [], "science": 0.0,
 		"phase": "planning", "aborted": false, "distance_m": 0.0, "demo": false,
 		"reached_orbit": true, "rockets_lost": 0, "trick_points": 0, "rover_health": -1.0, "rover_lost": false,
+		"launch_peak_stress": 0.0, "breakup_km": 0.0, "breakup_air": 0.0, "breakup_sideways": false,
 	}
 
 func part(list: Array, id: String) -> Dictionary:
@@ -225,6 +230,95 @@ func score() -> Dictionary:
 	elif total >= 500.0:
 		rank = "Mission Specialist"
 	return {"success": success, "science": float(m.science), "budget": budget_pts, "tricks": tricks, "total": total, "rank": rank}
+
+## What this mission can teach, built from what actually happened on it. Each item has a title, an
+## explanation and, when the source check passed, a verbatim NASA quote. Used by the debrief and failure panels.
+func lessons() -> Array:
+	var out: Array = []
+	if int(mission.rockets_lost) > 0 or float(mission.launch_peak_stress) > 0.0:
+		out.append(launch_lesson())
+	var w := window_lesson()
+	if not w.is_empty():
+		out.append(w)
+	var l := landing_lesson()
+	if not l.is_empty():
+		out.append(l)
+	var g := gravity_lesson()
+	if not g.is_empty():
+		out.append(g)
+	var r := rover_lesson()
+	if not r.is_empty():
+		out.append(r)
+	return out
+
+func launch_lesson() -> Dictionary:
+	var text := "Air stress peaks partway up, when the rocket is already fast but the air is still thick. Higher up, the air thins out faster than the rocket gains speed."
+	if int(mission.rockets_lost) > 0:
+		text += " Your rocket broke up about %.0f km up, where the air was still %.0f%% as dense as at sea level (derived)." % [float(mission.breakup_km), float(mission.breakup_air) * 100.0]
+		if mission.breakup_sideways:
+			text += " It was also flying sideways, and air hitting the side loads a rocket far more than air along the nose."
+	else:
+		text += " Your needle peaked at %.0f%% of the red line. The needle is a game value." % (float(mission.launch_peak_stress) * 100.0)
+	return {"title": "Why rockets ease off in the lower air", "text": text, "fact": Data.lessons.get("max_q", {})}
+
+func window_lesson() -> Dictionary:
+	var t := target()
+	var text := "Trips between planets depend on where the planets are on launch day."
+	if t.id != "earth" and (t.kind == "planet" or (t.kind != "exoplanet" and str(t.get("parent", "")) not in ["earth", "sun", ""])):
+		var parent: String = t.id if t.kind == "planet" else str(t.parent)
+		var extra := (Orbital.window_factor(parent, float(mission.launch_unix)) - 1.0) * 100.0
+		if extra >= 2.0:
+			text += " Your launch date cost about %.0f%% more delta-v than the best window (simplified game model)." % extra
+		elif is_demo():
+			text += " The demo picked a launch date close to the best window for you."
+		else:
+			text += " You launched close to the best window, so the trip needed less propellant."
+	elif not is_demo():
+		return {}
+	return {"title": "Why launch dates matter", "text": text, "fact": Data.lessons.get("window", {})}
+
+func landing_lesson() -> Dictionary:
+	if is_probe_mission() or (not mission.landed and int(mission.crashes) == 0):
+		return {}
+	var s: Dictionary = mission.get("landing_stats", {})
+	var text := ""
+	if mission.landed:
+		text = "You touched down at %.1f m/s. This lander's limit is %.0f m/s (game value)." % [float(s.get("sink", 0.0)), float(s.get("limit", 0.0))]
+		if int(mission.crashes) > 0:
+			text += " It took %d backup lander%s to get there." % [int(mission.crashes), "" if int(mission.crashes) == 1 else "s"]
+	else:
+		var limit := float(s.get("limit", 0.0))
+		if float(s.get("drift", 0.0)) > limit * 1.3:
+			text = "Sideways speed stays until the engine cancels it, so tilt against the drift well before the ground."
+		elif float(s.get("sink", 0.0)) <= limit:
+			text = "Steep ground can tip a lander over, even at a gentle speed. Aim for the flat ground inside the ring."
+		elif float(s.get("brake_m", 0.0)) > 0.0:
+			text = "To stop from %.0f m/s at full thrust takes about %.0f m of height (derived: speed squared, divided by twice the braking power left after gravity). Start the burn higher." % [float(s.sink), float(s.brake_m)]
+		else:
+			text = "You hit the ground at %.0f m/s. This lander's limit is %.0f m/s (game value)." % [float(s.get("sink", 0.0)), limit]
+	return {"title": "Why landing is the hard part", "text": text, "fact": Data.lessons.get("landing", {})}
+
+func gravity_lesson() -> Dictionary:
+	var t := target()
+	if is_probe_mission() or t.get("gravity") == null:
+		return {}
+	var g := float(t.gravity)
+	var earth := float(Data.body("earth").gravity)
+	if g <= 0.0:
+		return {}
+	var how := "A fall builds speed more slowly here, and the rover's jumps carry farther." if g < earth else "A fall builds speed faster here, and the rover's jumps are shorter."
+	return {"title": "What gravity changes", "text": "Gravity at %s is %.2f m/s\u00b2, %.0f%% of Earth's (percentage derived). %s" % [str(t.name), g, g / earth * 100.0, how], "fact": {}}
+
+func rover_lesson() -> Dictionary:
+	var hp := float(mission.rover_health)
+	var text := ""
+	if mission.rover_lost:
+		text = "Rock strikes wrecked your rover."
+	elif hp >= 0.0 and hp < 100.0:
+		text = "Rock strikes wore your rover down to %d%%." % int(ceil(hp))
+	else:
+		return {}
+	return {"title": "Why rover drivers plan around rocks", "text": text + " Rover health is a game value, but real wheels do get hurt, as this quote shows.", "fact": Data.lessons.get("wheels", {})}
 
 func save_best(total: float) -> bool:
 	var id: String = mission.target_id

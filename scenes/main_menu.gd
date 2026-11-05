@@ -47,7 +47,7 @@ func _build_ui() -> void:
 	col.add_child(start)
 	var modes := UI.hbox(10)
 	col.add_child(modes)
-	modes.add_child(_mode_button("Play Demo", "About 3 minutes, one simple page", func() -> void: Flow.go("demo_picker")))
+	modes.add_child(_mode_button("Play Demo", "About 4 minutes, with a short quiz", _start_demo))
 	modes.add_child(_mode_button("Play 2D", "Build rockets, chase the high score", func() -> void:
 		Rocket2D.new_game()
 		Flow.go("rocket2d", "Rocket Builder")))
@@ -97,4 +97,12 @@ func auto_advance() -> void:
 			Rocket2D.flights_left = Autotest._flights_override
 		Flow.go("rocket2d", "Rocket Builder")
 		return
-	Flow.go("demo_picker" if Autotest.demo else "planner", "Mission Control")
+	if Autotest.demo:
+		_start_demo()
+	else:
+		Flow.go("planner", "Mission Control")
+
+func _start_demo() -> void:
+	Game.quiz_stage = "before"
+	Game.quiz_before = -1
+	Flow.go("quiz")

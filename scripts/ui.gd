@@ -224,6 +224,16 @@ static func fact_block(fact: Dictionary, size: int = 16) -> VBoxContainer:
 	v.add_child(para("Source: " + short_url(fact.get("url", "")), 12, ACCENT))
 	return v
 
+## One entry from Game.lessons(): what happened, why, and the NASA quote behind it when there is one.
+static func lesson_block(item: Dictionary, size: int = 15) -> VBoxContainer:
+	var v := vbox(4)
+	v.add_child(label(str(item.title), size + 2, AMBER, "bold"))
+	v.add_child(para(str(item.text), size, TEXT))
+	var fact: Dictionary = item.get("fact", {})
+	if not fact.is_empty():
+		v.add_child(fact_block(fact, size - 1))
+	return v
+
 ## The numeric card for any target, every value from bundled data and labelled when computed.
 static func stats_grid(t: Dictionary) -> GridContainer:
 	var g := grid(2)

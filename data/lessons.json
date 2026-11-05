@@ -1,0 +1,24 @@
+{
+ "lessons": {
+  "max_q": {
+   "id": "max_q",
+   "url": "https://www.nasa.gov/blogs/commercialcrew/2026/10/01/rocket-reaches-max-q-5/",
+   "text": "Max Q marks the moment of peak aerodynamic stress on the rocket."
+  },
+  "window": {
+   "id": "window",
+   "url": "https://science.nasa.gov/planetary-science/programs/mars-exploration/mission-timeline/",
+   "text": "As Earth and Mars orbit the Sun at different speeds and distances, about once every 26 months they are aligned in a way that allows the most energy-efficient trip to Mars."
+  },
+  "landing": {
+   "id": "landing",
+   "url": "https://science.nasa.gov/resource/challenges-of-getting-to-mars-curiositys-seven-minutes-of-terror/",
+   "text": "Because we've got literally seven minutes to get from the top of the atmosphere to the surface of Mars going from 13,000 miles an hour to zero, in perfect sequence, perfect choreography, perfect timing and the computer has to do it all by itself, with no help from the ground."
+  },
+  "wheels": {
+   "id": "wheels",
+   "url": "https://science.nasa.gov/resource/break-in-raised-tread-on-curiosity-wheel/",
+   "text": "Holes and tears in the wheels worsened significantly during 2013 as Curiosity was crossing terrain studded with sharp rocks on the route from near its 2012 landing site to the base of Mount Sharp."
+  }
+ }
+}

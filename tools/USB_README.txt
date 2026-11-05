@@ -38,7 +38,8 @@ Linux (64-bit)
 GAME MODES
 ----------
 Play Main Game  The full mission: plan, launch, cruise, orbit, land, explore.
-Play Demo       A short version with one simple planning page.
+Play Demo       A short version with one simple planning page and a 3-question
+                quiz before and after. Quiz results stay on this computer.
 Play 2D         Build rockets, earn money from height, buy better parts.
                 6 launches per game. Type your name at the end to join today's
                 leaderboard. The next player starts fresh; the day's scores stay.

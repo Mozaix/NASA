@@ -47,7 +47,7 @@ Before starting: launch the game, set Settings to Fullscreen, and return to the 
 - Open **Launch Window**. Drag the slider off the peak and watch the penalty rise. Click **Jump to the best window**.
 - Open **Review**, then click **LAUNCH**.
 
-**1:00 Launch and cruise (25 s).** Press Space to ignite, and press Space in the green for the departure burn.
+**1:00 Launch and cruise (25 s).** Press Space to ignite, then press **P** for the autopilot so the rocket stays out of the red. Say: "Stress peaks partway up, just like a real rocket's Max Q. If you hold it in the red, the rocket breaks up, and the game explains why." Press Space in the green for the departure burn.
 In the cruise view, press **M** to switch to true scale: "This is how empty space really is." Press M again, then **Faster**.
 
 **1:25 Landing (25 s).** In orbit, click **Begin descent**. Press **P** for the autopilot, so the demo cannot crash.
@@ -56,7 +56,7 @@ Point out that the terrain below is real Mars elevation.
 **1:50 Surface (45 s).** Drive to the nearest beacon. A NASA fact card appears with the elevation measured at that spot.
 Hold **E** to collect a sample. Turn toward Mount Sharp: "This mountain is real, and the HUD shows the real elevation."
 
-**2:35 Range (15 s).** Press Esc and end the mission to show the score. Say that the same flow reaches 16 solar system worlds and 50 exoplanets.
+**2:35 Debrief (15 s).** Press Esc and end the mission. Point at "What this mission showed": it explains this flight using its own numbers, beside NASA quotes. Say that the same flow reaches 16 solar system worlds and 50 exoplanets.
 
 **2:50 Close (10 s).** "Everything you saw runs offline, from NASA data, and every source is listed in the game."
 
@@ -64,7 +64,7 @@ Hold **E** to collect a sample. Turn toward Mount Sharp: "This mountain is real,
 
 ## Other modes
 
-**Play Demo** is a shorter mission with one planning page and a spinning hologram of the spacecraft.
+**Play Demo** is a shorter mission with one planning page and a spinning hologram of the spacecraft. It asks three questions before the mission and offers the same three afterward, then shows the change for that player and the average on that computer. These numbers are a small, informal check, not a study.
 **Play 2D** lets people build rockets, earn money from height and compete on today's leaderboard.
 Each part card shows its predicted effect on height.
 
@@ -79,5 +79,5 @@ Each part card shows its predicted effect on height.
 
 - Terrain is compressed horizontally and exaggerated vertically so it can be driven. The HUD shows the scale for each site.
 - The launch-window penalty is a simplified model, and the planner says so.
-- Part costs and masses are game values, labelled as such.
+- Part costs and masses are game values, labelled as such. So are rocket stress and strength, trick scores, rover health and the autopilot's emergency thrust.
 - Not endorsed by NASA.

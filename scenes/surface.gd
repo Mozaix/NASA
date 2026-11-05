@@ -260,7 +260,7 @@ func _build_hud() -> void:
 	_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 18)
 	root.add_child(_card)
 	if not _probe:
-		_card.add_row("health", "Rover health", true, UI.GOOD)
+		_card.add_row("health", "Rover health (game value)", true, UI.GOOD)
 	_card.add_row("speed", "Speed", true)
 	_card.add_row("gravity", "Gravity")
 	if region.get("real_elevation", false):
@@ -480,7 +480,8 @@ func _rover_wrecked() -> void:
 	_done_panel.get_parent().add_child(pan)
 	UI.center_panel(pan)
 	v.add_child(UI.heading("The rover is wrecked", 28))
-	v.add_child(UI.para("Too many rock strikes. The science you already collected is safe.", 16, UI.TEXT))
+	v.add_child(UI.para("The science you already collected is safe.", 16, UI.TEXT))
+	v.add_child(UI.lesson_block(Game.rover_lesson(), 15))
 	var end := UI.button("End mission", end_mission, true)
 	v.add_child(end)
 	end.grab_focus.call_deferred()

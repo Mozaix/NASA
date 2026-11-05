@@ -6,6 +6,7 @@ var elements: Dictionary = {}
 var exo: Dictionary = {}
 var regions: Dictionary = {}
 var milestones: Array = []
+var lessons: Dictionary = {}
 var _targets: Array = []
 var _by_id: Dictionary = {}
 var _tex_cache: Dictionary = {}
@@ -36,6 +37,7 @@ func _ready() -> void:
 	exo = _json("res://data/exoplanets.json")
 	regions = _json("res://data/regions.json")
 	milestones = _json("res://data/milestones.json").get("milestones", [])
+	lessons = _json("res://data/lessons.json").get("lessons", {})
 	_build_targets()
 
 func _json(path: String) -> Dictionary:

@@ -166,6 +166,11 @@ func _process(delta: float) -> void:
 				_stage = 2
 				DirAccess.remove_absolute(ProjectSettings.globalize_path(Rocket2D.board_path))
 				_finish()
+		"Quiz":
+			if _stage == 0 and _t > 1.0:
+				_stage = 1
+				_shot("quiz")
+				scene.auto_advance()
 		"DemoPicker":
 			if _stage == 0 and _t > 1.0:
 				_stage = 1

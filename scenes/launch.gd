@@ -81,6 +81,7 @@ class TimingBar extends Control:
 func _ready() -> void:
 	Sfx.music("music_space")
 	Game.mission.phase = "launch"
+	Game.mission.launch_peak_stress = 0.0
 	Game.mission.reached_orbit = false
 	var sun := Vector3(0.6, 0.55, 0.6).normalized()
 	var light := Space.make_sun_light(self, sun)
@@ -166,11 +167,11 @@ func _build_hud() -> void:
 	_card.add_row("speed", "Speed")
 	_gauge_box = UI.vbox(4)
 	_gauge_box.visible = false
-	_gauge_box.add_child(UI.label("Stress on the rocket", 15, UI.TEXT_DIM))
+	_gauge_box.add_child(UI.label("Stress on the rocket (game value)", 15, UI.TEXT_DIM))
 	_gauge = StressGauge.new()
 	_gauge.custom_minimum_size = Vector2(0, 16)
 	_gauge_box.add_child(_gauge)
-	_gauge_box.add_child(UI.label("Rocket strength", 15, UI.TEXT_DIM))
+	_gauge_box.add_child(UI.label("Rocket strength (game value)", 15, UI.TEXT_DIM))
 	_damage_bar = UI.bar(0, 1, UI.GOOD, 9.0)
 	_damage_bar.value = 1.0
 	_gauge_box.add_child(_damage_bar)
@@ -311,6 +312,7 @@ func _ascent(real_delta: float) -> void:
 		if not over:
 			q_time_good += delta
 	_gauge.value = stress
+	Game.mission.launch_peak_stress = maxf(float(Game.mission.launch_peak_stress), stress)
 	_gauge.queue_redraw()
 	# Damage counts in real seconds, so the demo's faster ascent is naturally more forgiving.
 	if over:
@@ -394,6 +396,9 @@ func _apply_attitude() -> void:
 
 func _break_up() -> void:
 	state = "broken"
+	Game.mission.breakup_km = altitude
+	Game.mission.breakup_air = exp(-altitude / 8.5)
+	Game.mission.breakup_sideways = pow(sin(_off_axis()), 2.0) * 6.0 > 0.5
 	stress = 0.0
 	trick.bail()
 	_trick_hud.flash("Combo lost", UI.BAD)
@@ -417,7 +422,8 @@ func _break_up() -> void:
 	var pan := UI.panel(v, 26)
 	pan.custom_minimum_size.x = 560.0
 	v.add_child(UI.heading("The rocket broke apart", 32))
-	v.add_child(UI.para("Aerodynamic stress stayed in the red for too long. Throttle down in the thick lower air, and point the nose into the airflow. Save the big spins for above the atmosphere.", 18, UI.TEXT))
+	v.add_child(UI.lesson_block(Game.launch_lesson(), 16))
+	v.add_child(UI.para("Next time: press %s to throttle down in the thick lower air and keep the nose straight, or press %s for the autopilot." % [Settings.key_name("move_back"), Settings.key_name("assist")], 16, UI.GOOD))
 	var again := UI.button("Try again with a backup rocket", func() -> void: Flow.go("launch", "Launch"), true)
 	v.add_child(again)
 	v.add_child(UI.button("End mission", func() -> void: Flow.go("debrief", "Mission Debrief")))

@@ -15,7 +15,7 @@ func _init(t: TrickScore, hint: String) -> void:
 	custom_minimum_size.x = 240.0
 	var v := UI.vbox(2)
 	add_child(v)
-	v.add_child(UI.label("Trick score", 14, UI.TEXT_DIM))
+	v.add_child(UI.label("Trick score (game bonus)", 14, UI.TEXT_DIM))
 	_total = UI.label("0", 28, UI.AMBER, "mono")
 	v.add_child(_total)
 	_combo = UI.label("", 20, UI.GOOD, "bold")

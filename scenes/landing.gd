@@ -264,7 +264,7 @@ func _update_card(alt: float, dist: float) -> void:
 	if auto_pilot:
 		tip = "Autopilot is flying. Press %s to look down, %s to take over" % [Settings.key_name("look_down"), Settings.key_name("assist")]
 		if overdrive > 1.0:
-			tip = "Autopilot is on emergency thrust!"
+			tip = "Autopilot is on emergency thrust (a game assist)"
 		elif autopilot_diverted:
 			tip = "Autopilot can't reach the pad, so it's landing on the nearest safe ground"
 	elif uses_chute:
@@ -364,7 +364,7 @@ func _touchdown(dist: float) -> void:
 		Game.mission.landed = true
 		Game.mission.landing_rating = rating
 		Game.mission.landing_pos = [p.x, p.z]
-		Game.mission.landing_stats = {"sink": sink, "drift": drift, "slope": slope, "dist_real_km": dist * float(region.get("hscale", 24.0)) / 1000.0, "fuel_left": fuel}
+		Game.mission.landing_stats = {"sink": sink, "drift": drift, "slope": slope, "dist_real_km": dist * float(region.get("hscale", 24.0)) / 1000.0, "fuel_left": fuel, "limit": limit}
 		_show_result(true, "Touchdown at %.1f m/s, %.1f km from the target." % [sink, dist * float(region.get("hscale", 24.0)) / 1000.0])
 	else:
 		state = "crashed"
@@ -372,6 +372,8 @@ func _touchdown(dist: float) -> void:
 		Game.mission.crashes = int(Game.mission.crashes) + 1
 		craft.visible = false
 		Game.mission.landing_stats = {"sink": sink, "drift": drift, "slope": slope, "fuel_left": fuel, "limit": limit, "dist_m": dist}
+		if not uses_chute and thrust_acc > gravity:
+			Game.mission.landing_stats.brake_m = sink * sink / (2.0 * (thrust_acc - gravity))
 		var why := "Impact at %.1f m/s (limit %.0f)." % [sink, limit]
 		if drift > limit * 1.3:
 			why = "Too much sideways drift: %.1f m/s." % drift
@@ -394,7 +396,8 @@ func _show_result(ok: bool, text: String) -> void:
 		v.add_child(go)
 		go.grab_focus.call_deferred()
 	else:
-		v.add_child(UI.para("Mission control has a backup lander, at a scoring penalty. Tip: start braking earlier, and arrive slowly and nearly upright.", 16))
+		v.add_child(UI.lesson_block(Game.landing_lesson(), 15))
+		v.add_child(UI.para("Mission control has a backup lander, at a scoring penalty.", 15))
 		var again := UI.button("Try again with the backup lander", func() -> void: Flow.go("landing", str(region.name)), true)
 		v.add_child(again)
 		again.grab_focus.call_deferred()

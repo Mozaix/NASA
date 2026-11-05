@@ -29,6 +29,7 @@ func _ready() -> void:
 	test_rover_contact()
 	await test_autoland()
 	await test_player_reports()
+	await test_learning()
 	await test_demo()
 	await test_rocket_scenes()
 	await test_scenes()
@@ -926,4 +927,74 @@ func test_player_reports() -> void:
 	pr.queue_free()
 	cloud.queue_free()
 	await get_tree().process_frame
+	Game.new_mission()
+
+func test_learning() -> void:
+	# Every quote the lessons rely on survived the source check.
+	for id: String in ["max_q", "window", "landing", "wheels"]:
+		check(Data.lessons.has(id) and str(Data.lessons[id].get("url", "")).contains("nasa.gov"), "lesson quote verified: " + id)
+	Game.new_mission()
+	Game.mission.target_id = "mars"
+	Game.mission.region_id = "gale"
+	check(Game.landing_lesson().is_empty(), "no landing lesson before a landing attempt")
+	check(Game.rover_lesson().is_empty(), "no rover lesson before the rover is hurt")
+	# A launch break-up reports where it happened.
+	Game.mission.rockets_lost = 1
+	Game.mission.breakup_km = 12.0
+	Game.mission.breakup_air = exp(-12.0 / 8.5)
+	var launch := Game.launch_lesson()
+	check(launch.text.contains("12 km") and launch.text.contains("24%"), "break-up lesson uses this flight's numbers", launch.text)
+	check(launch.fact.text.contains("Max Q"), "break-up lesson quotes NASA")
+	# Off-window launches show their cost. The best window doesn't.
+	var u := Orbital.best_window("mars", 1798761600.0, Orbital.synodic_days("mars") * 1.1)
+	Game.mission.launch_unix = u
+	check(not Game.window_lesson().text.contains("more delta-v"), "best window has no penalty line", Game.window_lesson().text)
+	Game.mission.launch_unix = u + Orbital.synodic_days("mars") * 0.5 * 86400.0
+	check(Game.window_lesson().text.contains("more delta-v"), "off-window launch reports its cost", Game.window_lesson().text)
+	# Each crash cause gets its own explanation.
+	Game.mission.crashes = 1
+	Game.mission.landing_stats = {"sink": 30.0, "drift": 0.0, "slope": 2.0, "limit": 5.0, "brake_m": 50.0}
+	check(Game.landing_lesson().text.contains("50 m"), "hard impact gives the braking height", Game.landing_lesson().text)
+	Game.mission.landing_stats = {"sink": 2.0, "drift": 20.0, "slope": 2.0, "limit": 5.0}
+	check(Game.landing_lesson().text.contains("Sideways"), "drift crash explains drift")
+	Game.mission.landing_stats = {"sink": 2.0, "drift": 0.0, "slope": 40.0, "limit": 5.0}
+	check(Game.landing_lesson().text.contains("Steep"), "slope crash explains slope")
+	check(Game.gravity_lesson().text.contains("38%"), "Mars gravity compared with Earth", Game.gravity_lesson().text)
+	Game.mission.rover_health = 40.0
+	check(Game.rover_lesson().fact.text.contains("sharp rocks"), "damaged rover lesson quotes NASA")
+	check(Game.lessons().size() == 5, "all five lessons appear", Game.lessons().size())
+	# Lessons are safe on every target, including ones with no window or surface.
+	for id: String in Data.bodies.keys() + ["exo_trappist_1_e"]:
+		Game.new_mission()
+		Game.mission.target_id = id
+		Game.mission.launch_unix = 1798761600.0
+		Game.mission.crashes = 1
+		Game.mission.landing_stats = {}
+		check(Game.lessons() is Array, "lessons build for " + id)
+	# Quiz totals: a damaged file starts again, and each pair counts once.
+	var path := "user://quiz_test.json"
+	DirAccess.remove_absolute(path)
+	check(int(QuizScene.load_results(path).runs) == 0, "quiz totals start empty")
+	QuizScene.record(1, 3, path)
+	var r := QuizScene.record(0, 2, path)
+	check(int(r.runs) == 2 and int(r.before_total) == 1 and int(r.after_total) == 5, "quiz totals add up", r)
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_string("not json")
+	f.close()
+	check(int(QuizScene.load_results(path).runs) == 0, "damaged quiz file is ignored")
+	DirAccess.remove_absolute(path)
+	# The after-round runs start to finish, with results written only to a test path.
+	Game.new_mission()
+	Game.quiz_stage = "after"
+	Game.quiz_before = 1
+	var quiz: QuizScene = load("res://scenes/quiz.tscn").instantiate()
+	quiz.results_path = path
+	add_child(quiz)
+	await get_tree().process_frame
+	quiz.auto_advance()
+	check(quiz.score == 3, "right answers all score", quiz.score)
+	check(Game.quiz_before == -1, "a finished pair cannot be counted twice")
+	check(int(QuizScene.load_results(path).runs) == 1, "after-round records one result")
+	quiz.queue_free()
+	DirAccess.remove_absolute(path)
 	Game.new_mission()
