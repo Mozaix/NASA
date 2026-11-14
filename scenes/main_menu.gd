@@ -53,7 +53,7 @@ func _build_ui() -> void:
 		Flow.go("rocket2d", "Rocket Builder")))
 	var row := UI.hbox(8)
 	col.add_child(row)
-	for pair: Array in [["Leaderboard", "leaderboard"], ["Archive", "archive"], ["Settings", "settings"], ["Credits", "credits"]]:
+	for pair: Array in [["Leaderboard", "leaderboard"], ["Results", "results"], ["Archive", "archive"], ["Settings", "settings"], ["Credits", "credits"]]:
 		var dest: String = pair[1]
 		var b := UI.button(pair[0], func() -> void: Flow.go(dest))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL

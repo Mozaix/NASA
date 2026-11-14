@@ -7,7 +7,7 @@ const SCENES := {
 	"surface": "res://scenes/surface.tscn", "debrief": "res://scenes/debrief.tscn", "archive": "res://scenes/archive.tscn",
 	"settings": "res://scenes/settings.tscn", "credits": "res://scenes/credits.tscn",
 	"demo_picker": "res://scenes/demo_picker.tscn", "quiz": "res://scenes/quiz.tscn", "rocket2d": "res://scenes/rocket2d.tscn", "rocket2d_flight": "res://scenes/rocket2d_flight.tscn", "leaderboard": "res://scenes/leaderboard.tscn",
-	"hatch": "res://scenes/hatch.tscn",
+	"hatch": "res://scenes/hatch.tscn", "results": "res://scenes/results.tscn",
 }
 
 var _fade: ColorRect

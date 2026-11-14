@@ -51,6 +51,8 @@ func _ready() -> void:
 ## The demo quiz: which round comes next, and the score from the round before the mission (-1 when it was skipped).
 var quiz_stage := "before"
 var quiz_before := -1
+## Which questions were right before the mission, so the results screen can show the change per question.
+var quiz_before_right: Array = []
 
 func new_mission() -> void:
 	mission = {

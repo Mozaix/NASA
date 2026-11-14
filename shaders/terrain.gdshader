@@ -20,8 +20,14 @@ uniform vec3 pad_pos = vec3(0.0);
 uniform float pad_radius = 0.0;
 
 // How far this chunk has blended toward the next coarser mesh, so detail levels change without popping.
+// The web renderer gets plain uniforms, set on a material copy per chunk (see terrain.gd).
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+uniform float morph = 0.0;
+uniform float lod_step = 1.0;
+#else
 instance uniform float morph = 0.0;
 instance uniform float lod_step = 1.0;
+#endif
 
 varying vec3 wpos;
 

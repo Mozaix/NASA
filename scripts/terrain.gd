@@ -19,6 +19,22 @@ var _meshes: Array[ArrayMesh] = []
 var _lod_dist: Array[float] = []
 var _time := 0.0
 var _morph_now := PackedFloat32Array()
+## The web renderer (Compatibility) leaks instance-uniform slots when a chunk swaps meshes,
+## so there each chunk gets its own material copy and the per-chunk values are plain uniforms.
+var _per_chunk_mat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
+
+func _set_shared(param: String, value: Variant) -> void:
+	material.set_shader_parameter(param, value)
+	if _per_chunk_mat:
+		for c in _chunks:
+			if is_instance_valid(c):
+				(c.material_override as ShaderMaterial).set_shader_parameter(param, value)
+
+func _set_chunk(c: MeshInstance3D, param: String, value: float) -> void:
+	if _per_chunk_mat:
+		(c.material_override as ShaderMaterial).set_shader_parameter(param, value)
+	else:
+		c.set_instance_shader_parameter(param, value)
 
 static func _grid_mesh(step_t: int) -> ArrayMesh:
 	# Vertices are in texel units; node scale turns them into metres. UV.x flags the skirt.
@@ -85,7 +101,7 @@ func setup_region(region: Dictionary) -> void:
 	_finish(ImageTexture.create_from_image(color), ImageTexture.create_from_image(normal), 0.0)
 	# Under a Sun skimming the horizon, strong fine bumps throw hard black blotches across the ground.
 	if region.get("polar", false):
-		material.set_shader_parameter("bump_amt", 2.5)
+		_set_shared("bump_amt", 2.5)
 
 ## Procedural world, for exoplanets and Triton. Clearly labelled in the HUD.
 func setup_procedural(body: Dictionary, art: Dictionary) -> void:
@@ -158,15 +174,15 @@ func _finish(color: Texture2D, normal: Texture2D, lava: float) -> void:
 	var height_img := Image.create_from_data(n, n, false, Image.FORMAT_RF, heights.to_byte_array())
 	material = ShaderMaterial.new()
 	material.shader = SHADER
-	material.set_shader_parameter("height_tex", ImageTexture.create_from_image(height_img))
-	material.set_shader_parameter("color_tex", color)
-	material.set_shader_parameter("normal_tex", normal)
-	material.set_shader_parameter("detail_tex", detail_noise())
-	material.set_shader_parameter("world_m", world_m)
-	material.set_shader_parameter("n_side", float(n))
-	material.set_shader_parameter("y_scale", y_scale)
-	material.set_shader_parameter("y_ref", y_ref)
-	material.set_shader_parameter("lava", lava)
+	_set_shared("height_tex", ImageTexture.create_from_image(height_img))
+	_set_shared("color_tex", color)
+	_set_shared("normal_tex", normal)
+	_set_shared("detail_tex", detail_noise())
+	_set_shared("world_m", world_m)
+	_set_shared("n_side", float(n))
+	_set_shared("y_scale", y_scale)
+	_set_shared("y_ref", y_ref)
+	_set_shared("lava", lava)
 	_build_chunks()
 
 static var _noise_cache: NoiseTexture2D
@@ -208,12 +224,12 @@ func _build_chunks() -> void:
 	for cz in count:
 		for cx in count:
 			var mi := MeshInstance3D.new()
-			mi.material_override = material
+			mi.material_override = material.duplicate() if _per_chunk_mat else material
 			mi.position = Vector3(cx * size, 0.0, cz * size)
 			mi.scale = Vector3(texel, 1.0, texel)
 			mi.custom_aabb = AABB(Vector3(0, ylo, 0), Vector3(CHUNK_TEXELS, yhi - ylo, CHUNK_TEXELS))
 			mi.mesh = _meshes[3]
-			mi.set_instance_shader_parameter("lod_step", 8.0)
+			_set_chunk(mi, "lod_step", 8.0)
 			add_child(mi)
 			_chunks.append(mi)
 			_morph_now.append(0.0)
@@ -239,7 +255,7 @@ func _build_chunks() -> void:
 
 func update_lod(cam_pos: Vector3, delta: float) -> void:
 	_time += delta
-	material.set_shader_parameter("time_s", _time)
+	_set_shared("time_s", _time)
 	var half := float(CHUNK_TEXELS) * texel * 0.5
 	for i in _chunks.size():
 		var c := _chunks[i]
@@ -254,18 +270,18 @@ func update_lod(cam_pos: Vector3, delta: float) -> void:
 		var m := _meshes[lod]
 		if c.mesh != m:
 			c.mesh = m
-			c.set_instance_shader_parameter("lod_step", float(1 << lod))
+			_set_chunk(c, "lod_step", float(1 << lod))
 		# Blend toward the next level over the last stretch before switching, so nothing pops.
 		var blend := 0.0
 		if lod < 3:
 			blend = smoothstep(_lod_dist[lod] * 0.78, _lod_dist[lod], d)
 		if not is_equal_approx(_morph_now[i], blend):
 			_morph_now[i] = blend
-			c.set_instance_shader_parameter("morph", blend)
+			_set_chunk(c, "morph", blend)
 
 func set_pad(pos: Vector3, radius: float) -> void:
-	material.set_shader_parameter("pad_pos", pos)
-	material.set_shader_parameter("pad_radius", radius)
+	_set_shared("pad_pos", pos)
+	_set_shared("pad_radius", radius)
 
 func _sample_raw(x: float, z: float) -> float:
 	var fx := clampf(x / texel, 0.0, float(n - 1))

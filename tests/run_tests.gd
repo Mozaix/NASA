@@ -37,6 +37,7 @@ func _ready() -> void:
 	await test_hatch()
 	await test_parachute()
 	await test_salvage()
+	test_learning_results()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
@@ -656,7 +657,7 @@ func test_scenes() -> void:
 			inst.queue_free()
 			await get_tree().process_frame
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	for s: String in ["main_menu", "planner", "archive", "settings", "credits", "demo_picker", "rocket2d", "rocket2d_flight", "leaderboard"]:
+	for s: String in ["main_menu", "planner", "archive", "settings", "credits", "demo_picker", "rocket2d", "rocket2d_flight", "leaderboard", "results"]:
 		var packed: PackedScene = load("res://scenes/%s.tscn" % s)
 		var inst := packed.instantiate()
 		add_child(inst)
@@ -1136,3 +1137,13 @@ func test_salvage() -> void:
 	check(h.bolts[first].state == "stripped", "salvage: far past spec strips the bolt", h.bolts[first].torque)
 	h.queue_free()
 	await get_tree().process_frame
+
+## The results screen's per-question tallies add up across players.
+func test_learning_results() -> void:
+	var path := "user://test_quiz_results.json"
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	QuizScene.record(1, 3, path, [true, false, false], [true, true, true])
+	var r := QuizScene.record(2, 2, path, [false, true, true], [true, false, true])
+	check(int(r.runs) == 2 and int(r.before_total) == 3 and int(r.after_total) == 5, "results: totals add up", r)
+	check(r.q_before == [1, 1, 1] and r.q_after == [2, 1, 2] and int(r.q_runs) == 2, "results: per-question tallies", r)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

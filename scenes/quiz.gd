@@ -26,6 +26,7 @@ var _i := 0
 var _answered := false
 var _order: Array = []
 var _box: VBoxContainer
+var _right: Array = []
 
 func _ready() -> void:
 	stage = Game.quiz_stage
@@ -79,6 +80,7 @@ func _answer(a: String) -> void:
 	_answered = true
 	var q: Dictionary = QUESTIONS[_i]
 	var right := a == str(q.right)
+	_right.append(right)
 	if right:
 		score += 1
 	if stage == "before":
@@ -99,6 +101,7 @@ func _next() -> void:
 		_show_question()
 	elif stage == "before":
 		Game.quiz_before = score
+		Game.quiz_before_right = _right.duplicate()
 		Flow.go("demo_picker")
 	else:
 		_show_results()
@@ -114,7 +117,7 @@ func _show_results() -> void:
 	if Game.quiz_before >= 0:
 		_box.add_child(UI.heading("Before: %d of %d.  After: %d of %d." % [Game.quiz_before, total, score, total], 30))
 		# Autotests must not fill a player's totals. A pair counts once.
-		var r := load_results(results_path) if Autotest.active else record(Game.quiz_before, score, results_path)
+		var r := load_results(results_path) if Autotest.active else record(Game.quiz_before, score, results_path, Game.quiz_before_right, _right)
 		if int(r.runs) > 0:
 			_box.add_child(UI.para("All players on this computer (%d): average %.1f before, %.1f after." % [int(r.runs), float(r.before_total) / int(r.runs), float(r.after_total) / int(r.runs)], 17, UI.TEXT))
 			_box.add_child(UI.para("This is an informal check using the same questions twice, not a scientific study.", 14, UI.TEXT_DIM))
@@ -139,11 +142,24 @@ static func load_results(path: String) -> Dictionary:
 			return empty
 	return d
 
-static func record(before: int, after: int, path: String) -> Dictionary:
+static func record(before: int, after: int, path: String, before_right: Array = [], after_right: Array = []) -> Dictionary:
 	var r := load_results(path)
 	r.runs = int(r.runs) + 1
 	r.before_total = int(r.before_total) + before
 	r.after_total = int(r.after_total) + after
+	# Per-question tallies: how many players got each question right, before and after.
+	if before_right.size() == QUESTIONS.size() and after_right.size() == QUESTIONS.size():
+		for key: String in ["q_before", "q_after"]:
+			var arr: Array = r.get(key, [])
+			if arr.size() != QUESTIONS.size():
+				arr = []
+				arr.resize(QUESTIONS.size())
+				arr.fill(0)
+			var src: Array = before_right if key == "q_before" else after_right
+			for i in QUESTIONS.size():
+				arr[i] = int(arr[i]) + (1 if src[i] else 0)
+			r[key] = arr
+		r.q_runs = int(r.get("q_runs", 0)) + 1
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify(r))
