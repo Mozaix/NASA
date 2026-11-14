@@ -49,6 +49,10 @@ const REPAIR_RADIUS := 45.0
 const REPAIR_PER_S := 10.0
 ## Rocks at least this big stop the rover. Smaller ones are rolled over.
 const SOLID_ROCK := 0.9
+## A derelict lander to strip for parts (game fiction). Same shape as a POI so navigation can point at it.
+var wreck: Dictionary = {}
+var salvage: SalvageGame
+var _hud_root: Control
 
 func _ready() -> void:
 	target = Game.target()
@@ -94,6 +98,8 @@ func _ready() -> void:
 	cam.fov = 68.0
 	add_child(cam)
 	_build_pois()
+	if not _probe and str(target.get("id", "")) != "earth":
+		_build_wreck(start)
 	_build_hud()
 	_set_capture(true)
 	_refresh_objectives()
@@ -227,6 +233,96 @@ func _build_pois() -> void:
 		Models.ball(root, 0.35, Vector3(0, 0.35, 0), pm)
 		pois.append({"src": src, "pos": pos, "root": root, "tag": tag, "pillar": pillar, "visited": false, "sampled": false})
 
+## Put the wreck on open ground a short drive from the landing site, clear of the science stops.
+func _build_wreck(landing: Vector3) -> void:
+	var w: float = terrain.world_m
+	var spot := Vector3.INF
+	for off: Vector2 in [Vector2(0.05, 0.03), Vector2(-0.05, 0.035), Vector2(0.04, -0.05), Vector2(-0.045, -0.04), Vector2(0.08, 0.0)]:
+		var u := clampf(landing.x / w + off.x, 0.08, 0.92)
+		var v := clampf(landing.z / w + off.y, 0.08, 0.92)
+		var cand: Vector3 = terrain.flat_spot(u, v) if terrain is Terrain else terrain.uv_to_world(u, v)
+		var clear := Vector2(cand.x - landing.x, cand.z - landing.z).length() > 60.0
+		for p: Dictionary in pois:
+			if Vector2(cand.x - p.pos.x, cand.z - p.pos.z).length() < 90.0:
+				clear = false
+		if clear:
+			spot = cand
+			break
+	if spot == Vector3.INF:
+		return
+	var root := Models.wreck()
+	add_child(root)
+	root.global_position = spot
+	var beam := StandardMaterial3D.new()
+	beam.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	beam.albedo_color = Color(1.0, 0.7, 0.25, 0.2)
+	var pillar := Models.cyl(root, 0.45, 0.45, 500.0, Vector3(0, 250, 0), beam, 8)
+	pillar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var tag := Label3D.new()
+	tag.text = "Derelict lander (game fiction)"
+	tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	tag.no_depth_test = true
+	tag.fixed_size = true
+	tag.pixel_size = 0.0011
+	tag.font = UI.font_bold()
+	tag.font_size = 32
+	tag.outline_size = 10
+	tag.modulate = Color(1.0, 0.8, 0.45)
+	tag.position = Vector3(0, 12, 0)
+	root.add_child(tag)
+	wreck = {"src": {"name": "Derelict lander"}, "pos": spot, "root": root, "pillar": pillar, "sampled": false, "visited": false}
+
+func _process_wreck() -> void:
+	if wreck.is_empty() or wreck.sampled or salvage != null:
+		return
+	var v := vehicle.global_position
+	if Vector2(wreck.pos.x - v.x, wreck.pos.z - v.z).length() > REACH + 10.0 or _near != null:
+		return
+	_progress_label.text = "Press %s to salvage parts from the derelict lander" % Settings.key_name("interact")
+	if Input.is_action_just_pressed("interact"):
+		open_salvage()
+
+func open_salvage() -> void:
+	if wreck.is_empty() or wreck.sampled or salvage != null:
+		return
+	_set_capture(false)
+	Sfx.loop("rover", 0.0)
+	get_tree().paused = true
+	salvage = SalvageGame.new()
+	salvage.wreck_name = "Derelict lander, %s" % str(region.get("name", target.name))
+	salvage.finished.connect(_close_salvage)
+	_hud_root.add_child(salvage)
+
+func _close_salvage(result: Dictionary) -> void:
+	if salvage:
+		salvage.queue_free()
+		salvage = null
+	get_tree().paused = false
+	_set_capture(true)
+	wreck.sampled = true
+	(wreck.pillar as MeshInstance3D).visible = false
+	var working: Array = result.get("working", [])
+	if "battery" in working:
+		vehicle.repair(40.0)
+	if "motor" in working:
+		vehicle.speed_mult *= 1.1
+	if "antenna" in working:
+		Game.add_science(25.0)
+	Game.add_science(float(result.get("in_spec", 0)) * 5.0)
+	Game.mission["salvage"] = result
+	_show_toast("Salvage done: %d part%s working" % [working.size(), "" if working.size() == 1 else "s"], 4.0)
+	_refresh_objectives()
+
+## Test hook: strip the wreck perfectly, through the same mini-game a player uses.
+func auto_salvage() -> void:
+	if wreck.is_empty() or wreck.sampled:
+		return
+	open_salvage()
+	salvage.auto_complete()
+	_close_salvage(salvage.summary())
+
 ## The demo keeps two nearby stops.
 func _pois_for_mode() -> Array:
 	var all: Array = region.pois
@@ -255,6 +351,7 @@ func _build_hud() -> void:
 	root.theme = UI.theme()
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(root)
+	_hud_root = root
 	# Top-left: what to do now, in plain words.
 	_card = HudCard.new(str(target.name), str(region.name))
 	_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 18)
@@ -353,6 +450,10 @@ class MapOverlay extends Control:
 			var col := UI.GOOD if p.sampled else (UI.ACCENT if p.visited else Color(1.0, 0.9, 0.3))
 			draw_circle(pt, 5.0, col)
 			draw_arc(pt, 7.0, 0.0, TAU, 16, Color.BLACK, 1.0)
+		var wk: Dictionary = owner_scene.wreck
+		if not wk.is_empty() and not wk.sampled:
+			var wp := Vector2(wk.pos.x / w * s.x, wk.pos.z / w * s.y)
+			draw_rect(Rect2(wp - Vector2(5, 5), Vector2(10, 10)), Color(1.0, 0.7, 0.25))
 		var v: Vector3 = owner_scene.vehicle.global_position
 		var c := Vector2(v.x / w * s.x, v.z / w * s.y)
 		var f: Vector3 = owner_scene.vehicle.forward_dir()
@@ -451,6 +552,7 @@ func _physics_process(delta: float) -> void:
 		if vehicle.get_meta("hit_edge", false):
 			_show_toast("Edge of the mapped region.", 1.5)
 	_process_pois(delta)
+	_process_wreck()
 
 func _rover_events(delta: float) -> void:
 	var r: Rover = vehicle
@@ -576,7 +678,10 @@ func _update_hud() -> void:
 	_card.set_details(details)
 	var best: Variant = null
 	var best_d := INF
-	for p: Dictionary in pois:
+	var targets: Array = pois.duplicate()
+	if not wreck.is_empty() and not wreck.sampled:
+		targets.append(wreck)
+	for p: Dictionary in targets:
 		if p.sampled:
 			continue
 		var d := Vector2(p.pos.x - v.x, p.pos.z - v.z).length()
@@ -684,6 +789,8 @@ func _refresh_objectives() -> void:
 			col = UI.TEXT_DIM
 		var l := UI.para("%s  %s  (%s)" % [icon, str(p.src.name), kind], 14, col)
 		_objectives.add_child(l)
+	if not wreck.is_empty():
+		_objectives.add_child(UI.para("%s  Derelict lander: salvage parts (optional)" % ("✓" if wreck.sampled else "◇"), 14, UI.GOOD if wreck.sampled else UI.AMBER))
 	_objectives.add_child(UI.label("Science: %d" % int(Game.mission.science), 16, UI.AMBER, "mono"))
 
 func _check_done() -> void:
@@ -736,6 +843,7 @@ func auto_visit_all() -> void:
 		var kind: String = "gas" if _probe else p.src.sample
 		if Game.can_collect(kind) and not p.sampled:
 			_sample(p, kind)
+	auto_salvage()
 
 func auto_advance() -> void:
 	end_mission()

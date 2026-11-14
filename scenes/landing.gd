@@ -7,6 +7,17 @@ var region: Dictionary
 var craft: Node3D
 var flame: CPUParticles3D
 var chute: Node3D
+var drogue: Node3D
+## Parachute landers fall under a small drogue, then the player opens the main canopy.
+## Opening shock grows with the square of the speed (like dynamic pressure); past the canopy's rating it tears.
+var chute_open := false
+var chute_torn := false
+var chute_stress := 0.0
+var chute_damage := 0.0
+var chute_safe_speed := 20.0
+var chute_open_speed := 0.0
+var _stress_warned := false
+const CHUTE_AUTO_ALT := 90.0
 var cam: Camera3D
 var pad := Vector3.ZERO
 var vel := Vector3.ZERO
@@ -58,6 +69,7 @@ func _ready() -> void:
 	flame = craft.get_node("Flame")
 	if craft.has_node("Chute"):
 		chute = craft.get_node("Chute")
+		drogue = craft.get_node("Drogue")
 	# Start high and off-target. Weak-gravity worlds start with more speed so the descent stays short.
 	# Weak gravity also means weak thrusters, so tiny moons start lower and closer to the pad.
 	var near_factor := clampf(sqrt(gravity / 1.2), 0.4, 1.0)
@@ -70,6 +82,12 @@ func _ready() -> void:
 	var atmo := Data.has_atmosphere(t)
 	var pressure := float(t.get("pressure_bar") if t.get("pressure_bar") != null else (1.4 if t.id == "titan" else 0.0))
 	drag = 0.0 if not atmo else clampf(0.012 + 0.03 * log(1.0 + pressure * 40.0), 0.01, 0.2)
+	if uses_chute:
+		# Thin air (Mars) lets the canopy open faster than thick air (Titan, Earth) before it is overloaded.
+		chute_safe_speed = clampf(22.0 / sqrt(maxf(drag, 0.001) / 0.02), 12.0, 30.0)
+		vel.y = -maxf(-vel.y, chute_safe_speed * 1.5)
+		if drogue:
+			drogue.visible = true
 	# Delta-v margin buys fuel. Sky cranes and retro landers both benefit; airbags need less.
 	var margin := Game.dv_margin()
 	var flight_quality := float(Game.mission.launch_quality) * float(Game.mission.correction_quality)
@@ -105,8 +123,11 @@ func _build_hud() -> void:
 	_card.add_row("height", "Height above ground", true)
 	_card.add_row("falling", "Falling")
 	_card.add_row("pad", "Landing pad")
-	_card.add_row("fuel", "Fuel", true, UI.AMBER)
-	var keys := UI.para("%s look down at the pad   %s fire engine   W A S D steer   %s autopilot" % [Settings.key_name("look_down"), Settings.key_name("thrust"), Settings.key_name("assist")], 13)
+	if uses_chute:
+		_card.add_row("chute", "Parachute", true, UI.GOOD)
+	else:
+		_card.add_row("fuel", "Fuel", true, UI.AMBER)
+	var keys := UI.para("%s look down at the pad   %s %s   W A S D steer   %s autopilot" % [Settings.key_name("look_down"), Settings.key_name("thrust"), "open parachute" if uses_chute else "fire engine", Settings.key_name("assist")], 13)
 	_card.add_widget(keys)
 	_msg = UI.label("", 22, UI.AMBER, "bold")
 	_msg.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 30)
@@ -211,13 +232,11 @@ func _physics_process(delta: float) -> void:
 	flame.emitting = firing
 	Sfx.loop("engine", 0.45 if firing else 0.0, 0.8 + throttle * 0.2)
 	if uses_chute:
-		if chute and alt < 170.0:
-			chute.visible = true
-		# Canopy: strong drag toward a gentle terminal speed. Steering comes from vanes.
-		# Falls fast under a drogue, then the main canopy slows it for the last stretch.
-		var terminal := minf(tolerance * 0.65, 8.5) if alt < 170.0 else 26.0
-		vel.y = lerpf(vel.y, -terminal, clampf(delta * 0.8, 0.0, 1.0))
-		accel = Vector3(steer.x * 5.0, 0.0, steer.y * 5.0)
+		_update_chute(alt, steer, delta)
+		# Under the drogue it falls fast; the main canopy slows it for the last stretch. Steering comes from vanes.
+		var terminal := minf(tolerance * 0.65, 8.5) if chute_open else chute_safe_speed * 0.75
+		vel.y = lerpf(vel.y, -terminal, clampf(delta * (0.8 if chute_open else 0.35), 0.0, 1.0))
+		accel = Vector3(steer.x * 5.0, 0.0, steer.y * 5.0) * (0.0 if chute_torn else 1.0)
 	elif drag > 0.0:
 		accel -= vel * drag
 	vel += accel * delta
@@ -229,6 +248,71 @@ func _physics_process(delta: float) -> void:
 	_update_card(alt, dist)
 	if craft.global_position.y <= terrain.height_at(craft.global_position.x, craft.global_position.z):
 		_touchdown(dist)
+
+## Stress if the main canopy took the load at this speed: 1.0 is its rating. Steering hard adds load.
+func chute_load(sink: float, steer_amt: float = 0.0) -> float:
+	return pow(maxf(sink, 0.0) / chute_safe_speed, 2.0) + steer_amt * 0.25
+
+func _update_chute(alt: float, steer: Vector2, delta: float) -> void:
+	var sink := -vel.y
+	if not chute_open and not chute_torn:
+		var want := Input.is_action_just_pressed("thrust")
+		if auto_pilot:
+			want = alt < 300.0 and chute_load(sink) < 0.8
+		if want or alt < CHUTE_AUTO_ALT:
+			open_chute()
+	if chute_open:
+		chute_stress = chute_load(sink, steer.length())
+		if chute_stress > 1.0:
+			chute_damage += (chute_stress - 1.0) * delta * 1.6
+			if not _stress_warned:
+				_stress_warned = true
+				Sfx.play("alarm", -4.0)
+			if chute_damage >= 1.0:
+				_tear_chute()
+	else:
+		chute_stress = chute_load(sink)
+
+func open_chute() -> void:
+	chute_open = true
+	chute_open_speed = -vel.y
+	if chute:
+		chute.visible = true
+	if drogue:
+		drogue.visible = false
+	Sfx.play("stage", -6.0, 1.4)
+
+func _tear_chute() -> void:
+	chute_open = false
+	chute_torn = true
+	if chute:
+		chute.visible = false
+	Sfx.play("crash", -6.0, 1.8)
+	_msg.text = "Parachute torn!"
+	# Shreds of canopy blown upward as the lander drops away.
+	var shreds := CPUParticles3D.new()
+	shreds.one_shot = true
+	shreds.amount = 40
+	shreds.lifetime = 2.5
+	shreds.explosiveness = 0.95
+	shreds.direction = Vector3.UP
+	shreds.spread = 70.0
+	shreds.initial_velocity_min = 6.0
+	shreds.initial_velocity_max = 14.0
+	shreds.gravity = Vector3(0, -1.5, 0)
+	var q := QuadMesh.new()
+	q.size = Vector2(1.2, 0.7)
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.95, 0.5, 0.2)
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	q.material = m
+	shreds.mesh = q
+	shreds.particle_flag_rotate_y = true
+	shreds.angular_velocity_min = -300.0
+	shreds.angular_velocity_max = 300.0
+	add_child(shreds)
+	shreds.global_position = craft.global_position + Vector3(0, 15, 0)
+	shreds.emitting = true
 
 func _update_card(alt: float, dist: float) -> void:
 	var sink := -vel.y
@@ -256,8 +340,18 @@ func _update_card(alt: float, dist: float) -> void:
 	var real_km := dist * float(region.get("hscale", 24.0)) / 1000.0
 	var on_pad := dist < 34.0
 	_card.set_row("pad", "Right below you" if on_pad else ("%.1f km away" % real_km), UI.GOOD if on_pad else UI.TEXT)
-	_card.set_row("fuel", "%d%%" % int(fuel * 100.0), UI.BAD if fuel < 0.18 else UI.AMBER, fuel)
-	if fuel < 0.18 and not _low_alarm:
+	if uses_chute:
+		var load_pct := int(chute_stress * 100.0)
+		var c := UI.GOOD if chute_stress < 0.8 else (UI.AMBER if chute_stress <= 1.0 else UI.BAD)
+		if chute_torn:
+			_card.set_row("chute", "Torn", UI.BAD, 0.0)
+		elif chute_open:
+			_card.set_row("chute", "Open, stress %d%%" % load_pct, c, minf(chute_stress, 1.0))
+		else:
+			_card.set_row("chute", "Packed, stress if opened %d%%" % load_pct, c, minf(chute_stress, 1.0))
+	else:
+		_card.set_row("fuel", "%d%%" % int(fuel * 100.0), UI.BAD if fuel < 0.18 else UI.AMBER, fuel)
+	if not uses_chute and fuel < 0.18 and not _low_alarm:
 		_low_alarm = true
 		Sfx.play("alarm")
 	var tip := "Steer toward the green ring with W A S D"
@@ -267,8 +361,12 @@ func _update_card(alt: float, dist: float) -> void:
 			tip = "Autopilot is on emergency thrust (a game assist)"
 		elif autopilot_diverted:
 			tip = "Autopilot can't reach the pad, so it's landing on the nearest safe ground"
+	elif uses_chute and chute_torn:
+		tip = "The main parachute tore. Brace for a hard landing!"
+	elif uses_chute and chute_open:
+		tip = "Steer gently to the ring. Hard steering adds stress" if chute_stress < 0.8 else "Too much stress! Stop steering"
 	elif uses_chute:
-		tip = "The parachute does the work. Steer to the ring"
+		tip = "Press %s to open the main parachute when stress is green (it opens itself at %d m)" % [Settings.key_name("thrust"), int(CHUTE_AUTO_ALT)]
 	elif fuel <= 0.0:
 		tip = "Out of fuel. Brace!"
 	elif fall_word == "Too fast!":
@@ -375,6 +473,11 @@ func _touchdown(dist: float) -> void:
 		if not uses_chute and thrust_acc > gravity:
 			Game.mission.landing_stats.brake_m = sink * sink / (2.0 * (thrust_acc - gravity))
 		var why := "Impact at %.1f m/s (limit %.0f)." % [sink, limit]
+		if chute_torn:
+			Game.mission.landing_stats.chute_torn = true
+			Game.mission.landing_stats.chute_open_speed = chute_open_speed
+			Game.mission.landing_stats.chute_safe_speed = chute_safe_speed
+			why = "The main parachute tore. It opened at %.0f m/s; here it is rated to about %.0f m/s (game value)." % [chute_open_speed, chute_safe_speed]
 		if drift > limit * 1.3:
 			why = "Too much sideways drift: %.1f m/s." % drift
 		elif sink <= limit:

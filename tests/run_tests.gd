@@ -35,6 +35,8 @@ func _ready() -> void:
 	await test_rocket_scenes()
 	await test_scenes()
 	await test_hatch()
+	await test_parachute()
+	await test_salvage()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
@@ -1031,7 +1033,6 @@ func test_hatch() -> void:
 	var h: HatchScene = packed.instantiate()
 	add_child(h)
 	await get_tree().process_frame
-	h.size = Vector2(1600, 900)
 	h.auto_advance()
 	for k in 900:
 		h._process(1.0 / 60.0)
@@ -1055,4 +1056,83 @@ func test_hatch() -> void:
 	h2._retry()
 	check(h2.state == "play" and h2.stability == 100.0 and h2.seated_count() == 0, "hatch: retry gives a fresh set of rods")
 	h2.queue_free()
+	await get_tree().process_frame
+
+## The parachute: its lines reach the lander, and opening it far too fast tears it.
+func test_parachute() -> void:
+	var lander := Models.lander(true)
+	add_child(lander)
+	for n: String in ["Chute", "Drogue"]:
+		var node: Node3D = lander.get_node(n)
+		var lowest := INF
+		for c: Node in node.get_children():
+			var mi := c as MeshInstance3D
+			var h := (mi.mesh as CylinderMesh).height
+			lowest = minf(lowest, mi.position.y - h * 0.5 * absf(mi.basis.y.y))
+		check(node.get_child_count() > 6, "%s has suspension lines" % n, node.get_child_count())
+		check(absf(lowest - 4.6) < 0.3, "%s lines end on the lander's top" % n, lowest)
+	lander.queue_free()
+	for case: Array in [["early", 3.0], ["patient", 0.0]]:
+		Game.new_mission()
+		Game.mission.target_id = "mars"
+		Game.mission.region_id = "gale"
+		Game.auto_design()
+		Game.mission.lander = "airbag"
+		var inst: Node = (load("res://scenes/landing.tscn") as PackedScene).instantiate()
+		add_child(inst)
+		await get_tree().process_frame
+		check(inst.drogue.visible and not inst.chute.visible, "drogue flies first, main canopy packed")
+		inst.auto_pilot = true
+		if case[1] > 0.0:
+			inst.vel.y = -inst.chute_safe_speed * 2.0
+			inst.open_chute()
+		var steps := 0
+		while inst.state == "fly" and steps < 60 * 300:
+			inst._physics_process(1.0 / 60.0)
+			steps += 1
+		if case[0] == "early":
+			check(inst.chute_torn, "opening at twice the rated speed tears the parachute", inst.chute_damage)
+			check(inst.state == "crashed", "a torn parachute on Mars means a hard landing", inst.state)
+			check(Game.landing_lesson().text.contains("square of speed"), "the lesson explains the tear")
+		else:
+			check(not inst.chute_torn and inst.state == "landed", "autopilot waits for a safe speed and lands", [inst.chute_torn, inst.state])
+		inst.queue_free()
+		await get_tree().process_frame
+		Sfx.stop_loops()
+	Game.new_mission()
+
+## Salvage: perfect play installs every part; out-of-order bolts are refused; over-torque strips.
+func test_salvage() -> void:
+	var g := SalvageGame.new()
+	add_child(g)
+	await get_tree().process_frame
+	g.auto_complete()
+	var s := g.summary()
+	check(g.phase == "done" and int(s.parts) == 3, "salvage: all three parts done", s)
+	check(int(s.in_spec) == int(s.bolts) and int(s.stripped) == 0, "salvage: perfect torque on every bolt", s)
+	check((s.working as Array).size() == 3, "salvage: every part works", s.working)
+	g.queue_free()
+	var h := SalvageGame.new()
+	add_child(h)
+	await get_tree().process_frame
+	for i in h.bolts.size():
+		h.active = i
+		h.turn(i, 0.5)
+	check(not h.bolts[0].out, "salvage: turning clockwise does not unscrew")
+	for i in h.bolts.size():
+		h.active = i
+		h.turn(i, -3.0)
+	check(h.phase == "move", "salvage: all bolts out frees the part", h.phase)
+	h._finish_move()
+	var first: int = h.part().order[0]
+	var wrong: int = h.part().order[1]
+	check(not h._can_use(wrong), "salvage: bolts must follow the spec sheet order")
+	check(h._can_use(first), "salvage: the first bolt in the order can be turned")
+	h.active = first
+	h.turn(first, 1.0 + 0.5 / SalvageGame.TORQUE_PER_TURN)
+	h._settle(first)
+	check(h.bolts[first].state == "under", "salvage: half the spec torque is under spec", h.bolts[first].torque)
+	h.turn(first, 1.0)
+	check(h.bolts[first].state == "stripped", "salvage: far past spec strips the bolt", h.bolts[first].torque)
+	h.queue_free()
 	await get_tree().process_frame

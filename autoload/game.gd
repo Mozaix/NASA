@@ -288,7 +288,9 @@ func landing_lesson() -> Dictionary:
 			text += " It took %d backup lander%s to get there." % [int(mission.crashes), "" if int(mission.crashes) == 1 else "s"]
 	else:
 		var limit := float(s.get("limit", 0.0))
-		if float(s.get("drift", 0.0)) > limit * 1.3:
+		if s.get("chute_torn", false):
+			text = "Opening shock grows with the square of speed. Under the drogue the lander slows down; wait until the stress reading is green before you open the main parachute, and steer gently while it carries the load."
+		elif float(s.get("drift", 0.0)) > limit * 1.3:
 			text = "Sideways speed stays until the engine cancels it, so tilt against the drift well before the ground."
 		elif float(s.get("sink", 0.0)) <= limit:
 			text = "Steep ground can tip a lander over, even at a gentle speed. Aim for the flat ground inside the ring."

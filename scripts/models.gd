@@ -195,12 +195,68 @@ static func lander(with_chute: bool = false) -> Node3D:
 	if with_chute:
 		var chute_mat := mat(Color(0.95, 0.5, 0.2), 0.0, 0.8)
 		chute_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		var chute := Node3D.new()
-		chute.name = "Chute"
-		chute.position = Vector3(0, 16, 0)
-		root.add_child(chute)
-		cyl(chute, 0.5, 9.0, 3.5, Vector3.ZERO, chute_mat, 32)
-		chute.visible = false
+		var stripe := mat(Color(0.96, 0.95, 0.92), 0.0, 0.8)
+		stripe.cull_mode = BaseMaterial3D.CULL_DISABLED
+		var cord := mat(Color(0.9, 0.88, 0.82), 0.0, 0.9)
+		# Every suspension line runs from the canopy's rim down to one bridle point on top of the lander.
+		var bridle := Vector3(0, 4.6, 0)
+		var main := Node3D.new()
+		main.name = "Chute"
+		root.add_child(main)
+		cyl(main, 0.5, 9.0, 3.5, Vector3(0, 16, 0), chute_mat, 32)
+		cyl(main, 0.52, 3.2, 1.25, Vector3(0, 17.13, 0), stripe, 32)
+		_lines(main, 12, 9.0, 14.25, bridle, cord)
+		main.visible = false
+		var drogue := Node3D.new()
+		drogue.name = "Drogue"
+		root.add_child(drogue)
+		cyl(drogue, 0.3, 2.6, 1.4, Vector3(0, 12, 0), chute_mat, 20)
+		_lines(drogue, 6, 2.6, 11.3, bridle, cord)
+		drogue.visible = false
+	return root
+
+## Suspension lines from evenly spaced points on a canopy rim to one point below.
+static func _lines(parent: Node3D, count: int, rim_r: float, rim_y: float, to: Vector3, m: Material) -> void:
+	for i in count:
+		var a := TAU * float(i) / float(count)
+		line(parent, Vector3(cos(a) * rim_r, rim_y, sin(a) * rim_r), to, 0.035, m)
+
+## A thin cylinder from a to b.
+static func line(parent: Node3D, a: Vector3, b: Vector3, r: float, m: Material) -> MeshInstance3D:
+	var mi := cyl(parent, r, r, a.distance_to(b), (a + b) * 0.5, m, 4)
+	var up := (b - a).normalized()
+	var side := up.cross(Vector3.FORWARD if absf(up.dot(Vector3.FORWARD)) < 0.9 else Vector3.RIGHT).normalized()
+	mi.basis = Basis(side, up, side.cross(up))
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mi
+
+## A derelict from an earlier (fictional) mission: a tipped-over lander and its dead rover, dusty and dark.
+static func wreck() -> Node3D:
+	var root := Node3D.new()
+	var old_lander := lander(false)
+	old_lander.get_node("Flame").queue_free()
+	old_lander.rotation = Vector3(0.22, 0.4, -0.12)
+	old_lander.position = Vector3(0, -0.5, 0)
+	root.add_child(old_lander)
+	var dust := mat(Color(0.52, 0.42, 0.34), 0.1, 0.95)
+	var dark := mat(Color(0.16, 0.16, 0.17), 0.3, 0.8)
+	var panel := mat(Color(0.12, 0.14, 0.22), 0.6, 0.4)
+	var rover := Node3D.new()
+	rover.position = Vector3(7.5, 0.0, 3.0)
+	rover.rotation = Vector3(0.05, -0.7, 0.18)
+	root.add_child(rover)
+	cube(rover, Vector3(3.2, 0.9, 2.0), Vector3(0, 1.1, 0), dust)
+	cube(rover, Vector3(3.6, 0.06, 2.4), Vector3(0, 1.6, 0), panel)
+	for x: float in [-1.2, 0.0, 1.2]:
+		for z: float in [-1.15, 1.15]:
+			if x == 1.2 and z == 1.15:
+				continue  # one wheel lost
+			var w := cyl(rover, 0.45, 0.45, 0.35, Vector3(x, 0.45, z), dark, 16)
+			w.rotation = Vector3(PI * 0.5, 0, 0)
+	var lost := cyl(root, 0.45, 0.45, 0.35, Vector3(11.0, 0.2, 5.5), dark, 16)
+	lost.rotation = Vector3(0.2, 0.6, 1.3)
+	var mast := cyl(rover, 0.07, 0.07, 1.8, Vector3(1.0, 2.1, 0.6), mat(Color(0.6, 0.6, 0.6), 0.4, 0.6), 8)
+	mast.rotation = Vector3(0, 0, 0.9)
 	return root
 
 ## Atmospheric probe.

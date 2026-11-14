@@ -63,6 +63,9 @@ func _ready() -> void:
 			UI.kv(g, "Power core", "not loaded, ran on batteries", UI.AMBER)
 		else:
 			UI.kv(g, "Power core", "loaded, %d wall touches  (+%d)" % [int(core.touches), int(core.bonus)], UI.GOOD if int(core.touches) == 0 else UI.TEXT)
+	if Game.mission.has("salvage"):
+		var sv: Dictionary = Game.mission.salvage
+		UI.kv(g, "Salvaged parts", "%d working, %d of %d bolts in spec" % [(sv.get("working", []) as Array).size(), int(sv.get("in_spec", 0)), int(sv.get("bolts", 0))], UI.GOOD if int(sv.get("stripped", 0)) == 0 else UI.AMBER)
 	if int(Game.mission.crashes) > 0:
 		UI.kv(g, "Landers lost", str(Game.mission.crashes), UI.BAD)
 	if int(Game.mission.rockets_lost) > 0:
