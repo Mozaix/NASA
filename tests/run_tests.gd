@@ -38,6 +38,7 @@ func _ready() -> void:
 	await test_parachute()
 	await test_salvage()
 	test_learning_results()
+	await test_orbit_button()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
@@ -1147,3 +1148,20 @@ func test_learning_results() -> void:
 	check(int(r.runs) == 2 and int(r.before_total) == 3 and int(r.after_total) == 5, "results: totals add up", r)
 	check(r.q_before == [1, 1, 1] and r.q_after == [2, 1, 2] and int(r.q_runs) == 2, "results: per-question tallies", r)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+## Regression (v1.4 report "can't land on Mars"): the descent button must be on screen for every world.
+func test_orbit_button() -> void:
+	var vs := get_viewport().get_visible_rect()
+	for id: String in ["mars", "moon", "titan", "venus", "earth", "europa"]:
+		Game.new_mission()
+		Game.mission.target_id = id
+		Game.auto_design()
+		var o: Node = (load("res://scenes/orbit.tscn") as PackedScene).instantiate()
+		add_child(o)
+		for i in 3:
+			await get_tree().process_frame
+		var b: Button = o._go
+		check(vs.encloses(b.get_global_rect()), "orbit: Begin descent is on screen for " + id, [b.get_global_rect(), vs.size])
+		o.queue_free()
+		await get_tree().process_frame
+	Game.new_mission()

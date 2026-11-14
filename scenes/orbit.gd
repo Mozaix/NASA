@@ -91,8 +91,10 @@ func _build_ui() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.theme = UI.theme()
 	layer.add_child(root)
-	var v := UI.vbox(9)
-	var pan := UI.panel(v)
+	# The facts scroll; the landing-site picker and the descent button stay pinned at the bottom,
+	# so a tall panel (Mars has the longest atmosphere entry) can never push them off a laptop screen.
+	var outer := UI.vbox(10)
+	var pan := UI.panel(outer)
 	pan.custom_minimum_size.x = 420.0
 	pan.anchor_left = 0.0
 	pan.anchor_top = 0.0
@@ -102,6 +104,16 @@ func _build_ui() -> void:
 	pan.offset_bottom = -20.0
 	pan.offset_right = 440.0
 	root.add_child(pan)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	outer.add_child(scroll)
+	var v := UI.vbox(9)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(v)
+	outer.add_child(HSeparator.new())
+	var bottom := UI.vbox(9)
+	outer.add_child(bottom)
 	v.add_child(UI.eyebrow("In orbit"))
 	v.add_child(UI.heading(str(target.name), 34))
 	var mu := Orbital.mu_of(target)
@@ -116,17 +128,16 @@ func _build_ui() -> void:
 	v.add_child(HSeparator.new())
 	v.add_child(UI.stats_grid(target))
 	v.add_child(HSeparator.new())
-	v.add_child(UI.eyebrow("Orbital survey"))
-	_status = UI.para("Hold %s to scan from orbit and earn science." % Settings.key_name("interact"), 15, UI.TEXT)
-	v.add_child(_status)
-	_scan_bar = UI.bar(0, 1, UI.ACCENT, 10.0)
-	v.add_child(_scan_bar)
 	var facts: Array = target.get("facts", [])
 	if not facts.is_empty():
 		v.add_child(UI.fact_block(facts[randi() % facts.size()], 15))
-	v.add_child(UI.spacer())
+	bottom.add_child(UI.eyebrow("Orbital survey"))
+	_status = UI.para("Hold %s to scan from orbit and earn science." % Settings.key_name("interact"), 15, UI.TEXT)
+	bottom.add_child(_status)
+	_scan_bar = UI.bar(0, 1, UI.ACCENT, 10.0)
+	bottom.add_child(_scan_bar)
 	if _sites.size() > 0:
-		v.add_child(UI.eyebrow("Landing site"))
+		bottom.add_child(UI.eyebrow("Landing site"))
 		var opt := OptionButton.new()
 		var selected := 0
 		for i in _sites.size():
@@ -135,14 +146,14 @@ func _build_ui() -> void:
 				selected = i
 		opt.select(selected)
 		opt.item_selected.connect(_select_site)
-		v.add_child(opt)
+		bottom.add_child(opt)
 		_select_site(selected)
 	var label := "Begin descent"
 	if Game.is_probe_mission():
 		label = "Release the atmospheric probe"
 	_go = UI.button(label, begin_descent, true)
 	_go.custom_minimum_size.y = 50.0
-	v.add_child(_go)
+	bottom.add_child(_go)
 	_go.grab_focus.call_deferred()
 	if target.get("map_credit") != null:
 		v.add_child(UI.para("Map: " + str(target.map_credit), 12))
