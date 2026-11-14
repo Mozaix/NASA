@@ -1,0 +1,49 @@
+{
+ "name": "Bahrain Spaceport (concept)",
+ "concept": true,
+ "bbox": [
+  25.75,
+  26.35,
+  50.3,
+  50.9
+ ],
+ "width_km": 60.0,
+ "gulf_bbox": [
+  22.05,
+  30.05,
+  46.6,
+  54.6
+ ],
+ "gulf_width_km": 800.4,
+ "pad": {
+  "lat": 25.9744,
+  "lon": 50.5643,
+  "elev_m": 2.0
+ },
+ "height_n": 512,
+ "height_max_m": 120.0,
+ "color_label": "NASA/USGS Landsat (HLS L30, 2025-01-05) via NASA GIBS",
+ "gulf_label": "NASA Blue Marble Next Generation via NASA GIBS",
+ "dem_label": "SRTM-based terrain tiles (NASA/NGA SRTM via AWS Open Data)",
+ "al_munther": {
+  "name": "Al Munther",
+  "launched": "2025-03-15",
+  "orbit_km": 550,
+  "summary": "Bahrain's first locally built satellite: a 3U CubeSat from the National Space Science Agency, launched on 15 March 2025 to a 550 km sun-synchronous orbit.",
+  "url": "https://www.arabnews.pk/node/2593636/middle-east",
+  "source": "Arab News, citing the Bahrain News Agency (not a NASA source)"
+ },
+ "milestone": {
+  "id": "al_munther",
+  "name": "Al Munther's orbit (Bahrain)",
+  "km": 550,
+  "bonus": 1000,
+  "text": "Bahrain's first locally built satellite, Al Munther, circles Earth at about 550 km. It was launched on 15 March 2025.",
+  "url": "https://www.arabnews.pk/node/2593636/middle-east",
+  "source": "Arab News, citing the Bahrain News Agency (not a NASA source)"
+ },
+ "sources": [
+  "https://gibs.earthdata.nasa.gov/ (HLS_L30_Nadir_BRDF_Adjusted_Reflectance, BlueMarble_NextGeneration)",
+  "https://registry.opendata.aws/terrain-tiles/ (SRTM-based elevation)"
+ ]
+}

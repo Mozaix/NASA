@@ -53,6 +53,15 @@ This game is not endorsed by NASA. NASA data and imagery are credited below unde
 Elevations on real-data regions are true metres from NASA PDS. Scale and vertical exaggeration are shown in the HUD.
 PDS is used instead of the Treks DEM layers because Treks serves those as 8-bit images (see PLAN.md, D1).
 
+## Bahrain launch site (concept)
+
+Made by `tools/fetch_bahrain.py`. The spaceport is game fiction: Bahrain has no launch pad.
+
+- **Ground image**: NASA/USGS Landsat 8/9, Harmonized Landsat Sentinel-2 (HLS L30), 5 January 2025, via NASA GIBS (layer `HLS_L30_Nadir_BRDF_Adjusted_Reflectance`): https://gibs.earthdata.nasa.gov/ . Small no-data gaps are filled from surrounding pixels.
+- **Gulf around it**: NASA Blue Marble Next Generation, via NASA GIBS (layer `BlueMarble_NextGeneration`).
+- **Elevation**: SRTM-based terrain tiles (NASA/NGA Shuttle Radar Topography Mission, via AWS Open Data Terrain Tiles): https://registry.opendata.aws/terrain-tiles/ . Used to shade the ground and to place the pad on flat land.
+- **Al Munther** (Bahrain's first locally built satellite, launched 15 March 2025 to a 550 km orbit): Arab News, citing the Bahrain News Agency, https://www.arabnews.pk/node/2593636/middle-east . Not a NASA source; shown as the 550 km milestone in the 2D rocket mode.
+
 ## Science facts
 
 Prose facts are verbatim quotes. Each was checked against the page text when this file was generated.

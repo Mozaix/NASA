@@ -8,6 +8,9 @@ var craft: Node3D
 var flame: CPUParticles3D
 var chute: Node3D
 var drogue: Node3D
+## Side (RCS) thruster puffs: steering burns a little propellant, so the player sees it happen.
+var _rcs: Dictionary = {}
+var rcs_firing := false
 ## Parachute landers fall under a small drogue, then the player opens the main canopy.
 ## Opening shock grows with the square of the speed (like dynamic pressure); past the canopy's rating it tears.
 var chute_open := false
@@ -67,6 +70,13 @@ func _ready() -> void:
 	craft = Models.lander(uses_chute or lander_part.id == "skycrane")
 	add_child(craft)
 	flame = craft.get_node("Flame")
+	# Each puff fires away from the way the lander is pushed: pushing +x fires the thruster on the -x side.
+	for key: String in ["px", "nx", "pz", "nz"]:
+		var out: Vector3 = {"px": Vector3.LEFT, "nx": Vector3.RIGHT, "pz": Vector3.FORWARD, "nz": Vector3.BACK}[key]
+		var puff := Models.flame(craft, out * 2.3 + Vector3(0, 2.6, 0), 0.22, Color(0.85, 0.9, 1.0), true)
+		puff.direction = out
+		puff.lifetime = 0.25
+		_rcs[key] = puff
 	if craft.has_node("Chute"):
 		chute = craft.get_node("Chute")
 		drogue = craft.get_node("Drogue")
@@ -128,6 +138,8 @@ func _build_hud() -> void:
 	else:
 		_card.add_row("fuel", "Fuel", true, UI.AMBER)
 	var keys := UI.para("%s look down at the pad   %s %s   W A S D steer   %s autopilot" % [Settings.key_name("look_down"), Settings.key_name("thrust"), "open parachute" if uses_chute else "fire engine", Settings.key_name("assist")], 13)
+	if not uses_chute:
+		keys.text = keys.text.replace("W A S D steer", "W A S D side thrusters (use a little fuel)")
 	_card.add_widget(keys)
 	_msg = UI.label("", 22, UI.AMBER, "bold")
 	_msg.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 30)
@@ -219,9 +231,15 @@ func _physics_process(delta: float) -> void:
 	craft.transform.basis = basis
 	var accel := Vector3.DOWN * gravity
 	# Side thrusters steer without the main engine, at a small propellant cost.
-	if fuel > 0.0 and not uses_chute and steer.length() > 0.05:
+	rcs_firing = fuel > 0.0 and not uses_chute and steer.length() > 0.05
+	if rcs_firing:
 		accel += Vector3(steer.x, 0.0, steer.y) * minf(thrust_acc * 0.3, 2.0)
 		fuel = maxf(fuel - fuel_burn * 0.12 * steer.length() * delta, 0.0)
+	if not _rcs.is_empty():
+		(_rcs.px as CPUParticles3D).emitting = rcs_firing and steer.x > 0.1
+		(_rcs.nx as CPUParticles3D).emitting = rcs_firing and steer.x < -0.1
+		(_rcs.pz as CPUParticles3D).emitting = rcs_firing and steer.y > 0.1
+		(_rcs.nz as CPUParticles3D).emitting = rcs_firing and steer.y < -0.1
 	# Dense air gives the shell aerodynamic lift to steer with, at no propellant cost.
 	if drag > 0.0 and not uses_chute:
 		accel += Vector3(steer.x, 0.0, steer.y) * drag * 30.0
@@ -350,7 +368,10 @@ func _update_card(alt: float, dist: float) -> void:
 		else:
 			_card.set_row("chute", "Packed, stress if opened %d%%" % load_pct, c, minf(chute_stress, 1.0))
 	else:
-		_card.set_row("fuel", "%d%%" % int(fuel * 100.0), UI.BAD if fuel < 0.18 else UI.AMBER, fuel)
+		var burning := "" if not rcs_firing or flame.emitting else "  side thrusters"
+		if flame.emitting:
+			burning = "  main engine"
+		_card.set_row("fuel", "%d%%%s" % [int(fuel * 100.0), burning], UI.BAD if fuel < 0.18 else UI.AMBER, fuel)
 	if not uses_chute and fuel < 0.18 and not _low_alarm:
 		_low_alarm = true
 		Sfx.play("alarm")

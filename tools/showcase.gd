@@ -9,7 +9,8 @@ const STEPS := [
 	[5.5, "go_planner"],
 	[6.6, "cap", "DATA", "Launch windows come from JPL planetary orbital elements: the game finds the real Mars windows of 16 Nov 2026 and 4 Jan 2029"],
 	[12.5, "go_launch"],
-	[13.6, "cap", "TECH", "Rocket equation and Max Q: launch stress follows real dynamic pressure, using Earth's air from NASA fact sheets"],
+	[13.3, "cap", "DATA", "Launching from a concept spaceport in Bahrain, built on NASA Landsat imagery and SRTM elevation of the island", "top"],
+	[16.6, "cap", "TECH", "Rocket equation and Max Q: launch stress follows real dynamic pressure, using Earth's air from NASA fact sheets"],
 	[19.0, "go_landing"],
 	[20.0, "cap", "DATA", "Gale Crater is built from NASA MOLA laser altimetry: 16-bit heights in true metres, cross-checked against Solar System Treks"],
 	[25.0, "cap", "TECH", "GPU-displaced terrain and a powered descent under real Mars gravity, 3.71 m/s², flown here by the autopilot"],
@@ -22,7 +23,7 @@ const STEPS := [
 	[46.5, "salvage"],
 	[46.7, "cap", "TECH", "Salvage a derelict lander: unscrew parts and torque them to the spec sheet with a dial wrench"],
 	[51.5, "go_quiz"],
-	[52.4, "cap", "IMPACT", "A before-and-after quiz measures what each player learned. The Results screen totals it for a class or event, with no names"],
+	[52.4, "cap", "IMPACT", "Built for Bahrain's classrooms: a before-and-after quiz measures learning, and the Results screen totals it for each school visit"],
 	[60.0, "quit"],
 ]
 
@@ -119,8 +120,8 @@ func go_planner() -> void:
 
 func go_launch() -> void:
 	_mars()
-	Flow.go("launch", "Launch")
-	await get_tree().create_timer(1.0).timeout
+	Flow.go("launch", "Launch from Bahrain")
+	await get_tree().create_timer(3.2).timeout
 	var s := _scene()
 	if s and s.has_method("ignite"):
 		s.auto_fly = true

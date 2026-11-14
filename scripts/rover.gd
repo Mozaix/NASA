@@ -4,6 +4,8 @@ extends Node3D
 
 const MAX_SPEED := 24.0
 const BOOST_SPEED := 40.0
+## Reverse is slow, like a real rover's, and boost does not apply to it.
+const REVERSE_SPEED := 8.0
 const WHEELS := [Vector3(-1.4, 0, 1.7), Vector3(1.4, 0, 1.7), Vector3(-1.5, 0, 0), Vector3(1.5, 0, 0), Vector3(-1.4, 0, -1.7), Vector3(1.4, 0, -1.7)]
 
 const WHEEL_R := 0.55
@@ -161,7 +163,11 @@ func tick(delta: float, throttle: float, steer: float, boost: bool, hop: bool) -
 		if throttle > 0.0 and along < cap:
 			velocity += tangent * accel * throttle * delta
 		elif throttle < 0.0:
-			velocity += tangent * accel * 1.2 * throttle * delta
+			if along > 0.5:
+				# Rolling forward: S brakes first.
+				velocity += tangent * accel * 1.2 * throttle * delta
+			elif along > -REVERSE_SPEED * speed_mult:
+				velocity += tangent * accel * 0.6 * throttle * delta
 		var side := tangent.cross(n).normalized()
 		velocity -= side * velocity.dot(side) * clampf(delta * 5.0 * grip, 0.0, 1.0)
 		if absf(throttle) < 0.05:

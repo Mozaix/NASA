@@ -39,6 +39,7 @@ func _ready() -> void:
 	await test_salvage()
 	test_learning_results()
 	await test_orbit_button()
+	await test_bahrain()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
@@ -839,6 +840,22 @@ func test_player_reports() -> void:
 		ro.place(ro.global_position)
 		ro.heading = 0.0
 		return ro
+	# Player report: reverse went extremely fast. Holding S for 20 s, with boost held too, stays slow.
+	var rv: Rover = make_rover.call()
+	var top_rev := 0.0
+	for i in 60 * 20:
+		rv.tick(1.0 / 60.0, -1.0, 0.0, true, false)
+		top_rev = maxf(top_rev, Vector2(rv.velocity.x, rv.velocity.z).length())
+	check(top_rev <= Rover.REVERSE_SPEED + 1.5, "Reverse stays at a crawl, even with boost held", top_rev)
+	var rf: Rover = make_rover.call()
+	rf.velocity = Vector3(0, 0, 20.0) * rf.forward_dir().z
+	var braked := 0.0
+	for i in 60:
+		rf.tick(1.0 / 60.0, -1.0, 0.0, false, false)
+	braked = Vector2(rf.velocity.x, rf.velocity.z).length()
+	check(braked < 20.0, "Pressing S while rolling forward brakes", braked)
+	rv.queue_free()
+	rf.queue_free()
 	var r1: Rover = make_rover.call()
 	var ahead := r1.global_position + Vector3(0, 0, 12)
 	r1.rocks = [Vector4(ahead.x, tw.height_at(ahead.x, ahead.z), ahead.z, 1.5)]
@@ -1164,4 +1181,33 @@ func test_orbit_button() -> void:
 		check(vs.encloses(b.get_global_rect()), "orbit: Begin descent is on screen for " + id, [b.get_global_rect(), vs.size])
 		o.queue_free()
 		await get_tree().process_frame
+	Game.new_mission()
+
+## Bahrain launch site and Al Munther, plus the player report "fuel drops with no engine on".
+func test_bahrain() -> void:
+	var bh: Dictionary = Data.bahrain
+	check(not bh.is_empty() and bool(bh.get("concept", false)), "Bahrain site loads and is labelled concept")
+	check(float(bh.pad.elev_m) > 0.5, "the concept pad is on land in the SRTM heights", bh.pad)
+	check(FileAccess.file_exists("res://data/regions/bahrain_spaceport/color.jpgdata"), "Landsat scene of Bahrain is bundled")
+	var ids: Array = Data.milestones.map(func(m: Dictionary) -> String: return str(m.id))
+	check(ids.find("al_munther") == ids.find("iss") + 1, "Al Munther's 550 km sits between the ISS and the thermosphere", ids)
+	Game.new_mission()
+	Game.mission.target_id = "mars"
+	Game.mission.region_id = "gale"
+	Game.auto_design()
+	var l: Node = (load("res://scenes/landing.tscn") as PackedScene).instantiate()
+	add_child(l)
+	await get_tree().process_frame
+	l.auto_pilot = false
+	for i in 120:
+		l._physics_process(1.0 / 60.0)
+	check(l.fuel == 1.0 and not l.rcs_firing, "no keys: no fuel used", l.fuel)
+	Input.action_press("move_right")
+	for i in 30:
+		l._physics_process(1.0 / 60.0)
+	check(l.fuel < 1.0 and l.rcs_firing and l._rcs.px.emitting, "steering fires a visible side thruster and uses fuel", [l.fuel, l.rcs_firing])
+	Input.action_release("move_right")
+	l.queue_free()
+	await get_tree().process_frame
+	Sfx.stop_loops()
 	Game.new_mission()

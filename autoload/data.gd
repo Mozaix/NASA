@@ -7,6 +7,8 @@ var exo: Dictionary = {}
 var regions: Dictionary = {}
 var milestones: Array = []
 var lessons: Dictionary = {}
+## Bahrain launch site and Al Munther (data/bahrain.json, made by tools/fetch_bahrain.py).
+var bahrain: Dictionary = {}
 var _targets: Array = []
 var _by_id: Dictionary = {}
 var _tex_cache: Dictionary = {}
@@ -38,6 +40,11 @@ func _ready() -> void:
 	regions = _json("res://data/regions.json")
 	milestones = _json("res://data/milestones.json").get("milestones", [])
 	lessons = _json("res://data/lessons.json").get("lessons", {})
+	bahrain = _json("res://data/bahrain.json")
+	# Bahrain's Al Munther orbit joins the 2D game's altitude ladder, in height order.
+	if bahrain.has("milestone"):
+		milestones.append(bahrain.milestone)
+		milestones.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a.km) < float(b.km))
 	_build_targets()
 
 func _json(path: String) -> Dictionary:

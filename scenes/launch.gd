@@ -39,6 +39,7 @@ var _globe: Node3D
 var _detached: Node3D
 var _detached_v := Vector3.ZERO
 var _land: MeshInstance3D
+var _site_card: PanelContainer
 var stress := 0.0
 var red_time := 0.0
 var lean := 0.0
@@ -115,23 +116,20 @@ func _ready() -> void:
 	earth.rotation = Vector3.ZERO
 	add_child(earth)
 	_globe = earth.get_node("Globe")
-	# Rotate the globe so Florida, the launch site, sits directly under the rocket at the top.
-	var site := Space.latlon_to_unit(28.57, -80.65)
+	# Launch site: a concept spaceport in Bahrain's southern desert (game fiction), on real NASA data.
+	# The globe turns so the pad sits directly under the rocket at the top.
+	var bh: Dictionary = Data.bahrain
+	var pad: Dictionary = bh.get("pad", {"lat": 25.97, "lon": 50.56})
+	var plat := float(pad.lat)
+	var plon := float(pad.lon)
+	var site := Space.latlon_to_unit(plat, plon)
 	var q := Quaternion(site, Vector3.UP)
 	_globe.quaternion = q
-	# NASA Blue Marble crop of Florida under the pad, at true scale. It is flat, so it hides as Earth curves away.
-	var land := MeshInstance3D.new()
-	var plane := PlaneMesh.new()
-	var region: Dictionary = Data.regions.get("earth_site", {})
-	var land_size := float(region.get("width_km", 2400.0)) / 10.0
-	plane.size = Vector2(land_size, land_size)
-	land.mesh = plane
-	var land_mat := StandardMaterial3D.new()
-	land_mat.albedo_texture = Data.texture("res://data/regions/earth_site/color.jpgdata")
-	land_mat.roughness = 1.0
-	land.material_override = land_mat
-	land.position = Vector3(0, EARTH_R + 0.05, 0)
+	# Two flat maps under the pad at true scale (1 unit = 10 km): NASA Blue Marble for the Gulf, and the
+	# NASA/USGS Landsat scene of Bahrain on top, shaded by SRTM elevation. They hide as Earth curves away.
+	var land := _map_plane("gulf", bh.get("gulf_bbox", [22.05, 30.05, 46.6, 54.6]), plat, plon, 0.0)
 	add_child(land)
+	land.add_child(_map_plane("color", bh.get("bbox", [25.75, 26.35, 50.3, 50.9]), plat, plon, 0.004, land.position))
 	_land = land
 	var pad_y := EARTH_R + 0.05
 	Models.cyl(self, 0.05, 0.06, 0.012, Vector3(0, pad_y + 0.006, 0), Models.mat(Color(0.42, 0.42, 0.44)), 24)
@@ -151,6 +149,23 @@ func _ready() -> void:
 	add_child(cam)
 	_build_hud()
 
+## A flat map of a lat/lon box, placed so the pad (plat, plon) is at the origin. North is -z.
+func _map_plane(file: String, b: Array, plat: float, plon: float, lift: float, parent_pos: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var kx := 111.32 * cos(deg_to_rad(plat)) / 10.0
+	var kz := 111.32 / 10.0
+	var plane := PlaneMesh.new()
+	plane.size = Vector2((float(b[3]) - float(b[2])) * kx, (float(b[1]) - float(b[0])) * kz)
+	var mi := MeshInstance3D.new()
+	mi.mesh = plane
+	var m := StandardMaterial3D.new()
+	m.albedo_texture = Data.texture("res://data/regions/bahrain_spaceport/%s.jpgdata" % file)
+	m.roughness = 1.0
+	mi.material_override = m
+	var cx := ((float(b[2]) + float(b[3])) * 0.5 - plon) * kx
+	var cz := -((float(b[0]) + float(b[1])) * 0.5 - plat) * kz
+	mi.position = Vector3(cx, EARTH_R + 0.05 + lift, cz) - parent_pos
+	return mi
+
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
@@ -160,7 +175,7 @@ func _build_hud() -> void:
 	root.theme = UI.theme()
 	layer.add_child(root)
 	_ui_root = root
-	_card = HudCard.new("Launch", "%s to %s" % [str(Game.launcher().name), str(Game.target().name)])
+	_card = HudCard.new("Launch", "%s to %s, from %s" % [str(Game.launcher().name), str(Game.target().name), str(Data.bahrain.get("name", "Bahrain"))])
 	_card.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT, Control.PRESET_MODE_MINSIZE, 20)
 	root.add_child(_card)
 	_card.add_row("height", "Height", true)
@@ -181,6 +196,25 @@ func _build_hud() -> void:
 	_trick_hud.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 20)
 	_trick_hud.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	root.add_child(_trick_hud)
+	# Where we are: shown on the pad, hidden at ignition.
+	var bh: Dictionary = Data.bahrain
+	if not bh.is_empty():
+		var sv := UI.vbox(6)
+		_site_card = UI.panel(sv, 16)
+		_site_card.custom_minimum_size.x = 430.0
+		_site_card.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE, 20)
+		_site_card.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+		_site_card.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		root.add_child(_site_card)
+		sv.add_child(UI.eyebrow("Launch site"))
+		sv.add_child(UI.heading(str(bh.name), 22))
+		var g := UI.grid(2)
+		sv.add_child(g)
+		UI.kv(g, "Pad", "%.2f° N, %.2f° E" % [float(bh.pad.lat), float(bh.pad.lon)])
+		UI.kv(g, "Pad elevation", "%d m (SRTM)" % int(round(float(bh.pad.elev_m))))
+		UI.kv(g, "Ground image", "Landsat, NASA/USGS")
+		sv.add_child(UI.para("A concept site: Bahrain has no launch pad yet. Its first locally built satellite, Al Munther, launched on 15 March 2025 to a 550 km orbit.", 14, UI.TEXT))
+		sv.add_child(UI.para("Source: %s" % str(bh.al_munther.source), 12, UI.TEXT_DIM))
 	_status = UI.label("", 34, UI.TEXT, "bold")
 	_status.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 40)
 	_status.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -272,6 +306,8 @@ func ignite() -> void:
 	_prompt.text = ""
 	_status.text = "Liftoff"
 	_gauge_box.visible = true
+	if _site_card:
+		_site_card.visible = false
 	Sfx.play("stage")
 	Sfx.loop("engine", 0.6)
 
