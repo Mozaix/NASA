@@ -407,8 +407,9 @@ func _show_result(ok: bool, text: String) -> void:
 	_result_panel.mouse_filter = Control.MOUSE_FILTER_PASS
 	UI.center_panel(pan)
 
+## The rover's power core is loaded in the hatch mini-game, which then rolls out to the surface.
 func _go_surface() -> void:
-	Flow.go("surface", str(region.name))
+	Flow.go("hatch", "Power Bay")
 
 func _process(delta: float) -> void:
 	terrain.update_lod(cam.global_position, delta)

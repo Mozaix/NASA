@@ -171,6 +171,14 @@ func _process(delta: float) -> void:
 				_stage = 1
 				_shot("quiz")
 				scene.auto_advance()
+		"Hatch":
+			if _stage == 0 and _t > 1.5:
+				_stage = 1
+				_shot("hatch_intro")
+				scene.auto_advance()
+			elif _stage == 1 and scene.state == "play" and scene.seated_count() >= 1:
+				_stage = 2
+				_shot("hatch_play")
 		"DemoPicker":
 			if _stage == 0 and _t > 1.0:
 				_stage = 1

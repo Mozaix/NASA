@@ -57,6 +57,12 @@ func _ready() -> void:
 	UI.kv(g, "Sites visited", str(Game.mission.pois.size()))
 	if float(Game.mission.distance_m) > 0.0:
 		UI.kv(g, "Distance on map", "%.1f km" % (float(Game.mission.distance_m) / 1000.0))
+	if Game.mission.has("core"):
+		var core: Dictionary = Game.mission.core
+		if core.get("skipped", false):
+			UI.kv(g, "Power core", "not loaded, ran on batteries", UI.AMBER)
+		else:
+			UI.kv(g, "Power core", "loaded, %d wall touches  (+%d)" % [int(core.touches), int(core.bonus)], UI.GOOD if int(core.touches) == 0 else UI.TEXT)
 	if int(Game.mission.crashes) > 0:
 		UI.kv(g, "Landers lost", str(Game.mission.crashes), UI.BAD)
 	if int(Game.mission.rockets_lost) > 0:

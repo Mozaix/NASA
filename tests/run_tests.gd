@@ -34,6 +34,7 @@ func _ready() -> void:
 	await test_demo()
 	await test_rocket_scenes()
 	await test_scenes()
+	await test_hatch()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
@@ -1009,3 +1010,49 @@ func test_version_stamp() -> void:
 	# An empty number here makes the macOS export use the one in project.godot.
 	var presets := FileAccess.get_file_as_string("res://export_presets.cfg")
 	check(presets.contains('application/short_version=""') and presets.contains('application/version=""'), "exports don't carry their own version number")
+
+## The power-core mini-game: every channel can be driven down its middle without a touch,
+## channels never overlap, walls cost stability, and enough touches blow the core.
+func test_hatch() -> void:
+	var lanes: Array = HatchScene.LANES
+	for i in lanes.size():
+		var hw: float = lanes[i].hw
+		check(hw - HatchScene.ROD_R >= 8.0, "hatch lane %d leaves room around the rod" % i)
+		for j in lanes.size():
+			if j == i:
+				continue
+			for p: Vector2 in lanes[i].pts:
+				var c := HatchScene.closest_on(j, p)
+				check(float(c.dist) > hw + float(lanes[j].hw) + 6.0, "hatch lane %d stays clear of lane %d" % [i, j])
+	Game.new_mission()
+	Game.mission.target_id = "mars"
+	Game.mission.region_id = "gale"
+	var packed: PackedScene = load("res://scenes/hatch.tscn")
+	var h: HatchScene = packed.instantiate()
+	add_child(h)
+	await get_tree().process_frame
+	h.size = Vector2(1600, 900)
+	h.auto_advance()
+	for k in 900:
+		h._process(1.0 / 60.0)
+		if h.state != "play" and h.state != "to_bay":
+			break
+	check(h.seated_count() == 3, "hatch: autopilot seats all three rods", h.seated_count())
+	check(h.touches == 0, "hatch: the middle of each channel never touches a wall", h.touches)
+	check(int(Game.mission.get("core", {}).get("bonus", 0)) == 60, "hatch: clean run earns +60 science")
+	h.queue_free()
+	await get_tree().process_frame
+	var h2: HatchScene = packed.instantiate()
+	add_child(h2)
+	await get_tree().process_frame
+	h2.size = Vector2(1600, 900)
+	h2.state = "play"
+	h2.held = 0
+	for k in 4:
+		h2._cooldown = 0.0
+		h2._move_rod(0, Vector2(300, 400))
+	check(h2.state == "boom" and h2.stability <= 0.0, "hatch: four wall hits blow the core", [h2.state, h2.stability])
+	h2._retry()
+	check(h2.state == "play" and h2.stability == 100.0 and h2.seated_count() == 0, "hatch: retry gives a fresh set of rods")
+	h2.queue_free()
+	await get_tree().process_frame

@@ -7,6 +7,7 @@ const SCENES := {
 	"surface": "res://scenes/surface.tscn", "debrief": "res://scenes/debrief.tscn", "archive": "res://scenes/archive.tscn",
 	"settings": "res://scenes/settings.tscn", "credits": "res://scenes/credits.tscn",
 	"demo_picker": "res://scenes/demo_picker.tscn", "quiz": "res://scenes/quiz.tscn", "rocket2d": "res://scenes/rocket2d.tscn", "rocket2d_flight": "res://scenes/rocket2d_flight.tscn", "leaderboard": "res://scenes/leaderboard.tscn",
+	"hatch": "res://scenes/hatch.tscn",
 }
 
 var _fade: ColorRect
@@ -18,7 +19,7 @@ var _fps: Label
 var _pause_end: Button
 var _fps_t := 0.0
 ## Scenes with their own pause menu or none needed are not listed here.
-const PAUSABLE: Array[String] = ["Launch", "Transfer", "Orbit", "Landing", "Rocket2DFlight"]
+const PAUSABLE: Array[String] = ["Launch", "Transfer", "Orbit", "Landing", "Hatch", "Rocket2DFlight"]
 
 func _ready() -> void:
 	layer = 100
