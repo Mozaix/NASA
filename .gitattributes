@@ -1,0 +1,4 @@
+USB_BUILD/**/*.zip filter=lfs diff=lfs merge=lfs -text
+USB_BUILD/**/*.x86_64 filter=lfs diff=lfs merge=lfs -text
+USB_BUILD/**/*.pck filter=lfs diff=lfs merge=lfs -text
+USB_BUILD/**/*.exe filter=lfs diff=lfs merge=lfs -text
