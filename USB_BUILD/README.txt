@@ -69,8 +69,17 @@ Keys can be changed in Settings.
 
 Launch: press Space to go for launch; the countdown runs from T-30 (Space again skips to T-10).
         After liftoff, W/S throttle, A/D steer. If the stress needle stays in the red too long, the rocket breaks up.
+Cruise: when debris rushes at you, answer with 1, 2 or 3 (or click) before the timer
+        runs out to fire the thrusters and dodge.
 Tricks: hold Q and press W/S to flip or A/D to spin, on the rocket or in a rover jump. Land the combo to bank it.
 Rover: rocks cost health. Drive back to the lander to repair.
+
+
+FOR TEACHERS
+------------
+Open Results and start a class before the lesson. Results are kept per class, with
+no names. "Lesson sheet for teachers" opens a printable 40-minute plan with answers.
+Pitching the game? Press F2 for a 3-minute timer and talking points.
 
 
 IF THE GAME RUNS SLOWLY
