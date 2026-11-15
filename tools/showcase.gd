@@ -1,30 +1,24 @@
 extends Node
-## A scripted 60-second tour of the real game for the pitch video, with captions tagged DATA / TECH / IMPACT.
+## A scripted 30-second tour of the real game's core loop for the pitch video, with captions tagged DATA / TECH / IMPACT.
 ## Record it with Godot's movie writer (not part of the exported game; tools/ is excluded from builds):
 ##   godot --path . --write-movie pitch/showcase.avi --fixed-fps 30 --resolution 1920x1080 res://tools/showcase.tscn
 
 const STEPS := [
-	[0.0, "go_menu"],
-	[0.4, "cap", "IMPACT", "Next Frontier Explorer: a free mission-design game that runs offline from a USB stick on Windows, Mac and Linux"],
-	[5.5, "go_planner"],
-	[6.6, "cap", "DATA", "Launch windows come from JPL planetary orbital elements: the game finds the real Mars windows of 16 Nov 2026 and 4 Jan 2029"],
-	[12.5, "go_launch"],
-	[13.3, "cap", "DATA", "Launching from a concept spaceport in Bahrain, built on NASA Landsat imagery and SRTM elevation of the island", "top"],
-	[16.6, "cap", "TECH", "Rocket equation and Max Q: launch stress follows real dynamic pressure, using Earth's air from NASA fact sheets"],
-	[19.0, "go_landing"],
-	[20.0, "cap", "DATA", "Gale Crater is built from NASA MOLA laser altimetry: 16-bit heights in true metres, cross-checked against Solar System Treks"],
-	[25.0, "cap", "TECH", "GPU-displaced terrain and a powered descent under real Mars gravity, 3.71 m/s², flown here by the autopilot"],
-	[30.0, "go_hatch"],
-	[31.0, "cap", "TECH", "Mini-games teach hands-on engineering: load the rover's power core without touching the walls"],
-	[33.5, "hatch_play"],
-	[39.5, "go_surface"],
-	[41.0, "surface_poi"],
-	[41.2, "cap", "DATA", "Every fact on screen is a verbatim NASA quote, checked against its source page when the game is built", "top"],
-	[46.5, "salvage"],
-	[46.7, "cap", "TECH", "Salvage a derelict lander: unscrew parts and torque them to the spec sheet with a dial wrench"],
-	[51.5, "go_quiz"],
-	[52.4, "cap", "IMPACT", "Built for Bahrain's classrooms: a before-and-after quiz measures learning, and the Results screen totals it for each school visit"],
-	[60.0, "quit"],
+	[0.0, "go_launch"],
+	[0.4, "cap", "DATA", "Launch from a concept spaceport in Bahrain, built from NASA Landsat imagery and SRTM elevation", "top"],
+	[7.0, "go_landing"],
+	[7.8, "cap", "TECH", "Powered descent onto Gale Crater: real NASA MOLA terrain, real Mars gravity"],
+	[12.0, "go_hatch"],
+	[12.8, "hatch_play"],
+	[12.9, "cap", "TECH", "Load the rover's power core: move each fuel rod without touching the walls"],
+	[17.5, "go_surface"],
+	[18.6, "surface_poi"],
+	[18.7, "cap", "DATA", "Drive to real science sites: every fact is a verbatim NASA quote. Collect samples for science points", "top"],
+	[24.0, "salvage"],
+	[24.1, "cap", "TECH", "Salvage a derelict lander: torque each part to the spec sheet"],
+	[27.4, "go_quiz"],
+	[28.1, "cap", "IMPACT", "A before-and-after quiz measures what Bahrain's students learn"],
+	[30.0, "quit"],
 ]
 
 var t := 0.0
@@ -37,6 +31,9 @@ var _salvage_bolt := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# The how-to-play cards pause the game; keep them out of the recording without changing the player's setting.
+	if get_node_or_null("/root/Tips"):
+		get_node("/root/Tips").enabled = false
 	_build_caption()
 
 func _build_caption() -> void:
@@ -121,11 +118,11 @@ func go_planner() -> void:
 func go_launch() -> void:
 	_mars()
 	Flow.go("launch", "Launch from Bahrain")
-	await get_tree().create_timer(3.2).timeout
+	await get_tree().create_timer(0.9).timeout
 	var s := _scene()
-	if s and s.has_method("ignite"):
+	if s and s.has_method("start_count"):
 		s.auto_fly = true
-		s.ignite()
+		s.start_count(4.5)
 
 func go_landing() -> void:
 	_mars()
@@ -153,6 +150,7 @@ func surface_poi() -> void:
 
 func salvage() -> void:
 	Input.action_release("move_forward")
+	Input.action_release("interact")
 	var s := _scene()
 	if s and s.has_method("open_salvage") and not s.wreck.is_empty():
 		s.open_salvage()
@@ -171,9 +169,14 @@ func _drive(delta: float) -> void:
 	var s := _scene()
 	if s == null:
 		return
-	if t > 41.0 and t < 46.4 and s.name == "Surface":
-		Input.action_press("move_forward", 0.45)
-	if t > 46.5 and s.name == "Surface" and s.salvage != null:
+	if t > 18.6 and t < 23.9 and s.name == "Surface":
+		# Drive in to the beacon, then hold the collect key once the rover is in reach.
+		if s._near == null:
+			Input.action_press("move_forward", 0.45)
+		else:
+			Input.action_release("move_forward")
+			Input.action_press("interact")
+	if t > 24.0 and s.name == "Surface" and s.salvage != null:
 		var g: SalvageGame = s.salvage
 		if g.phase == "remove" and _salvage_bolt < g.bolts.size():
 			g.active = _salvage_bolt
