@@ -71,6 +71,7 @@ func _ready() -> void:
 		Tips.set_enabled(true)
 		tipc.set_pressed_no_signal(true))
 	v.add_child(reset)
+	v.add_child(UI.para("Pitching the game? Press F2 for presenter mode: a 3-minute timer and talking points for each screen. Press F2 again for the timer only, and once more to turn it off.", 14))
 	v.add_child(UI.eyebrow("Audio"))
 	_slider(v, "Master", Settings.master_vol, func(x: float) -> void: Settings.master_vol = x)
 	_slider(v, "Music", Settings.music_vol, func(x: float) -> void: Settings.music_vol = x)

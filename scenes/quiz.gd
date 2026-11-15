@@ -118,6 +118,8 @@ func _show_results() -> void:
 		_box.add_child(UI.heading("Before: %d of %d.  After: %d of %d." % [Game.quiz_before, total, score, total], 30))
 		# Autotests must not fill a player's totals. A pair counts once.
 		var r := load_results(results_path) if Autotest.active else record(Game.quiz_before, score, results_path, Game.quiz_before_right, _right)
+		if not Autotest.active and results_path == RESULTS_PATH:
+			Classroom.record_quiz(Game.quiz_before, score, Game.quiz_before_right, _right)
 		if int(r.runs) > 0:
 			_box.add_child(UI.para("All players on this computer (%d): average %.1f before, %.1f after." % [int(r.runs), float(r.before_total) / int(r.runs), float(r.after_total) / int(r.runs)], 17, UI.TEXT))
 			_box.add_child(UI.para("This is an informal check using the same questions twice, not a scientific study.", 14, UI.TEXT_DIM))

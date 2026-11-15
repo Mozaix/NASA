@@ -32,31 +32,14 @@ var _parent_id := ""
 var _card: HudCard
 var _scale_btn: Button
 var _info: VBoxContainer
-var _fix_panel: Control
-var _fix_bar: ProgressBar
-var _fix_time := 0.0
-var _fix_offset := Vector2.ZERO
-var _fix_drift := Vector2.ZERO
-var _fix_total := 0.0
-var _fix_good := 0.0
 var _fix_active := false
 var _fixes_done := 0
-var _reticle: Reticle
+var debris: DebrisRun
+var _asked: Array = []
 var _focus_index := -1
 var _star: Node3D
 var _arrival := false
 var _craft_tag: Label3D
-
-class Reticle extends Control:
-	var off := Vector2.ZERO
-	func _draw() -> void:
-		var c := size * 0.5
-		draw_arc(c, 34.0, 0.0, TAU, 48, UI.GOOD, 2.0)
-		draw_arc(c, 4.0, 0.0, TAU, 12, UI.GOOD, 2.0)
-		var p := c + off
-		var col := UI.GOOD if off.length() < 34.0 else UI.BAD
-		draw_line(p + Vector2(-14, 0), p + Vector2(14, 0), col, 2.0)
-		draw_line(p + Vector2(0, -14), p + Vector2(0, 14), col, 2.0)
 
 func _ready() -> void:
 	target = Game.target()
@@ -304,21 +287,6 @@ func _build_hud() -> void:
 	ip.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	root.add_child(ip)
 	_show_target_info()
-	_fix_panel = UI.vbox(8)
-	var fix_p := UI.panel(_fix_panel)
-	fix_p.visible = false
-	fix_p.custom_minimum_size.x = 360.0
-	fix_p.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_MINSIZE, 30)
-	fix_p.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	fix_p.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	root.add_child(fix_p)
-	_fix_panel.add_child(UI.eyebrow("Course correction"))
-	_fix_panel.add_child(UI.para("Hold the crosshair inside the ring with WASD.", 15, UI.TEXT))
-	_reticle = Reticle.new()
-	_reticle.custom_minimum_size = Vector2(320, 150)
-	_fix_panel.add_child(_reticle)
-	_fix_bar = UI.bar(0, 1, UI.GOOD, 8.0)
-	_fix_panel.add_child(_fix_bar)
 
 func _show_target_info() -> void:
 	_set_info(target)
@@ -348,9 +316,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		toggle_scale()
 
 func _process(delta: float) -> void:
-	if _fix_active:
-		_fix_tick(delta)
-	else:
+	if not _fix_active:
 		progress += delta * time_scale / (DEMO_CRUISE_SECONDS if Game.is_demo() else CRUISE_SECONDS)
 	progress = minf(progress, 1.0)
 	var now := _start_unix + progress * _days * 86400.0
@@ -418,42 +384,29 @@ func _process_interstellar(delta: float) -> void:
 	_card.set_row("where", "%.1f of %.1f light-years" % [ly * progress, ly])
 	_card.set_details(PackedStringArray(["At Voyager 1's speed: %s" % Orbital.format_time(float(plan.voyager_years) * 365.25)]))
 
+## The debris dodge: two encounters per cruise, each with a question about this mission and one about
+## debris or meteoroids. Out between the planets the hazard is meteoroids; near Earth and the Moon it is
+## human-made debris. See scripts/debris_run.gd.
 func _begin_fix() -> void:
 	_fix_active = true
-	_fix_time = 0.0
-	_fix_good = 0.0
-	_fix_total = 5.0
-	_fix_offset = Vector2(randf_range(-60, 60), randf_range(-40, 40))
-	_fix_drift = Vector2(randf_range(-30, 30), randf_range(-30, 30))
-	_fix_panel.get_parent().visible = true
-	Sfx.play("alarm", -8.0)
-
-func _fix_tick(delta: float) -> void:
-	_fix_time += delta
-	var input := Vector2(Input.get_axis("move_left", "move_right"), Input.get_axis("move_forward", "move_back"))
-	_fix_drift += Vector2(randf_range(-40, 40), randf_range(-40, 40)) * delta
-	_fix_drift = _fix_drift.limit_length(45.0)
-	_fix_offset += (_fix_drift + input * 110.0) * delta
-	_fix_offset = _fix_offset.limit_length(70.0)
-	if _fix_offset.length() < 34.0:
-		_fix_good += delta
-	_reticle.off = _fix_offset
-	_reticle.queue_redraw()
-	_fix_bar.value = _fix_time / _fix_total
-	if _fix_time >= _fix_total:
-		_end_fix()
+	var layer := CanvasLayer.new()
+	layer.layer = 5
+	add_child(layer)
+	debris = DebrisRun.new()
+	debris.setup(Questions.encounter(target, plan, _asked), "debris" if mode == "lunar" else "meteoroids")
+	debris.finished.connect(func(_right: int, _asked_n: int) -> void:
+		layer.queue_free()
+		_end_fix())
+	layer.add_child(debris)
 
 func _end_fix() -> void:
 	_fix_active = false
 	_fixes_done += 1
-	_fix_panel.get_parent().visible = false
-	var q := _fix_good / _fix_total
-	Game.mission.correction_quality = float(Game.mission.correction_quality) * (0.85 + 0.15 * q)
-	Game.add_science(10.0 * q)
-	Sfx.play("collect" if q > 0.6 else "click")
+	debris = null
 
 func auto_advance() -> void:
 	time_scale = 8.0
+	_auto_answer.call_deferred()
 	if Game.is_demo():
 		return
 	if mode != "interstellar":
@@ -464,3 +417,13 @@ func _shot_true_scale() -> void:
 	await get_tree().create_timer(1.0).timeout
 	Autotest._shot("transfer_true_scale")
 	toggle_scale()
+
+## The autotest answers each debris question correctly after a short look.
+func _auto_answer() -> void:
+	while is_inside_tree():
+		await get_tree().create_timer(1.2).timeout
+		if is_instance_valid(debris):
+			if debris.state == "ask":
+				debris.answer(debris.right_index())
+			elif debris.state == "explain":
+				debris.next()

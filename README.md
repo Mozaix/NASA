@@ -8,8 +8,8 @@ Made for the <b>NASA Space Apps Challenge 2026</b>: Space Mission Design Game.
 </p>
 
 <p align="center">
-<a href="https://github.com/Mozaix/NASA/releases/latest"><b>⬇ Download the latest release</b></a>
-· macOS · Windows · Linux · works fully offline
+<a href="https://mozaix.github.io/NASA/"><b>▶ Play in your browser</b></a>
+· <a href="https://github.com/Mozaix/NASA/releases/latest"><b>⬇ Download for macOS, Windows or Linux</b></a> (works fully offline)
 </p>
 
 ---
@@ -30,10 +30,20 @@ Every number in the game comes from NASA data: planet facts, orbits from JPL, ex
 | **Play Demo** | A guided run of about 4 minutes, with a 3-question quiz before and after to show what you learned. |
 | **Play 2D** | Build rockets from parts, earn money from altitude, buy better parts and climb the daily leaderboard. |
 
-### New in v1.9
+### New in v2.0
+- **Debris dodge**: twice on the way to your target, meteoroids or space debris rush at your spacecraft, seen from on top of it. Answer a question before the timer runs out to fire the thrusters. Questions use your own mission's NASA numbers (gravity, travel time, moons) plus real debris science, and every answer is explained.
+- **Classroom mode**: in **Results**, a teacher names a class before the lesson. Quiz results and debris answers are kept per class, with no player names. Includes before/after charts, the hardest questions, a CSV export and a printable lesson sheet with a 40-minute plan and answers.
+- **Play in a browser**: no install needed, on school Chromebooks too. It uses a lighter renderer, so it looks a little simpler, and the first load is about 160 MB.
+- **Presenter mode**: press **F2** while pitching for a 3-minute timer and talking points for each screen. Press F2 again for the timer only.
+
+<details>
+<summary>v1.9</summary>
+
 - **3D launch site**: the Bahrain spaceport is now a full 3D place. The ground is built from NASA SRTM heights (raised ×5, because Bahrain is nearly flat) and draped with NASA/USGS Landsat imagery.
 - **A real launch pad**: a raised concrete pad with a flame trench and launch mount, a service tower with swinging access arms, lightning masts, a water tower, propellant tanks, a hangar and roads
 - **T-minus countdown**: go for launch, then watch the terminal count from T-30. The arms retract, the vents steam, the water deluge starts and the engines light at T-3, with liftoff at T-0. Press Space again to skip to T-10.
+
+</details>
 
 <details>
 <summary>Earlier versions</summary>
@@ -47,9 +57,13 @@ Every number in the game comes from NASA data: planet facts, orbits from JPL, ex
 
 ## How to play
 
+### Play in a browser
+
+Open **https://mozaix.github.io/NASA/** in Chrome, Edge or Firefox on a laptop or Chromebook. The first load is about 160 MB; after that the browser keeps it. Results and classes are saved in that browser.
+
 ### Install
 
-Download the file for your computer from the [latest release](https://github.com/Mozaix/NASA/releases/latest).
+Or download the file for your computer from the [latest release](https://github.com/Mozaix/NASA/releases/latest).
 
 > **Note:** don't use GitHub's green *Code → Download ZIP* button to get the game. The builds are stored with Git LFS, so that ZIP holds small placeholder files instead of the game.
 
@@ -87,6 +101,8 @@ Keyboard and mouse, or any standard gamepad (plug it in before starting). You ca
 | Look down at the pad | `C` | Right stick press |
 | Show exact numbers | `Tab` | D-pad up |
 | Pause | `Esc` | Start |
+| Answer a debris question | `1` `2` `3` or click | — |
+| Presenter mode (timer and notes) | `F2` (`F3` restarts the timer) | — |
 
 ### Tips
 - **Launch:** press `Space` to go for launch and start the T-minus countdown. After liftoff, keep the stress needle out of the red, and steer into crosswinds with `A` / `D`.

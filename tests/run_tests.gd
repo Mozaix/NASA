@@ -42,6 +42,9 @@ func _ready() -> void:
 	await test_orbit_button()
 	await test_bahrain()
 	await test_countdown()
+	await test_debris_dodge()
+	test_classroom()
+	test_presenter()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
@@ -1210,6 +1213,119 @@ func test_orbit_button() -> void:
 		o.queue_free()
 		await get_tree().process_frame
 	Game.new_mission()
+
+## v2.0: questions for the debris dodge, for every world in the game.
+func _check_question(q: Dictionary, where: String) -> void:
+	var wrong: Array = q.get("wrong", [])
+	var ok := str(q.get("q", "")) != "" and str(q.get("right", "")) != "" and str(q.get("why", "")) != "" and wrong.size() == 2
+	ok = ok and not wrong.has(q.right) and str(wrong[0]) != str(wrong[1])
+	check(ok, "well-formed question %s at %s" % [str(q.get("id", "?")), where], q)
+
+func test_debris_dodge() -> void:
+	var ids: Array = Data.bodies.keys()
+	ids.append_array(["exo_trappist_1_e", "exo_55_cnc_e", "exo_proxima_cen_b"])
+	for id: String in ids:
+		var t := Data.body(id)
+		if t.is_empty():
+			continue
+		var plan := Orbital.plan(t)
+		for q: Dictionary in Questions.mission_questions(t, plan):
+			_check_question(q, id)
+		var used: Array = []
+		var a := Questions.encounter(t, plan, used)
+		var b := Questions.encounter(t, plan, used)
+		check(a.size() == 2 and b.size() >= 1, "two encounters of questions for " + id, [a.size(), b.size()])
+		var all_ids: Array = (a + b).map(func(q: Dictionary) -> String: return str(q.id))
+		check(all_ids.size() == Array(all_ids).reduce(func(acc: Array, x: String) -> Array: return acc if acc.has(x) else acc + [x], []).size(), "no repeated questions on one mission to " + id, all_ids)
+	for q: Dictionary in Questions.HAZARD:
+		_check_question(q, "hazard bank")
+	var mars := Questions.mission_questions(Data.body("mars"), Orbital.plan(Data.body("mars")))
+	var grav: Array = mars.filter(func(q: Dictionary) -> bool: return q.id == "m_gravity")
+	check(not grav.is_empty() and str(grav[0].right) == "Weaker than Earth's" and str(grav[0].why).contains("3.7"), "Mars gravity question uses NASA's 3.7 m/s²", grav)
+	# The dodge itself: a right answer dodges, a timeout hits, and the run reports back.
+	Classroom.root = "user://test_class_"
+	Game.new_mission()
+	var quality := float(Game.mission.correction_quality)
+	var run := DebrisRun.new()
+	run.setup([Questions.HAZARD[0], Questions.HAZARD[1]], "debris")
+	var done := []
+	run.finished.connect(func(r: int, n: int) -> void: done.append([r, n]))
+	add_child(run)
+	await get_tree().process_frame
+	check(run.state == "ask", "debris run opens on a question")
+	run.answer(run.right_index())
+	check(run.state == "dodge", "right answer fires the thrusters")
+	for i in 120:
+		run._process(1.0 / 60.0)
+	check(run.state == "explain", "after the dodge, the answer is explained", run.state)
+	run.next()
+	check(run.state == "ask", "second question follows")
+	run._process(DebrisRun.ANSWER_TIME + 0.1)
+	check(run.state == "impact", "running out of time means impact", run.state)
+	run._process(1.0)
+	check(run.state == "explain" and float(Game.mission.correction_quality) < quality, "an impact costs mission efficiency", Game.mission.correction_quality)
+	run.next()
+	await get_tree().process_frame
+	check(done == [[1, 2]], "debris run reports 1 right of 2", done)
+	var rows := Classroom.debris_rows("")
+	check(rows.size() == 2 and int(rows[0].right) == 0, "debris answers are counted, hardest first", rows)
+	_clear_test_class_files()
+	Classroom.root = "user://"
+	Game.new_mission()
+
+func _clear_test_class_files() -> void:
+	var d := DirAccess.open("user://")
+	if d:
+		for f: String in d.get_files():
+			if f.begins_with("test_class_"):
+				d.remove(f)
+
+## Classroom mode: classes keep their own results, and the lesson sheet and CSV carry them.
+func test_classroom() -> void:
+	Classroom.root = "user://test_class_"
+	_clear_test_class_files()
+	check(Classroom.active() == "", "no class is running at first")
+	check(Classroom.start_class("  Grade 6<B>  ") == "Grade 6<B>", "class names are trimmed")
+	check(Classroom.active() == "Grade 6<B>", "the class is running")
+	Classroom.record_quiz(1, 3, [true, false, false], [true, true, true])
+	Classroom.record_debris(Questions.HAZARD[2], true)
+	check(int(QuizScene.load_results(Classroom.quiz_path("Grade 6<B>")).runs) == 1, "quiz results count for the class")
+	check(Classroom.debris_rows("Grade 6<B>").size() == 1 and Classroom.debris_rows("").size() == 1, "debris answers count for the class and for everyone")
+	check(Classroom.quiz_path("Grade 6<B>") != Classroom.quiz_path("Grade 6 B"), "similar class names keep separate files")
+	var html := LessonSheet.html("Grade 6<B>")
+	check(html.contains("Grade 6&lt;B&gt;") and not html.contains("Grade 6<B>"), "lesson sheet escapes the class name")
+	check(html.contains(str(QuizScene.QUESTIONS[0].right)) and html.contains(str(Questions.HAZARD[2].q)), "lesson sheet lists questions with answers")
+	check(html.contains("1 players finished") or html.contains("players finished both quizzes"), "lesson sheet includes the class's results")
+	var res: Node = (load("res://scenes/results.tscn") as PackedScene).instantiate()
+	res.view_class = "Grade 6<B>"
+	add_child(res)
+	res.view_class = "Grade 6<B>"
+	var csv: String = res.csv_text()
+	check(csv.contains("debris_question,answered,right,share_right") and csv.contains("players,1"), "CSV has quiz totals and debris questions", csv)
+	res.queue_free()
+	Classroom.end_class()
+	check(Classroom.active() == "" and Classroom.classes().has("Grade 6<B>"), "ending a class keeps its results")
+	Classroom.delete_class("Grade 6<B>")
+	check(not Classroom.classes().has("Grade 6<B>") and not FileAccess.file_exists(Classroom.quiz_path("Grade 6<B>")), "deleting a class removes its results")
+	_clear_test_class_files()
+	Classroom.root = "user://"
+
+## Presenter mode: notes exist for the screens shown in a pitch, and F2 cycles notes, timer, off.
+func test_presenter() -> void:
+	var roots: Array = []
+	for path: String in Flow.SCENES.values():
+		roots.append(FileAccess.get_file_as_string(path).get_slice('[node name="', 1).get_slice('"', 0))
+	for k: String in Presenter.NOTES:
+		check(roots.has(k), "presenter notes are for a real screen: " + k)
+	for k: String in ["MainMenu", "Planner", "Launch", "Transfer", "Surface", "Debrief", "Results"]:
+		check((Presenter.notes_for(k)[1] as Array).size() >= 1, "presenter has notes for " + k)
+	check(Presenter.mode == "off", "presenter mode starts off")
+	Presenter.cycle()
+	check(Presenter.mode == "notes" and Presenter.elapsed == 0.0, "F2 turns on notes and starts the timer")
+	Presenter.cycle()
+	check(Presenter.mode == "timer", "F2 again shows only the timer")
+	Presenter.cycle()
+	check(Presenter.mode == "off", "F2 a third time turns it off")
 
 ## v1.9: the 3D launch site and the T-minus countdown.
 func test_countdown() -> void:

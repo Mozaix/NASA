@@ -1,0 +1,62 @@
+# Builds the browser version from source with Godot and publishes it to GitHub Pages.
+# Runs for every version tag (v2.0, v2.1, ...) and can be started by hand from the Actions tab.
+# The game's data is too big for a git file (over 100 MB), so the build happens here instead.
+name: Web version
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false   # the desktop builds in USB_BUILD/ are not needed here
+
+      - name: Install Godot and export templates
+        run: |
+          base="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable"
+          curl -sSL -o godot.zip "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl -sSL -o templates.tpz "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q godot.zip && mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot && chmod +x godot
+          dest="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$dest" && unzip -q templates.tpz -d tmpl && mv tmpl/templates/* "$dest/"
+          rm -rf godot.zip templates.tpz tmpl
+
+      - name: Export the web build
+        run: |
+          touch USB_BUILD/.gdignore
+          mkdir -p USB_BUILD/Web
+          ./godot --headless --import || true
+          ./godot --headless --export-release "Web" USB_BUILD/Web/index.html
+          rm USB_BUILD/.gdignore
+          ls -la USB_BUILD/Web
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: USB_BUILD/Web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -68,9 +68,9 @@ static func tip_for(scene_name: String) -> Dictionary:
 				"In orbit, press %s when the marker is in the green to leave Earth. %s turns on the autopilot." % [k.call("thrust"), k.call("assist")]]}
 		"Transfer":
 			return {"title": "Cruise to your target", "steps": [
-				"Your spacecraft is flying along real planet orbits.",
-				"When a course correction appears, hold the crosshair inside the ring with %s %s %s %s." % [k.call("move_forward"), k.call("move_left"), k.call("move_back"), k.call("move_right")],
-				"Drag to turn the camera and scroll to zoom. %s switches between true and viewable scale." % k.call("map")]}
+				"Your spacecraft is flying along real planet orbits. Drag to turn the camera and scroll to zoom. %s switches between true and viewable scale." % k.call("map"),
+				"Twice on the way, meteoroids or space debris head straight for you. You see it from on top of your spacecraft.",
+				"Answer the question before the timer runs out (click, or press 1, 2 or 3). Right fires the thrusters and you dodge. Wrong, and the shield takes a hit."]}
 		"Orbit":
 			return {"title": "In orbit", "steps": [
 				"Hold %s to scan the planet from orbit and earn science points." % k.call("interact"),

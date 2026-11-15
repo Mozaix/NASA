@@ -7,3 +7,6 @@ __pycache__/
 
 # Unzipped macOS app: too big for git (GitHub 100 MB limit). The LFS zip next to it holds the same build.
 USB_BUILD/macOS/*.app/
+
+# The browser build is made by .github/workflows/web.yml, not stored in git.
+USB_BUILD/Web/

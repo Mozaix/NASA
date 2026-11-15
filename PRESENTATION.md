@@ -37,7 +37,9 @@ So heights come from the same missions' 16-bit PDS files, and the Treks layers a
 
 ## 3-minute demo
 
-Before starting: launch the game, set Settings to Fullscreen, and return to the menu.
+Before starting: launch the game, set Settings to Fullscreen, and return to the menu. Press **F2** for presenter mode:
+a pitch timer against 3:00 and talking points for each screen, in the bottom-left corner. Press **F2** again for the timer only
+if the notes should stay off the projector, and **F3** to restart the timer.
 
 **0:00 Pitch (15 s).** "You plan a real mission and then land on real NASA terrain."
 
@@ -47,8 +49,8 @@ Before starting: launch the game, set Settings to Fullscreen, and return to the 
 - Open **Launch Window**. Drag the slider off the peak and watch the penalty rise. Click **Jump to the best window**.
 - Open **Review**, then click **LAUNCH**.
 
-**1:00 Launch and cruise (25 s).** Press Space to ignite, then press **P** for the autopilot so the rocket stays out of the red. Say: "Stress peaks partway up, just like a real rocket's Max Q. If you hold it in the red, the rocket breaks up, and the game explains why." Press Space in the green for the departure burn.
-In the cruise view, press **M** to switch to true scale: "This is how empty space really is." Press M again, then **Faster**.
+**1:00 Launch and cruise (25 s).** Press Space to go for launch, then Space again to skip to T-10: "This is a concept spaceport in Bahrain, in 3D from NASA SRTM heights and Landsat imagery." After liftoff press **P** for the autopilot so the rocket stays out of the red. Say: "Stress peaks partway up, just like a real rocket's Max Q. If you hold it in the red, the rocket breaks up, and the game explains why." Press Space in the green for the departure burn.
+In the cruise view, press **M** to switch to true scale: "This is how empty space really is." Press M again, then **Faster**. When the debris dodge appears: "You're riding on top of the spacecraft. Answer to fire the thrusters." Answer one question.
 
 **1:25 Landing (25 s).** In orbit, click **Begin descent**. Press **P** for the autopilot, so the demo cannot crash.
 Point out that the terrain below is real Mars elevation.
@@ -81,3 +83,16 @@ Each part card shows its predicted effect on height.
 - The launch-window penalty is a simplified model, and the planner says so.
 - Part costs and masses are game values, labelled as such. So are rocket stress and strength, trick scores, rover health and the autopilot's emergency thrust.
 - Not endorsed by NASA.
+
+## How the project meets the judging rubric
+
+| Criterion | What to show or say |
+|---|---|
+| **Influence** | Free, and it runs offline on macOS, Windows, Linux or in any browser, so any school can use it. Classroom mode turns it into a lesson for a whole class at once. |
+| **Creativity** | A complete mission in one game: plan with real orbital mechanics, fly, land on real terrain. The debris dodge turns learning questions into the action itself. |
+| **Validity** | Hohmann transfers, the rocket equation and real launch windows from JPL elements. Verbatim NASA quotes checked against their source pages. 1,700+ automated checks. Simplifications are labelled on screen. |
+| **Relevance** | Covers designing a mission (target, launcher, payload, window, budget), launch, cruise, orbit, landing and surface science, with tips on every screen, a demo mode and classroom tools. |
+| **Presentation** | Presenter mode keeps the pitch to 3:00 with notes per screen. Pitch deck and showcase video are in `pitch/`. |
+| **Use of data** | NASA elevation, imagery, fact sheets, orbits and the Exoplanet Archive drive every core feature. Debris questions use the mission's own NASA numbers. Limits are stated (heights ×5 at the launch site, game values for stress and score). |
+| **Use of technology** | Real NASA terrain streamed into a game engine, procedurally built launch complex, first-person debris view, and one codebase for three desktops and the web. |
+| **Local impact** | Launches from a 3D concept spaceport in Bahrain built from NASA data. Links to Bahrain's own satellite, Al Munther. Classroom mode and a printable lesson sheet for Bahraini schools. |
