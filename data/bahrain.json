@@ -45,5 +45,17 @@
  "sources": [
   "https://gibs.earthdata.nasa.gov/ (HLS_L30_Nadir_BRDF_Adjusted_Reflectance, BlueMarble_NextGeneration)",
   "https://registry.opendata.aws/terrain-tiles/ (SRTM-based elevation)"
- ]
+ ],
+ "site": {
+  "bbox": [
+   25.90254,
+   26.04626,
+   50.48436,
+   50.64424
+  ],
+  "km": 16.0,
+  "n": 256,
+  "min_m": -9.8,
+  "max_m": 123.4
+ }
 }

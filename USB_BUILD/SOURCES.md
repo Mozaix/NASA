@@ -60,6 +60,7 @@ Made by `tools/fetch_bahrain.py`. The spaceport is game fiction: Bahrain has no 
 - **Ground image**: NASA/USGS Landsat 8/9, Harmonized Landsat Sentinel-2 (HLS L30), 5 January 2025, via NASA GIBS (layer `HLS_L30_Nadir_BRDF_Adjusted_Reflectance`): https://gibs.earthdata.nasa.gov/ . Small no-data gaps are filled from surrounding pixels.
 - **Gulf around it**: NASA Blue Marble Next Generation, via NASA GIBS (layer `BlueMarble_NextGeneration`).
 - **Elevation**: SRTM-based terrain tiles (NASA/NGA Shuttle Radar Topography Mission, via AWS Open Data Terrain Tiles): https://registry.opendata.aws/terrain-tiles/ . Used to shade the ground and to place the pad on flat land.
+- **3D launch site** (16 km square around the pad): SRTM-based elevation (AWS Open Data terrain tiles, zoom 14) shown with heights raised ×5, draped with the same NASA/USGS Landsat HLS L30 scene. The launch complex on it is a concept design built in the game, not a real facility.
 - **Al Munther** (Bahrain's first locally built satellite, launched 15 March 2025 to a 550 km orbit): Arab News, citing the Bahrain News Agency, https://www.arabnews.pk/node/2593636/middle-east . Not a NASA source; shown as the 550 km milestone in the 2D rocket mode.
 
 ## Science facts

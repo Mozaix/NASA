@@ -3,9 +3,10 @@
 Gulf around it, and SRTM-based elevation (AWS Open Data terrain tiles; SRTM is NASA/NGA) for shading and
 placing the concept pad. Writes data/regions/bahrain_spaceport/ and data/bahrain.json.
 
-    python3 tools/fetch_bahrain.py
+    python3 tools/fetch_bahrain.py           # everything
+    python3 tools/fetch_bahrain.py --site    # only the 3D patch around the pad (keeps the existing pad)
 """
-import io, json, math, urllib.request
+import io, json, math, time, urllib.request
 from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
@@ -27,7 +28,14 @@ def get(url, name):
     f = CACHE / name
     if not f.exists():
         req = urllib.request.Request(url, headers={"User-Agent": "NextFrontierExplorer-data/1.0"})
-        f.write_bytes(urllib.request.urlopen(req, timeout=120).read())
+        for attempt in range(4):  # servers sometimes drop a connection; try again
+            try:
+                f.write_bytes(urllib.request.urlopen(req, timeout=120).read())
+                break
+            except OSError:
+                if attempt == 3:
+                    raise
+                time.sleep(2 + attempt * 3)
     return f.read_bytes()
 
 
@@ -43,10 +51,11 @@ def tile_xy(lat, lon, z):
     return x, y
 
 
-def elevation(n, z=12):
-    """Elevation in metres on an n×n lat/lon grid over the Bahrain box (row 0 = north)."""
-    x0, y0 = tile_xy(LAT1, LON0, z)
-    x1, y1 = tile_xy(LAT0, LON1, z)
+def elevation(n, z=12, box=None):
+    """Elevation in metres on an n×n lat/lon grid over a lat/lon box (default: Bahrain; row 0 = north)."""
+    lat0, lat1, lon0, lon1 = box or (LAT0, LAT1, LON0, LON1)
+    x0, y0 = tile_xy(lat1, lon0, z)
+    x1, y1 = tile_xy(lat0, lon1, z)
     tx0, ty0, tx1, ty1 = int(x0), int(y0), int(x1), int(y1)
     mosaic = np.zeros(((ty1 - ty0 + 1) * 256, (tx1 - tx0 + 1) * 256), np.float32)
     for ty in range(ty0, ty1 + 1):
@@ -55,26 +64,17 @@ def elevation(n, z=12):
             mosaic[(ty - ty0) * 256:(ty - ty0 + 1) * 256, (tx - tx0) * 256:(tx - tx0 + 1) * 256] = im[..., 0] * 256 + im[..., 1] + im[..., 2] / 256 - 32768
     out = np.zeros((n, n), np.float32)
     for r in range(n):
-        lat = LAT1 - (LAT1 - LAT0) * (r + 0.5) / n
+        lat = lat1 - (lat1 - lat0) * (r + 0.5) / n
         for c in range(n):
-            lon = LON0 + (LON1 - LON0) * (c + 0.5) / n
+            lon = lon0 + (lon1 - lon0) * (c + 0.5) / n
             px, py = tile_xy(lat, lon, z)
             out[r, c] = mosaic[int((py - ty0) * 256), int((px - tx0) * 256)]
     return out
 
 
-def main():
-    OUT.mkdir(parents=True, exist_ok=True)
-    n = 512
-    h = elevation(n)
-    land = h > 0.5
-    # Hillshade from the elevation (sun from the north-west), blended lightly into the Landsat colour.
-    hs = np.asarray(Image.fromarray(np.clip(h * 2.0, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)), np.float32) / 2.0
-    gy, gx = np.gradient(hs, 1.0)
-    shade = np.clip(1.0 + (-gx + gy) * 0.08, 0.88, 1.08)
-    color = gibs("HLS_L30_Nadir_BRDF_Adjusted_Reflectance", HLS_DATE, (LAT0, LAT1, LON0, LON1), 2048)
-    # Small no-data gaps in the Landsat scene come through black: fill each from the valid pixels around it
-    # (normalised box averaging, widening until every gap is filled).
+# Small no-data gaps in the Landsat scene come through black: fill each from the valid pixels around it
+# (normalised box averaging, widening until every gap is filled).
+def fill_gaps(color):
     def box(a, size):
         r = size // 2
         p = np.pad(a, ((r + 1, r), (r + 1, r)), mode="edge")
@@ -92,7 +92,38 @@ def main():
             arr[..., ch] = np.where(valid > 0, arr[..., ch], np.where(ok, num / np.maximum(den, 1e-6), 0.0))
         valid = np.maximum(valid, ok.astype(np.float32))
         size = size * 2 + 1
-    color = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
+    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
+
+
+SITE_KM = 16.0
+SITE_N = 256
+
+
+def site_patch(plat, plon):
+    """The 3D launch site: a SITE_KM square centred on the pad. SRTM heights at zoom 14 (about 9 m tiles,
+    resampled from SRTM's 30 m) and the same Landsat scene at 30 m, upsampled. Returns metadata."""
+    half_lat = SITE_KM / 2.0 / 111.32
+    half_lon = SITE_KM / 2.0 / (111.32 * math.cos(math.radians(plat)))
+    b = (plat - half_lat, plat + half_lat, plon - half_lon, plon + half_lon)
+    h = elevation(SITE_N, 14, b)
+    h.astype("<f4").tofile(OUT / "site_height.f32")
+    color = fill_gaps(gibs("HLS_L30_Nadir_BRDF_Adjusted_Reflectance", HLS_DATE, b, 1024))
+    color.save(OUT / "site_color.jpgdata", format="JPEG", quality=90)
+    return {"bbox": [round(v, 5) for v in b], "km": SITE_KM, "n": SITE_N,
+            "min_m": round(float(h.min()), 1), "max_m": round(float(h.max()), 1)}
+
+
+def main():
+    OUT.mkdir(parents=True, exist_ok=True)
+    n = 512
+    h = elevation(n)
+    land = h > 0.5
+    # Hillshade from the elevation (sun from the north-west), blended lightly into the Landsat colour.
+    hs = np.asarray(Image.fromarray(np.clip(h * 2.0, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(3)), np.float32) / 2.0
+    gy, gx = np.gradient(hs, 1.0)
+    shade = np.clip(1.0 + (-gx + gy) * 0.08, 0.88, 1.08)
+    color = gibs("HLS_L30_Nadir_BRDF_Adjusted_Reflectance", HLS_DATE, (LAT0, LAT1, LON0, LON1), 2048)
+    color = fill_gaps(color)
     big_shade = np.asarray(Image.fromarray((shade * 200).astype(np.uint8)).resize((2048, 2048), Image.BILINEAR), np.float32) / 200
     big_land = np.asarray(Image.fromarray(land.astype(np.uint8) * 255).resize((2048, 2048), Image.BILINEAR), np.float32) / 255
     c = np.asarray(color, np.float32)
@@ -127,6 +158,7 @@ def main():
         "gulf_width_km": round((G_LON1 - G_LON0) * 111.32 * math.cos(math.radians(26.0)), 1),
         "pad": {"lat": round(plat, 4), "lon": round(plon, 4), "elev_m": round(pelev, 1)},
         "height_n": n, "height_max_m": round(float(h.max()), 1),
+        "site": site_patch(plat, plon),
         "color_label": f"NASA/USGS Landsat (HLS L30, {HLS_DATE}) via NASA GIBS",
         "gulf_label": "NASA Blue Marble Next Generation via NASA GIBS",
         "dem_label": "SRTM-based terrain tiles (NASA/NGA SRTM via AWS Open Data)",
@@ -154,4 +186,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--site" in sys.argv:
+        OUT.mkdir(parents=True, exist_ok=True)
+        path = ROOT / "data" / "bahrain.json"
+        meta = json.loads(path.read_text())
+        meta["site"] = site_patch(meta["pad"]["lat"], meta["pad"]["lon"])
+        path.write_text(json.dumps(meta, indent=1, ensure_ascii=False))
+        print(json.dumps(meta["site"]))
+    else:
+        main()

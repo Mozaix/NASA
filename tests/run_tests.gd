@@ -41,6 +41,7 @@ func _ready() -> void:
 	test_learning_results()
 	await test_orbit_button()
 	await test_bahrain()
+	await test_countdown()
 	print("\nPASSED %d, FAILED %d" % [passes, fails.size()])
 	for f in fails:
 		print("  FAIL: ", f)
@@ -1208,6 +1209,46 @@ func test_orbit_button() -> void:
 		check(vs.encloses(b.get_global_rect()), "orbit: Begin descent is on screen for " + id, [b.get_global_rect(), vs.size])
 		o.queue_free()
 		await get_tree().process_frame
+	Game.new_mission()
+
+## v1.9: the 3D launch site and the T-minus countdown.
+func test_countdown() -> void:
+	var bh: Dictionary = Data.bahrain
+	check(bh.has("site") and FileAccess.file_exists("res://data/regions/bahrain_spaceport/site_height.f32"), "3D site heights are bundled")
+	Game.new_mission()
+	Game.auto_design()
+	var l: Node = (load("res://scenes/launch.tscn") as PackedScene).instantiate()
+	add_child(l)
+	await get_tree().process_frame
+	var site: LaunchSite = l.site
+	check(site.complex != null and site.complex.get_child_count() > 5, "launch complex is built")
+	check(absf(site.height_at(0.1, 0.1) - site.height_at(0.0, 0.0)) < 1e-6, "ground under the complex is level")
+	check(absf(float(l._rocket_y) - (l.EARTH_R + 0.05 + site.rocket_base_y())) < 1e-5 and site.rocket_base_y() > site.height_at(0.0, 0.0), "rocket stands on the mount, above the ground")
+	check(l.state == "countdown" and not l.counting, "launch opens at a hold")
+	l.start_count()
+	check(is_equal_approx(float(l.t_minus), 30.0), "count starts at T-30")
+	var n := 0
+	var flame_before_zero := false
+	while l.state == "countdown" and n < 60 * 40:
+		l.advance_count(1.0 / 60.0)
+		if float(l.t_minus) > 0.1 and l.flame.emitting:
+			flame_before_zero = true
+		n += 1
+	check(absf(float(n) / 60.0 - 30.0) < 0.05, "liftoff exactly at T-0", float(n) / 60.0)
+	check(l.state == "ascent", "the rocket lifts off when the clock reaches zero", l.state)
+	check(flame_before_zero, "engines light before T-0")
+	check(l.events_done.size() == l.EVENTS.size(), "every countdown step happened", l.events_done.keys())
+	check(site.crew_arm_angle() >= 0.0 and site._crew_target > 0.0, "crew access arm was told to retract")
+	l.queue_free()
+	await get_tree().process_frame
+	var quick: Node = (load("res://scenes/launch.tscn") as PackedScene).instantiate()
+	add_child(quick)
+	await get_tree().process_frame
+	quick.start_count(10.0)
+	check(quick.events_done.has(20.0) and not quick.events_done.has(10.0), "starting at T-10 completes the earlier steps at once")
+	quick.queue_free()
+	await get_tree().process_frame
+	Sfx.stop_loops()
 	Game.new_mission()
 
 ## Bahrain launch site and Al Munther, plus the player report "fuel drops with no engine on".

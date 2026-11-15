@@ -12,6 +12,19 @@ const FLIP_RATE := 4.5
 const ROLL_RATE := 6.0
 const LEAN_RATE := 0.9
 const COMBO_IDLE_S := 1.2   # an idle moment with the nose straight lands the combo
+const COUNT_FROM := 30.0    # the terminal count starts at T-30 seconds
+## The terminal count, in the order real launches run it. Each fires once as the clock passes it.
+const EVENTS := [
+	[30.0, "Terminal count started. All stations go"],
+	[25.0, "Propellant loading complete"],
+	[20.0, "Crew access arm retracting"],
+	[15.0, "Flight computer has control"],
+	[10.0, "Go for launch"],
+	[7.0, "Sound suppression water on"],
+	[3.0, "Ignition sequence start"],
+]
+## A backup rocket after a break-up starts at T-10, so a retry is quick.
+static var _retry := false
 
 var rocket: Node3D
 var booster: Node3D
@@ -57,6 +70,14 @@ var _center := Vector3.ZERO
 var _damage_bar: ProgressBar
 var _fail_root: Control
 var _ui_root: Control
+var site: LaunchSite
+var counting := false
+var t_minus := COUNT_FROM
+var events_done := {}
+var _rocket_y := 0.0
+var _clock: Label
+var _met := 0.0
+var _cam_t := 0.0
 
 ## Green, amber and red bands with a needle, so the red zone is visible before the rocket gets there.
 class StressGauge extends Control:
@@ -87,6 +108,13 @@ func _ready() -> void:
 	var sun := Vector3(0.6, 0.55, 0.6).normalized()
 	var light := Space.make_sun_light(self, sun)
 	light.shadow_enabled = false
+	light.light_cull_mask = 1
+	# A second sun, with shadows, lights only the pad and the rocket (render layer 2). Shadows on the
+	# Earth and its atmosphere shell would draw a dark disc around the camera.
+	var pad_light := Space.make_sun_light(self, sun)
+	pad_light.light_cull_mask = 2
+	pad_light.shadow_enabled = true
+	pad_light.directional_shadow_max_distance = 2.5
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
 	sky_mat = ShaderMaterial.new()
@@ -122,8 +150,8 @@ func _ready() -> void:
 	var pad: Dictionary = bh.get("pad", {"lat": 25.97, "lon": 50.56})
 	var plat := float(pad.lat)
 	var plon := float(pad.lon)
-	var site := Space.latlon_to_unit(plat, plon)
-	var q := Quaternion(site, Vector3.UP)
+	var site_dir := Space.latlon_to_unit(plat, plon)
+	var q := Quaternion(site_dir, Vector3.UP)
 	_globe.quaternion = q
 	# Two flat maps under the pad at true scale (1 unit = 10 km): NASA Blue Marble for the Gulf, and the
 	# NASA/USGS Landsat scene of Bahrain on top, shaded by SRTM elevation. They hide as Earth curves away.
@@ -132,11 +160,18 @@ func _ready() -> void:
 	land.add_child(_map_plane("color", bh.get("bbox", [25.75, 26.35, 50.3, 50.9]), plat, plon, 0.004, land.position))
 	_land = land
 	var pad_y := EARTH_R + 0.05
-	Models.cyl(self, 0.05, 0.06, 0.012, Vector3(0, pad_y + 0.006, 0), Models.mat(Color(0.42, 0.42, 0.44)), 24)
-	Models.cube(self, Vector3(0.005, 0.3, 0.005), Vector3(0.036, pad_y + 0.16, 0), Models.mat(Color(0.65, 0.22, 0.12), 0.3, 0.7))
+	# The 3D spaceport: SRTM terrain, Landsat colour and the launch complex. See scripts/launch_site.gd.
+	site = LaunchSite.new(ROCKET_SCALE)
+	site.position = Vector3(0, pad_y, 0)
+	add_child(site)
+	_rocket_y = pad_y + 0.012
+	if site.build(bh):
+		_rocket_y = pad_y + site.rocket_base_y()
+	else:
+		Models.cyl(self, 0.05, 0.06, 0.012, Vector3(0, pad_y + 0.006, 0), Models.mat(Color(0.42, 0.42, 0.44)), 24)
 	rocket = Models.rocket(str(Game.mission.launcher))
 	rocket.scale = Vector3.ONE * ROCKET_SCALE
-	rocket.position = Vector3(0, pad_y + 0.012, 0)
+	rocket.position = Vector3(0, _rocket_y, 0)
 	_base_pos = rocket.position
 	add_child(rocket)
 	booster = rocket.get_node("Booster")
@@ -147,7 +182,13 @@ func _ready() -> void:
 	cam.near = 0.02
 	cam.fov = 50.0
 	add_child(cam)
+	LaunchSite.use_site_light(site)
+	LaunchSite.use_site_light(rocket)
 	_build_hud()
+	site.set_venting(true)
+	if _retry or Game.is_demo():
+		_retry = false
+		start_count(10.0)
 
 ## A flat map of a lat/lon box, placed so the pad (plat, plon) is at the origin. North is -z.
 func _map_plane(file: String, b: Array, plat: float, plon: float, lift: float, parent_pos: Vector3 = Vector3.ZERO) -> MeshInstance3D:
@@ -213,10 +254,22 @@ func _build_hud() -> void:
 		UI.kv(g, "Pad", "%.2f° N, %.2f° E" % [float(bh.pad.lat), float(bh.pad.lon)])
 		UI.kv(g, "Pad elevation", "%d m (SRTM)" % int(round(float(bh.pad.elev_m))))
 		UI.kv(g, "Ground image", "Landsat, NASA/USGS")
+		UI.kv(g, "3D ground", "SRTM heights, raised ×%d" % int(LaunchSite.EXAG))
+		UI.kv(g, "Launch complex", "Concept design")
 		sv.add_child(UI.para("A concept site: Bahrain has no launch pad yet. Its first locally built satellite, Al Munther, launched on 15 March 2025 to a 550 km orbit.", 14, UI.TEXT))
 		sv.add_child(UI.para("Source: %s" % str(bh.al_munther.source), 12, UI.TEXT_DIM))
-	_status = UI.label("", 34, UI.TEXT, "bold")
-	_status.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 40)
+	_clock = UI.label("T-00:00:30", 46, UI.TEXT, "mono")
+	_clock.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 22)
+	_clock.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	# Dark outlines keep the clock and the countdown calls readable over the tower and the sky.
+	for l: Label in [_clock]:
+		l.add_theme_constant_override("outline_size", 10)
+		l.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.06, 0.85))
+	root.add_child(_clock)
+	_status = UI.label("", 30, UI.TEXT, "bold")
+	_status.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 92)
+	_status.add_theme_constant_override("outline_size", 8)
+	_status.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.06, 0.85))
 	_status.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	root.add_child(_status)
 	_prompt = UI.label("", 22, UI.AMBER, "bold")
@@ -235,10 +288,7 @@ func _build_hud() -> void:
 func _process(delta: float) -> void:
 	match state:
 		"countdown":
-			_prompt.text = "Press %s to ignite" % Settings.key_name("thrust")
-			_status.text = "Awaiting ignition"
-			if Input.is_action_just_pressed("thrust"):
-				ignite()
+			_countdown(delta)
 		"ascent":
 			_ascent(delta)
 		"coast":
@@ -263,6 +313,9 @@ func _process(delta: float) -> void:
 		_settle_attitude(delta)
 	if state != "countdown" and state != "broken":
 		_apply_attitude()
+	if state != "countdown":
+		_met += delta
+	_update_clock()
 	_camera(delta)
 	_card.set_row("height", "%.0f km up" % altitude, UI.TEXT, altitude / (Orbital.LEO_ALT / 1000.0))
 	_card.set_row("speed", "%.1f km/s" % speed)
@@ -277,7 +330,9 @@ func _process(delta: float) -> void:
 func _what_now() -> String:
 	match state:
 		"countdown":
-			return "Press %s to light the engines" % Settings.key_name("thrust")
+			if not counting:
+				return "Press %s to go for launch and start the countdown" % Settings.key_name("thrust")
+			return "Stand by. The engines light at T-3, liftoff at T-0"
 		"ascent":
 			if stress > 1.0:
 				return "IN THE RED! Hold %s to throttle down and straighten up" % Settings.key_name("move_back")
@@ -299,9 +354,80 @@ func _unhandled_input(event: InputEvent) -> void:
 		auto_fly = not auto_fly
 		_trick_hud.flash("Autopilot on" if auto_fly else "Autopilot off", UI.AMBER)
 
+## Starts the terminal count at T-from seconds. Steps the clock has already passed take effect at once.
+func start_count(from: float = COUNT_FROM) -> void:
+	counting = true
+	t_minus = from
+	events_done.clear()
+	for e: Array in EVENTS:
+		if float(e[0]) > from:
+			_event(e, true)
+	Sfx.play("chime")
+
+func _countdown(delta: float) -> void:
+	if not counting:
+		_status.text = "Holding: Go/No-Go poll"
+		_prompt.text = "Press %s: go for launch" % Settings.key_name("thrust")
+		if Input.is_action_just_pressed("thrust"):
+			start_count()
+		return
+	var before := t_minus
+	if Input.is_action_just_pressed("thrust") and t_minus > 10.5:
+		t_minus = 10.0
+		_cam_t = 0.0
+	advance_count(delta)
+	if t_minus > 0.0 and t_minus <= 10.0 and ceilf(before) != ceilf(t_minus):
+		Sfx.play("click", -2.0, 1.0 + (10.0 - ceilf(t_minus)) * 0.05)
+	_prompt.text = "Press %s to skip to T-10" % Settings.key_name("thrust") if t_minus > 10.5 else ""
+
+## Runs the clock forward. Public so tests can run a whole countdown.
+func advance_count(delta: float) -> void:
+	t_minus -= delta
+	for e: Array in EVENTS:
+		if t_minus <= float(e[0]) and not events_done.has(e[0]):
+			_event(e, false)
+	if t_minus <= 0.0 and state == "countdown":
+		ignite()
+
+func _event(e: Array, silent: bool) -> void:
+	events_done[e[0]] = true
+	if not silent:
+		_status.text = str(e[1])
+	match int(e[0]):
+		20:
+			site.retract_crew_arm()
+		10:
+			if not silent:
+				Sfx.play("chime")
+		7:
+			site.set_deluge(true)
+		3:
+			flame.emitting = true
+			site.set_smoke(true)
+			Sfx.loop("engine", 0.3)
+			if not silent:
+				Sfx.play("stage")
+
+func _update_clock() -> void:
+	if state == "countdown":
+		var s := int(ceilf(maxf(t_minus, 0.0)))
+		_clock.text = "T-00:%02d:%02d" % [s / 60, s % 60]
+		_clock.add_theme_color_override("font_color", UI.AMBER if not counting else (UI.BAD if t_minus <= 10.0 else UI.TEXT))
+	else:
+		var s := int(_met)
+		_clock.text = "T+00:%02d:%02d" % [s / 60, s % 60]
+		_clock.add_theme_color_override("font_color", UI.GOOD)
+
 func ignite() -> void:
 	state = "ascent"
 	t = 0.0
+	counting = false
+	t_minus = 0.0
+	_met = 0.0
+	site.set_venting(false)
+	site.retract_umbilicals()
+	site.set_deluge(true)
+	site.set_smoke(true)
 	flame.emitting = true
 	_prompt.text = ""
 	_status.text = "Liftoff"
@@ -365,8 +491,12 @@ func _ascent(real_delta: float) -> void:
 		return
 	_tilt = clampf(altitude / 280.0, 0.0, 1.0) * 1.35
 	var along := altitude * 0.55 * _tilt
-	var r := EARTH_R + 0.062 + altitude / 10.0
+	var r := _rocket_y + altitude / 10.0
 	_land.visible = altitude < 55.0
+	site.visible = altitude < 40.0
+	if altitude > 3.0 and not site.deluge.is_empty() and site.deluge[0].emitting:
+		site.set_deluge(false)
+		site.set_smoke(false)
 	_base_pos = Vector3(along * 0.1, r, 0)
 	if altitude > 15.0 and _status.text == "Liftoff":
 		_status.text = "Max Q"
@@ -460,7 +590,9 @@ func _break_up() -> void:
 	v.add_child(UI.heading("The rocket broke apart", 32))
 	v.add_child(UI.lesson_block(Game.launch_lesson(), 16))
 	v.add_child(UI.para("Next time: press %s to throttle down in the thick lower air and keep the nose straight, or press %s for the autopilot." % [Settings.key_name("move_back"), Settings.key_name("assist")], 16, UI.GOOD))
-	var again := UI.button("Try again with a backup rocket", func() -> void: Flow.go("launch", "Launch"), true)
+	var again := UI.button("Try again with a backup rocket", func() -> void:
+		_retry = true
+		Flow.go("launch", "Launch"), true)
 	v.add_child(again)
 	v.add_child(UI.button("End mission", func() -> void: Flow.go("debrief", "Mission Debrief")))
 	_ui_root.add_child(pan)
@@ -552,6 +684,9 @@ func _next_scene() -> void:
 		Flow.go("transfer", "Cruise to " + str(Game.target().name))
 
 func _camera(delta: float) -> void:
+	if state == "countdown":
+		_pad_camera(delta)
+		return
 	var near_t := clampf(altitude / 12.0, 0.0, 1.0)
 	# Stay close enough that the rocket remains the subject of the shot all the way to orbit.
 	var dist := lerpf(0.62, 0.95, clampf(altitude / 300.0, 0.0, 1.0))
@@ -560,6 +695,19 @@ func _camera(delta: float) -> void:
 	var pos := tgt + off
 	pos.y = maxf(pos.y, EARTH_R + 0.14)
 	cam.global_position = cam.global_position.lerp(pos, clampf(delta * 9.0, 0.0, 1.0)) if cam.global_position.length() > 1.0 else pos
+	cam.look_at(tgt, Vector3.UP)
+
+## On the pad: a slow drift around the complex, closing in on the engines as the count nears zero.
+func _pad_camera(delta: float) -> void:
+	_cam_t += delta
+	var close := 1.0 - clampf(t_minus / 10.0, 0.0, 1.0) if counting else 0.0
+	var yaw := 0.55 + sin(_cam_t * 0.045) * 0.6
+	var dist := lerpf(0.62, 0.36, close)
+	var base := Vector3(0, _rocket_y, 0)
+	var tgt := base + Vector3(0, lerpf(0.13, 0.17, close), 0)
+	var pos := base + Vector3(cos(yaw) * dist, lerpf(0.2, 0.035, close), sin(yaw) * dist)
+	pos.y = maxf(pos.y, EARTH_R + 0.05 + site.height_at(pos.x, pos.z) + 0.02)
+	cam.global_position = cam.global_position.lerp(pos, clampf(delta * 2.5, 0.0, 1.0)) if cam.global_position.length() > 1.0 else pos
 	cam.look_at(tgt, Vector3.UP)
 
 func auto_advance() -> void:

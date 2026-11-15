@@ -62,9 +62,9 @@ static func tip_for(scene_name: String) -> Dictionary:
 				"You take the same quiz after the demo, so you can see what you learned."]}
 		"Launch":
 			return {"title": "Launch", "steps": [
-				"Press %s to light the engines." % k.call("thrust"),
-				"%s / %s throttle up and down. %s / %s steer into crosswinds." % [k.call("move_forward"), k.call("move_back"), k.call("move_left"), k.call("move_right")],
-				"Keep the stress needle out of the red, or the rocket breaks apart.",
+				"Press %s to go for launch. The T-minus clock counts down from T-30 and the pad crew works through the launch steps." % k.call("thrust"),
+				"In a hurry? Press %s again to skip to T-10. The engines light at T-3, and the rocket lifts off at T-0." % k.call("thrust"),
+				"%s / %s throttle up and down. %s / %s steer into crosswinds. Keep the stress needle out of the red, or the rocket breaks apart." % [k.call("move_forward"), k.call("move_back"), k.call("move_left"), k.call("move_right")],
 				"In orbit, press %s when the marker is in the green to leave Earth. %s turns on the autopilot." % [k.call("thrust"), k.call("assist")]]}
 		"Transfer":
 			return {"title": "Cruise to your target", "steps": [

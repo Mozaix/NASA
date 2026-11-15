@@ -67,7 +67,8 @@ Keyboard and mouse, or any standard gamepad (plug it in before starting).
 
 Keys can be changed in Settings.
 
-Launch: W/S throttle, A/D steer. If the stress needle stays in the red too long, the rocket breaks up.
+Launch: press Space to go for launch; the countdown runs from T-30 (Space again skips to T-10).
+        After liftoff, W/S throttle, A/D steer. If the stress needle stays in the red too long, the rocket breaks up.
 Tricks: hold Q and press W/S to flip or A/D to spin, on the rocket or in a rover jump. Land the combo to bank it.
 Rover: rocks cost health. Drive back to the lander to repair.
 

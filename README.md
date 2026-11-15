@@ -30,14 +30,15 @@ Every number in the game comes from NASA data: planet facts, orbits from JPL, ex
 | **Play Demo** | A guided run of about 4 minutes, with a 3-question quiz before and after to show what you learned. |
 | **Play 2D** | Build rockets from parts, earn money from altitude, buy better parts and climb the daily leaderboard. |
 
-### New in v1.8
-- Launch from a concept spaceport in **Bahrain**, built from NASA SRTM elevation and Landsat imagery
-- **How-to-play popups**: the first time you reach each screen, a short card explains what to do there. You can reopen it from the pause menu, or turn tips off in Settings.
-- Fixes for reverse driving and fuel use
+### New in v1.9
+- **3D launch site**: the Bahrain spaceport is now a full 3D place. The ground is built from NASA SRTM heights (raised ×5, because Bahrain is nearly flat) and draped with NASA/USGS Landsat imagery.
+- **A real launch pad**: a raised concrete pad with a flame trench and launch mount, a service tower with swinging access arms, lightning masts, a water tower, propellant tanks, a hangar and roads
+- **T-minus countdown**: go for launch, then watch the terminal count from T-30. The arms retract, the vents steam, the water deluge starts and the engines light at T-3, with liftoff at T-0. Press Space again to skip to T-10.
 
 <details>
 <summary>Earlier versions</summary>
 
+- **v1.8**: launch from a concept spaceport in Bahrain; how-to-play popups on every screen; fixes for reverse driving and fuel use
 - **v1.7**: fixed the Mars orbit screen hiding the *Begin descent* button
 - **v1.6**: learning results screen, pitch deck and showcase video
 - **v1.5**: parachute physics and tearing; derelict landers with a salvage mini-game
@@ -88,7 +89,7 @@ Keyboard and mouse, or any standard gamepad (plug it in before starting). You ca
 | Pause | `Esc` | Start |
 
 ### Tips
-- **Launch:** keep the stress needle out of the red, and steer into crosswinds with `A` / `D`.
+- **Launch:** press `Space` to go for launch and start the T-minus countdown. After liftoff, keep the stress needle out of the red, and steer into crosswinds with `A` / `D`.
 - **Landing:** touch down slowly and upright. `C` looks straight down at the pad, and `P` hands control to the autopilot.
 - **Surface:** rocks damage the rover. Drive back to the lander to repair, or salvage parts from derelict landers.
 - **Slow computer?** Set Graphics to **Low** in Settings.

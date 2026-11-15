@@ -2,7 +2,7 @@ config_version=5
 
 [application]
 config/name="Next Frontier Explorer"
-config/version="1.8"
+config/version="1.9"
 config/description="Design a space mission, fly it, land it, and explore real NASA terrain."
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
