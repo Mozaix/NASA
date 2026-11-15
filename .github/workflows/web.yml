@@ -1,11 +1,13 @@
 # Builds the browser version from source with Godot and publishes it to GitHub Pages.
-# Runs for every version tag (v2.0, v2.1, ...) and can be started by hand from the Actions tab.
+# Runs when main changes (GitHub Pages only accepts deployments from main) and can be started by hand
+# from the Actions tab. Changes that only touch docs, the pitch or the desktop builds are skipped.
 # The game's data is too big for a git file (over 100 MB), so the build happens here instead.
 name: Web version
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths-ignore: ["**.md", "pitch/**", "USB_BUILD/**", "tools/**"]
   workflow_dispatch:
 
 permissions:
