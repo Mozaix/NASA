@@ -18,6 +18,7 @@ Game="*res://autoload/game.gd"
 Rocket2D="*res://autoload/rocket2d.gd"
 Sfx="*res://autoload/sfx.gd"
 Flow="*res://autoload/flow.gd"
+Tips="*res://autoload/tips.gd"
 Autotest="*res://autoload/autotest.gd"
 
 [display]

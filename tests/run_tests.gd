@@ -31,6 +31,7 @@ func _ready() -> void:
 	await test_player_reports()
 	await test_learning()
 	test_version_stamp()
+	test_tips()
 	await test_demo()
 	await test_rocket_scenes()
 	await test_scenes()
@@ -1031,6 +1032,32 @@ func test_version_stamp() -> void:
 	# An empty number here makes the macOS export use the one in project.godot.
 	var presets := FileAccess.get_file_as_string("res://export_presets.cfg")
 	check(presets.contains('application/short_version=""') and presets.contains('application/version=""'), "exports don't carry their own version number")
+
+## How-to-play popups: every playable screen has one, opening pauses the game, closing restores it,
+## and each card is only shown automatically once.
+func test_tips() -> void:
+	var saved_seen: Dictionary = Tips.seen.duplicate()
+	var saved_on: bool = Tips.enabled
+	for scene_name: String in ["MainMenu", "Planner", "DemoPicker", "Quiz", "Launch", "Transfer", "Orbit", "Landing", "Hatch", "Surface", "Debrief", "Rocket2DBuild", "Rocket2DFlight"]:
+		var tip := Tips.tip_for(scene_name)
+		check(not tip.is_empty() and str(tip.get("title", "")) != "" and (tip.get("steps", []) as Array).size() >= 2, "tip exists for " + scene_name)
+	for path: String in Flow.SCENES.values():
+		var root_name := FileAccess.get_file_as_string(path).get_slice('[node name="', 1).get_slice('"', 0)
+		if root_name in ["Launch", "Landing", "Surface", "Hatch", "Orbit", "Transfer", "Planner"]:
+			check(Tips.has_tip(root_name), "mission screen %s has a tip" % root_name)
+	check(not Tips.has_tip("Credits"), "screens without controls have no tip")
+	get_tree().paused = false
+	check(Tips.show_tip("Launch"), "tip opens")
+	check(Tips.is_open() and get_tree().paused, "open tip pauses the game")
+	check(Tips.seen.has("Launch"), "opened tip is remembered")
+	Tips.close()
+	check(not Tips.is_open() and not get_tree().paused, "closing the tip unpauses")
+	Tips.enabled = true
+	Tips.seen = {"Launch": true}
+	Tips.maybe_show("Launch")
+	check(not Tips.is_open(), "seen tip is not shown again")
+	Tips.seen = saved_seen
+	Tips.set_enabled(saved_on)
 
 ## The power-core mini-game: every channel can be driven down its middle without a touch,
 ## channels never overlap, walls cost stability, and enough touches blow the core.

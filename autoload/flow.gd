@@ -83,6 +83,11 @@ func _build_pause() -> void:
 		_toggle_pause()
 		go("debrief", "Mission Debrief"))
 	v.add_child(_pause_end)
+	v.add_child(UI.button("How to play this screen", func() -> void:
+		var cs := get_tree().current_scene
+		_toggle_pause()
+		if cs:
+			Tips.show_tip(str(cs.name))))
 	v.add_child(UI.button("Quit to main menu", func() -> void:
 		_toggle_pause()
 		go("menu")))
@@ -97,7 +102,7 @@ func _toggle_pause() -> void:
 		Sfx.stop_loops()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if busy or not event.is_action_pressed("pause"):
+	if busy or Tips.is_open() or not event.is_action_pressed("pause"):
 		return
 	var cs := get_tree().current_scene
 	if cs and (str(cs.name) in PAUSABLE or _pause_layer.visible):

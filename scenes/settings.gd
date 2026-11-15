@@ -60,6 +60,17 @@ func _ready() -> void:
 		Settings.show_fps = on
 		Settings.save())
 	v.add_child(fpsc)
+	v.add_child(UI.eyebrow("Help"))
+	var tipc := CheckBox.new()
+	tipc.text = "Show how-to-play tips the first time you reach each screen"
+	tipc.button_pressed = Tips.enabled
+	tipc.toggled.connect(func(on: bool) -> void: Tips.set_enabled(on))
+	v.add_child(tipc)
+	var reset := UI.button("Show all tips again", func() -> void:
+		Tips.reset()
+		Tips.set_enabled(true)
+		tipc.set_pressed_no_signal(true))
+	v.add_child(reset)
 	v.add_child(UI.eyebrow("Audio"))
 	_slider(v, "Master", Settings.master_vol, func(x: float) -> void: Settings.master_vol = x)
 	_slider(v, "Music", Settings.music_vol, func(x: float) -> void: Settings.music_vol = x)
