@@ -40,6 +40,8 @@ var _flash: ColorRect
 var _overlay: Overlay
 var _shake := 0.0
 var _beeped := -1
+var _puffs := {}
+var _last_slot := -1
 
 ## Target brackets around the threat, and cracks on the visor after a hit.
 class Overlay extends Control:
@@ -93,15 +95,18 @@ func _build_world() -> void:
 	Space.make_sun_light(_world, Vector3(0.5, 0.6, 0.35), Color(1, 0.97, 0.92), 1.6)
 	_rig = Node3D.new()
 	_world.add_child(_rig)
-	var ship := Models.spacecraft(1.0)
+	var ship := Models.satellite()
 	_rig.add_child(ship)
+	for t: String in ["ThrusterL", "ThrusterR"]:
+		_puffs[t] = _thruster_puff(ship.get_node(t), -1.0 if t == "ThrusterL" else 1.0)
 	_cam = Camera3D.new()
 	_cam.fov = 70.0
 	_cam.near = 0.05
 	_cam.far = 2000.0
-	_cam.position = Vector3(0, 1.45, 2.6)
+	# Just above the top deck, looking forward over the satellite with its wings out to the sides.
+	_cam.position = Vector3(0, 2.1, 2.9)
 	_rig.add_child(_cam)
-	_cam.look_at_from_position(_cam.position, Vector3(0, 0.75, -12.0), Vector3.UP)
+	_cam.look_at_from_position(_cam.position, Vector3(0, 0.3, -10.0), Vector3.UP)
 	for i in FLYERS:
 		var f := _make_piece(_rng.randf_range(0.08, 0.45))
 		_world.add_child(f)
@@ -129,6 +134,37 @@ func _make_piece(r: float) -> Node3D:
 		mi.scale = Vector3(_rng.randf_range(0.7, 1.3), _rng.randf_range(0.6, 1.1), _rng.randf_range(0.8, 1.4))
 	n.add_child(mi)
 	return n
+
+## A short white burst from a side thruster, fired when the ship dodges.
+func _thruster_puff(at: Node3D, side: float) -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2.ONE * 0.1
+	p.mesh = q
+	p.amount = 40
+	p.lifetime = 0.7
+	p.one_shot = true
+	p.explosiveness = 0.15
+	p.direction = Vector3(side, 0.1, 0)
+	p.spread = 14.0
+	p.initial_velocity_min = 4.0
+	p.initial_velocity_max = 7.0
+	p.gravity = Vector3.ZERO
+	var curve := Curve.new()
+	curve.add_point(Vector2(0, 0.4))
+	curve.add_point(Vector2(0.5, 1.0))
+	curve.add_point(Vector2(1, 0.0))
+	p.scale_amount_curve = curve
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.albedo_color = Color(0.92, 0.95, 1.0, 0.7)
+	m.albedo_texture = Models._soft_dot()
+	p.material_override = m
+	p.emitting = false
+	at.add_child(p)
+	return p
 
 ## Background pieces rush past the ship, never at it.
 func _respawn_flyer(f: Dictionary, anywhere: bool) -> void:
@@ -273,8 +309,8 @@ func _ask() -> void:
 	_box.add_child(_timer_bar)
 	_q = UI.para(str(q.q), 22, UI.TEXT)
 	_box.add_child(_q)
-	_answers = [str(q.right)] + (q.wrong as Array).map(func(w: Variant) -> String: return str(w))
-	_answers.shuffle()
+	_answers = Questions.arrange(q, _rng, _last_slot)
+	_last_slot = _answers.find(str(q.right))
 	for i in _answers.size():
 		var idx := i
 		var b := UI.button("[%d]   %s" % [i + 1, _answers[i]], func() -> void: answer(idx))
@@ -306,6 +342,10 @@ func answer(idx: int) -> void:
 		state = "dodge"
 		_phase_t = 0.0
 		_dodge_dir = -1.0 if _threat.position.x > 0.0 else 1.0
+		# Moving right means firing the left-hand thruster, and the other way round.
+		var puff: CPUParticles3D = _puffs.get("ThrusterL" if _dodge_dir > 0.0 else "ThrusterR")
+		if puff:
+			puff.restart()
 		_title.text = "Thrusters firing!"
 		_title.add_theme_color_override("font_color", UI.GOOD)
 		Sfx.play("stage", -4.0)

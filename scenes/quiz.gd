@@ -27,9 +27,18 @@ var _answered := false
 var _order: Array = []
 var _box: VBoxContainer
 var _right: Array = []
+## The questions in the order this player sees them; results are still kept by question.
+var _qorder: Array = []
+var _rng := RandomNumberGenerator.new()
+var _last_slot := -1
 
 func _ready() -> void:
 	stage = Game.quiz_stage
+	_rng.randomize()
+	_qorder = range(QUESTIONS.size())
+	_qorder.shuffle()
+	_right.resize(QUESTIONS.size())
+	_right.fill(false)
 	Sfx.music("music_space")
 	Space.make_space_env(self)
 	var cam := Camera3D.new()
@@ -59,11 +68,11 @@ func _clear() -> void:
 func _show_question() -> void:
 	_clear()
 	_answered = false
-	var q: Dictionary = QUESTIONS[_i]
+	var q: Dictionary = QUESTIONS[_qorder[_i]]
 	_box.add_child(UI.eyebrow("%s the mission: question %d of %d" % ["Before" if stage == "before" else "After", _i + 1, QUESTIONS.size()]))
 	_box.add_child(UI.heading(str(q.q), 26))
-	_order = [q.right] + q.wrong
-	_order.shuffle()
+	_order = Questions.arrange(q, _rng, _last_slot)
+	_last_slot = _order.find(str(q.right))
 	var first: Button = null
 	for a: String in _order:
 		var b := UI.button(a, _answer.bind(a))
@@ -78,9 +87,9 @@ func _answer(a: String) -> void:
 	if _answered:
 		return
 	_answered = true
-	var q: Dictionary = QUESTIONS[_i]
+	var q: Dictionary = QUESTIONS[_qorder[_i]]
 	var right := a == str(q.right)
-	_right.append(right)
+	_right[_qorder[_i]] = right
 	if right:
 		score += 1
 	if stage == "before":
@@ -172,6 +181,6 @@ func auto_advance() -> void:
 	for i in QUESTIONS.size():
 		if not is_inside_tree():
 			return
-		_answer(str(QUESTIONS[_i].right))
+		_answer(str(QUESTIONS[_qorder[_i]].right))
 		if stage != "before":
 			_next()

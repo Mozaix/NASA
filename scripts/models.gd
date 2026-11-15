@@ -164,6 +164,114 @@ static func rocket(kind: String = "medium") -> Node3D:
 	cyl(upper, 0.02, 0.45, 1.5, Vector3(0, 9.35, 0), white)
 	return root
 
+## A detailed satellite for close-up views (the debris dodge rides on top of it): an eight-sided bus in
+## crinkled gold foil, folding solar wings with visible cells, a dish on a mast, engine bell and thrusters.
+## Forward is -z. Thrusters are named ThrusterL and ThrusterR so a scene can fire puffs from them.
+static func satellite() -> Node3D:
+	var root := Node3D.new()
+	var foil := StandardMaterial3D.new()
+	foil.albedo_color = Color(0.86, 0.66, 0.27)
+	foil.metallic = 0.9
+	foil.roughness = 0.32
+	var crinkle := NoiseTexture2D.new()
+	crinkle.width = 256
+	crinkle.height = 256
+	crinkle.seamless = true
+	crinkle.as_normal_map = true
+	crinkle.bump_strength = 6.0
+	var fn := FastNoiseLite.new()
+	fn.frequency = 0.06
+	fn.fractal_octaves = 3
+	crinkle.noise = fn
+	foil.normal_enabled = true
+	foil.normal_texture = crinkle
+	foil.normal_scale = 0.6
+	foil.uv1_scale = Vector3(3, 2, 1)
+	var silver := mat(Color(0.78, 0.8, 0.84), 0.85, 0.25)
+	var white := mat(Color(0.92, 0.93, 0.95), 0.1, 0.45)
+	var dark := mat(Color(0.1, 0.11, 0.13), 0.6, 0.5)
+	var along_z := Basis(Vector3.RIGHT, PI / 2.0)
+	# Turned an eighth of a side so a flat face is on top.
+	var bus_basis := Basis(Vector3.BACK, PI / 8.0) * along_z
+	# Bus: an eight-sided prism lying along z, with seams and end plates.
+	var bus := cyl(root, 0.52, 0.52, 1.3, Vector3.ZERO, foil, 8)
+	bus.basis = bus_basis
+	for z: float in [-0.66, 0.66]:
+		cyl(root, 0.54, 0.54, 0.04, Vector3(0, 0, z), silver, 8).basis = bus_basis
+	for z: float in [-0.22, 0.22]:
+		cyl(root, 0.525, 0.525, 0.015, Vector3(0, 0, z), dark, 8).basis = bus_basis
+	cube(root, Vector3(0.62, 0.03, 1.0), Vector3(0, 0.49, 0), silver)
+	# Engine bell at the back, thrusters on the sides.
+	var bell := cyl(root, 0.12, 0.28, 0.36, Vector3(0, 0, 0.86), dark, 24)
+	bell.basis = along_z
+	for side: float in [-1.0, 1.0]:
+		var t := Node3D.new()
+		t.name = "ThrusterL" if side < 0.0 else "ThrusterR"
+		t.position = Vector3(side * 0.5, 0.18, -0.45)
+		root.add_child(t)
+		var noz := cyl(t, 0.02, 0.055, 0.09, Vector3(side * 0.04, 0, 0), dark, 12)
+		noz.basis = Basis(Vector3.FORWARD, side * PI / 2.0)
+	# Dish antenna on a short mast, set back and to one side so it does not block the view ahead.
+	cyl(root, 0.025, 0.025, 0.22, Vector3(0.2, 0.6, 0.5), silver, 8)
+	var dish := Node3D.new()
+	dish.position = Vector3(0.2, 0.74, 0.5)
+	dish.rotation = Vector3(0.55, 0.3, 0)
+	root.add_child(dish)
+	cyl(dish, 0.24, 0.045, 0.09, Vector3.ZERO, white, 32)
+	cyl(dish, 0.236, 0.236, 0.01, Vector3(0, 0.045, 0), silver, 32)
+	for i in 3:
+		var a := float(i) / 3.0 * TAU
+		line(dish, Vector3(cos(a) * 0.21, 0.045, sin(a) * 0.21), Vector3(0, 0.22, 0), 0.006, silver)
+	cyl(dish, 0.025, 0.015, 0.045, Vector3(0, 0.22, 0), dark, 12)
+	# Star trackers and a whip antenna.
+	cube(root, Vector3(0.12, 0.1, 0.12), Vector3(-0.26, 0.56, -0.3), dark)
+	cyl(root, 0.045, 0.045, 0.08, Vector3(-0.26, 0.64, -0.3), silver, 12)
+	line(root, Vector3(-0.3, 0.5, 0.45), Vector3(-0.4, 1.05, 0.55), 0.006, silver)
+	# Solar wings: a yoke, then three hinged panels of cells in silver frames.
+	var cells := _cell_texture()
+	var cell_mat := StandardMaterial3D.new()
+	cell_mat.albedo_texture = cells
+	cell_mat.metallic = 0.55
+	cell_mat.roughness = 0.22
+	cell_mat.uv1_scale = Vector3(3, 2, 1)
+	var back := mat(Color(0.82, 0.83, 0.86), 0.3, 0.6)
+	for side: float in [-1.0, 1.0]:
+		line(root, Vector3(side * 0.5, 0.0, 0), Vector3(side * 0.95, 0.0, 0), 0.025, silver)
+		cube(root, Vector3(0.08, 0.12, 0.08), Vector3(side * 0.95, 0.0, 0), silver)
+		for k in 3:
+			var cx := side * (1.55 + float(k) * 1.12)
+			cube(root, Vector3(1.06, 0.028, 0.74), Vector3(cx, -0.008, 0), back)
+			cube(root, Vector3(1.04, 0.03, 0.72), Vector3(cx, 0.0, 0), silver)
+			cube(root, Vector3(1.0, 0.032, 0.68), Vector3(cx, 0.001, 0), cell_mat)
+			if k < 2:
+				cube(root, Vector3(0.08, 0.04, 0.1), Vector3(cx + side * 0.56, 0.0, 0.25), silver)
+				cube(root, Vector3(0.08, 0.04, 0.1), Vector3(cx + side * 0.56, 0.0, -0.25), silver)
+	return root
+
+static var _cells: ImageTexture
+
+## Deep blue solar cells with thin bright gaps and a silver busbar, drawn once.
+static func _cell_texture() -> ImageTexture:
+	if _cells:
+		return _cells
+	var n := 128
+	var img := Image.create(n, n, true, Image.FORMAT_RGB8)
+	img.fill(Color(0.05, 0.08, 0.22))
+	for y in n:
+		for x in n:
+			var cell := 32
+			var gx := x % cell
+			var gy := y % cell
+			var c := Color(0.06, 0.1, 0.28).lerp(Color(0.1, 0.16, 0.4), float(gy) / cell * 0.6)
+			if gx < 2 or gy < 2:
+				c = Color(0.55, 0.6, 0.68)
+			elif gx == cell / 2:
+				c = Color(0.35, 0.4, 0.5)
+			img.set_pixel(x, y, c)
+	img.generate_mipmaps()
+	_cells = ImageTexture.create_from_image(img)
+	return _cells
+
 ## Transfer spacecraft with solar wings.
 static func spacecraft(probe_scale: float = 1.0) -> Node3D:
 	var root := Node3D.new()

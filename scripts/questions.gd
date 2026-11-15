@@ -38,6 +38,54 @@ const HAZARD := [
 	 "right": "Each crash breaks into more pieces that can hit other things",
 	 "wrong": ["They make satellites go faster", "They make the Sun dimmer"],
 	 "why": "A collision turns two objects into a cloud of fragments, and each fragment can hit something else."},
+	{"id": "iss_speed", "q": "About how fast does the International Space Station travel?",
+	 "right": "About 28,000 km per hour",
+	 "wrong": ["About 900 km per hour, like a jet", "About 300,000 km per second, like light"],
+	 "why": "The ISS circles Earth about every 90 minutes at roughly 7.7 km/s, which is about 28,000 km per hour."},
+	{"id": "iss_float", "q": "Why do astronauts on the space station float?",
+	 "right": "They and the station are falling around Earth together",
+	 "wrong": ["There is no gravity in space", "The station is held up by magnets"],
+	 "why": "At the station's height gravity is still about 90% as strong as on the ground. Everything aboard is in free fall around Earth, so nothing presses on the floor."},
+	{"id": "graveyard", "q": "What happens to many old satellites high above Earth when they stop working?",
+	 "right": "They are pushed into a higher 'graveyard' orbit out of the way",
+	 "wrong": ["Astronauts collect them", "They are recharged by the Sun and keep working"],
+	 "why": "Satellites in geostationary orbit, about 36,000 km up, are usually boosted a few hundred kilometres higher at the end of their life, clear of working satellites."},
+	{"id": "tracking", "q": "How do teams on the ground know where pieces of debris are?",
+	 "right": "Radars and telescopes track them",
+	 "wrong": ["Astronauts count them by looking out of the window", "Debris glows in the dark"],
+	 "why": "Radars and telescopes track tens of thousands of objects in Earth orbit, from about the size of a softball upwards."},
+	{"id": "mass_energy", "q": "Two pieces of debris hit at the same speed. Which does more damage?",
+	 "right": "The heavier piece",
+	 "wrong": ["The lighter piece", "They always do the same damage"],
+	 "why": "Impact energy is half the mass times the speed squared, so at the same speed a heavier piece carries more energy."},
+	{"id": "meteoroid_source", "q": "Where do most meteoroids come from?",
+	 "right": "Broken bits of comets and asteroids",
+	 "wrong": ["Old satellites", "Volcanoes on the Moon"],
+	 "why": "Most meteoroids are pieces knocked off asteroids or dust shed by comets as they near the Sun."},
+	{"id": "meteor_shower", "q": "What causes a meteor shower?",
+	 "right": "Earth passing through dust left behind by a comet",
+	 "wrong": ["Two stars crashing into each other", "Many satellites burning up at once"],
+	 "why": "A comet leaves a trail of dust along its orbit. When Earth crosses that trail each year, many grains burn up in the sky at once."},
+	{"id": "micrometeoroid", "q": "What is a micrometeoroid?",
+	 "right": "A tiny grain of space dust, often smaller than a grain of sand",
+	 "wrong": ["A small moon", "A piece of a rocket engine"],
+	 "why": "Micrometeoroids are tiny, but at speeds of many kilometres per second they can still pit windows and wear down surfaces."},
+	{"id": "less_debris", "q": "How do mission teams avoid making new space debris?",
+	 "right": "They plan for old stages and satellites to come down and burn up",
+	 "wrong": ["They paint satellites a bright colour", "They only launch at night"],
+	 "why": "Rocket stages and satellites in low orbit are planned to re-enter and burn up in the atmosphere within a few years of the end of their mission."},
+	{"id": "moon_craters", "q": "Why does the Moon have so many more craters than Earth?",
+	 "right": "It has no air to burn up meteoroids and no weather to wear craters away",
+	 "wrong": ["The Moon is made of softer rock", "Meteoroids are attracted to the Moon"],
+	 "why": "Earth's atmosphere burns up most small meteoroids, and wind, water and moving plates erase old craters. The Moon has none of these."},
+	{"id": "high_debris", "q": "Why does debris high above Earth stay up for so long?",
+	 "right": "There is almost no air that high to slow it down",
+	 "wrong": ["Sunlight pushes it higher every day", "The Moon's gravity holds it in place"],
+	 "why": "Above about 1,000 km the air is so thin that drag is tiny, so debris there can stay in orbit for centuries or longer."},
+	{"id": "ram_side", "q": "Which side of a spacecraft in orbit gets hit by debris most often?",
+	 "right": "The side facing the way it is flying",
+	 "wrong": ["The side facing away from Earth", "Every side equally"],
+	 "why": "A spacecraft runs into most debris head-on as it moves, so the forward-facing side usually gets the most hits and the thickest shielding."},
 ]
 
 ## Two questions per encounter: one about this mission, then one about debris or meteoroids.
@@ -55,6 +103,26 @@ static func encounter(target: Dictionary, plan: Dictionary, used: Array) -> Arra
 	for q: Dictionary in out:
 		used.append(q.id)
 	return out
+
+## A "bigger, smaller or about the same" question from one value compared with Earth's.
+static func _compare(id: String, q: String, value: float, earth_value: float, more: String, less: String, same: String, why: String, same_band: float = -1.0) -> Dictionary:
+	var is_same := absf(value - earth_value) <= same_band if same_band >= 0.0 else absf(value / earth_value - 1.0) < 0.1
+	var right := same if is_same else (more if value > earth_value else less)
+	var wrong := [more, less, same]
+	wrong.erase(right)
+	return {"id": id, "q": q, "right": right, "wrong": wrong, "why": why}
+
+## Puts the right answer at a random place among the wrong ones. `avoid` is the slot the right
+## answer took last time; it is used again only now and then, so the answer never sits in one place.
+static func arrange(q: Dictionary, rng: RandomNumberGenerator, avoid: int = -1) -> Array:
+	var wrong: Array = (q.get("wrong", []) as Array).duplicate()
+	wrong.shuffle()
+	var n := wrong.size() + 1
+	var slot := rng.randi_range(0, n - 1)
+	if slot == avoid and rng.randf() < 0.75:
+		slot = (slot + rng.randi_range(1, n - 1)) % n
+	wrong.insert(slot, q.right)
+	return wrong.map(func(a: Variant) -> String: return str(a))
 
 ## Questions built from this target's own numbers.
 static func mission_questions(t: Dictionary, plan: Dictionary) -> Array:
@@ -95,6 +163,24 @@ static func mission_questions(t: Dictionary, plan: Dictionary) -> Array:
 			"right": "Earth and the target must be lined up for the cheapest path",
 			"wrong": ["Rockets can only launch in summer", "The Sun is in the way the rest of the year"],
 			"why": "Both planets keep moving. Launching when they are lined up lets a transfer orbit meet the target with the least fuel."})
+	var earth := Data.body("earth")
+	if t.get("day_hours") != null and str(t.get("id", "")) != "earth":
+		var dh := absf(float(t.day_hours))
+		out.append(_compare("m_day", "Is a day on %s longer or shorter than a day on Earth?" % nm, dh, 24.0, "Longer than Earth's", "Shorter than Earth's", "About the same as Earth's",
+			"A day on %s lasts about %s, compared with 24 hours on Earth." % [nm, Orbital.format_time(dh / 24.0) if dh >= 48.0 else "%.1f hours" % dh]))
+	if t.get("temp_c") != null and str(t.get("id", "")) != "earth":
+		var tc := float(t.temp_c)
+		out.append(_compare("m_temp", "Is %s hotter or colder than Earth on average?" % nm, tc, 15.0, "Hotter than Earth", "Colder than Earth", "About the same as Earth",
+			"The average temperature on %s is about %d °C. Earth's average is about 15 °C." % [nm, int(round(tc))], 10.0))
+	if t.get("radius_km") != null and str(t.get("id", "")) != "earth" and str(t.get("kind", "")) != "exoplanet":
+		var rk := float(t.radius_km)
+		out.append(_compare("m_size", "Is %s bigger or smaller than Earth?" % nm, rk, 6371.0, "Bigger than Earth", "Smaller than Earth", "About the same size as Earth",
+			"%s has a radius of about %s km. Earth's is about 6,371 km." % [nm, UI.grouped(int(rk))]))
+	if str(t.get("kind", "")) == "planet" and t.get("a_km") != null and str(t.get("id", "")) != "earth":
+		var au := float(t.a_km) / float(earth.get("a_km", 149598023.0))
+		out.append({"id": "m_sun", "q": "Is %s closer to the Sun than Earth, or farther away?" % nm,
+			"right": "Closer than Earth" if au < 1.0 else "Farther than Earth", "wrong": ["Farther than Earth" if au < 1.0 else "Closer than Earth", "The same distance as Earth"],
+			"why": "%s orbits about %.2f times as far from the Sun as Earth does." % [nm, au]})
 	if t.get("escape_kms") != null and str(t.get("id", "")) != "earth" and absf(float(t.escape_kms) - 11.2) > 0.3:
 		var e := float(t.escape_kms)
 		out.append({"id": "m_escape", "q": "Which world needs the most speed to escape its gravity?",

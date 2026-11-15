@@ -1019,6 +1019,7 @@ func test_learning() -> void:
 	quiz.results_path = path
 	add_child(quiz)
 	await get_tree().process_frame
+	check(Array(quiz._qorder).duplicate() != [] and quiz._qorder.size() == QuizScene.QUESTIONS.size(), "quiz asks every question once, in a shuffled order")
 	quiz.auto_advance()
 	check(quiz.score == 3, "right answers all score", quiz.score)
 	check(Game.quiz_before == -1, "a finished pair cannot be counted twice")
@@ -1029,7 +1030,8 @@ func test_learning() -> void:
 
 func test_version_stamp() -> void:
 	var v := str(ProjectSettings.get_setting("application/config/version", ""))
-	check(v.is_valid_float(), "project.godot has a version number", v)
+	var parts := v.split(".")
+	check(parts.size() >= 2 and Array(parts).all(func(x: String) -> bool: return x.is_valid_int()), "project.godot has a version number like 2.0 or 2.0.1", v)
 	var stamp: Label = Flow.get_node("VersionStamp")
 	check(stamp.text == "v" + v, "stamp shows the project version", stamp.text)
 	check(stamp.mouse_filter == Control.MOUSE_FILTER_IGNORE, "stamp can't block clicks")
@@ -1242,6 +1244,28 @@ func test_debris_dodge() -> void:
 	var mars := Questions.mission_questions(Data.body("mars"), Orbital.plan(Data.body("mars")))
 	var grav: Array = mars.filter(func(q: Dictionary) -> bool: return q.id == "m_gravity")
 	check(not grav.is_empty() and str(grav[0].right) == "Weaker than Earth's" and str(grav[0].why).contains("3.7"), "Mars gravity question uses NASA's 3.7 m/s²", grav)
+	# The right answer moves around: every slot gets used, and it rarely sits in the same slot twice running.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var slots := [0, 0, 0]
+	var repeats := 0
+	var last := -1
+	for i in 600:
+		var q: Dictionary = Questions.HAZARD[i % Questions.HAZARD.size()]
+		var opts := Questions.arrange(q, rng, last)
+		if i < 3:
+			check(opts.size() == 3 and opts.has(str(q.right)), "arranged answers include the right one")
+		var slot := opts.find(str(q.right))
+		slots[slot] += 1
+		if slot == last:
+			repeats += 1
+		last = slot
+	check(slots.min() > 150, "the right answer appears in every position about equally", slots)
+	check(repeats < 600 * 0.2, "the right answer rarely repeats its position", repeats)
+	check(Questions.HAZARD.size() >= 20, "at least 20 debris and meteoroid questions", Questions.HAZARD.size())
+	var mars_ids: Array = mars.map(func(q: Dictionary) -> String: return str(q.id))
+	for id: String in ["m_gravity", "m_trip", "m_moons", "m_day", "m_temp", "m_size", "m_sun"]:
+		check(mars_ids.has(id), "Mars has a %s question" % id, mars_ids)
 	# The dodge itself: a right answer dodges, a timeout hits, and the run reports back.
 	Classroom.root = "user://test_class_"
 	Game.new_mission()
